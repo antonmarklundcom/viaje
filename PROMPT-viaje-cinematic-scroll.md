@@ -1,67 +1,55 @@
 # PROMPT — "Viaje" cinematic scroll page (viaje.com.py)
 
-Build a **single standalone page** (`index.html` + `styles.css` + `script.js`, vanilla — no frameworks, no build step, no local assets). Every image and font must be loaded from the **remote URLs below**. Reproduce all values verbatim; they are not approximations.
+Build a **single standalone page** (`index.html` + `styles.css` + `script.js`, vanilla — no frameworks, no build step, no local assets). Every image and font is loaded from the **remote URLs below**; there is nothing to source or invent. Reproduce all values verbatim; they are not approximations.
 
-**Business context:** `viaje.com.py` — a Paraguayan travel agency / travel media brand. The page sells outbound travel from Asunción to the **United States, Europe and Asia**, plus **LATAM short-haul** escapes and **domestic Paraguayan tourism**. All copy is in **Paraguayan Spanish** (voseo-neutral, no Spain-Spanish). The motion engine is unchanged from the reference build — only content, language, anchors and the image slots change.
+**Business context:** `viaje.com.py` — a Paraguayan travel agency / travel media brand. The page sells outbound travel from Asunción to the **United States, Europe and Asia**, plus **LATAM short-haul** escapes and **domestic Paraguayan tourism**. All copy is in **Paraguayan Spanish**. This is a single cinematic screen driven entirely by scroll: three story beats and a destination carousel, all inside one sticky stage.
 
 ---
 
-## 1. Remote assets (the only allowed sources)
+## 1. Remote assets — final, do not substitute
 
-**Font — display serif, family name must be `"Ogg Medium"`**
+All scene photography lives under one base. Written out in full at each use site; never templated.
+
+```
+BASE = https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/
+```
+
+**Font — display serif, family name must be `"Ogg Medium"`, `font-display: swap`**
 
 ```
 https://dcym8fthxf5uu.cloudfront.net/fonts/247a073c-29f5-4a89-aa3a-741020f346fc/OggText-Medium.woff2
 ```
 
-**Scene photographs (transparent-edge PNG layers).** The URLs below are **placeholders that must render immediately**; each one is later replaced 1:1 by a generated image with the same technical shape. Do not change the number of layers, their order, or their classes.
+**Scene layers** — the three plates marked *opaque* are full-bleed 3168×1344 (21:9); the cutouts are transparent PNGs.
 
-| Layer role | Slot ID | What it must show for viaje.com.py | Placeholder URL |
+| Slot | Content | Alpha | URL |
 |---|---|---|---|
-| Sky / farthest background | `SKY` | Wide dawn sky, warm-to-blue gradient, thin high clouds. Full-bleed, no subject, no horizon line in the lower third. **Opaque, 21:9, edge-to-edge.** | `https://raft-blast-61784561.figma.site/_assets/v11/16b5007d9c93971e26ffe4e0e3e37946f6bd538c.png` |
-| Back glow layer | `GLOW` | Soft light bloom / sun flare band, rendered on transparency. Used at `mix-blend-mode: screen`, so it must be a **bright shape on black or transparent**. | `https://raft-blast-61784561.figma.site/_assets/v11/8a7f8af50e0ce92ec2e228e7b0b4112178c51cf1.png` |
-| Mid-back cityscape | `SKYLINE` | A layered world-travel skyline silhouette blending recognisable outbound icons (Manhattan towers, a European cathedral spire, a pagoda) into one continuous horizon band. **Transparent above the roofline, flat bottom edge.** | `https://raft-blast-61784561.figma.site/_assets/v11/864afe00e41e2fa20a5aa546e15cb807e0f81384.png` |
-| Splitframe LEFT | `SPLIT_L` | Left half of a single hero image, cut vertically down the middle (see §1.1). | `https://raft-blast-61784561.figma.site/_assets/v11/7536d7b60a1fce482cf6edf3f0bffd3bad5d0f8a.png` |
-| Splitframe RIGHT | `SPLIT_R` | Right half of the same hero image. | `https://raft-blast-61784561.figma.site/_assets/v11/392db6a6a6b98e868bd7f8d3f55bb719d51e5028.png` |
-| Hero foreground | `HERO` | The signature object the whole first screen is built around: a **wide-body aircraft seen from below-front, wings spread, climbing left-to-right**, cut out on transparency. (This replaces the reference build's stone bridge and inherits its exact motion.) | `https://raft-blast-61784561.figma.site/_assets/v11/c6a6d8ef49bca43f708aa852692942c45ec950d4.png` |
-| Frame-two reveal | `REVEAL` | The second-screen close-up that fades in behind the parting splitframes: **Paraguay from above** — the Paraná river bend at Encarnación or the Chaco palm savannah, aerial, golden hour. | `https://raft-blast-61784561.figma.site/_assets/v11/ba75252bab2b1c510987b74837770f7bc8a6b2d4.png` |
+| `SKY` | Dawn sky, amber-to-cyan gradient | opaque | `https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260814_123852_226759c5-704f-46bb-84ed-4297f6c00aa2.png` |
+| `SKYLINE` | World skyline band — Manhattan → cathedral → pagoda | **cutout** | `https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260814_131702_d1107c44-8f1c-4972-8f00-a65b167ef1bb.png` |
+| `SPLIT` | Symmetrical sunlit arched colonnade | opaque | `https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260814_123852_9589c288-3895-409a-93ac-9f8078dc7134.png` |
+| `HERO` | Wide-body airliner from below, climbing right | **cutout** | `https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260814_131703_1459dd4d-4a9f-40a6-9921-a2becb50de38.png` |
+| `REVEAL` | Aerial Paraná river meander, golden hour | opaque | `https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260814_123852_91a2f4a0-0952-4214-8fd5-24af8556cd0b.png` |
+| `ICON1` | Open passport with boarding pass | **cutout** | `https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260814_131705_44fd4400-432d-47b9-8cf6-8afab2711a33.png` |
+| `ICON2` | Tan hard-shell suitcase | **cutout** | `https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260814_131707_b6c926a7-cc64-4ce0-b3ac-4cd29aecc960.png` |
+| `ICON3` | Brass nautical compass | **cutout** | `https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260814_131708_2a522eb6-9970-48a9-8b97-9dca1d7aad97.png` |
 
-### 1.1 Splitframe rule (do not skip)
+**`SPLIT` is used twice** — once for `.splitframe-left` and once for `.splitframe-right`, same URL. The right copy is mirrored in CSS (see §5), so the pair reads as two halves of one symmetrical portal parting down the middle. This is deliberate; do not hunt for a second image.
 
-`SPLIT_L` and `SPLIT_R` must be **two halves of one single image**, not two different images. Generate one landscape frame — *a warm arched colonnade / departure-gate corridor framing a bright view* — then slice it exactly down the centre into two PNGs of identical dimensions. Each half keeps the full original height. The engine drives them apart to ∓46vw, and any mismatch in exposure or horizon between the halves is visible for the whole 560→1620px scroll segment.
+**`GLOW`** is not a photograph. It is a screen-blended light bloom, emitted inline as a data URI so there is no ninth network request:
 
-**Destination-card pin icons (transparent cutouts, square, 1:1)**
-
-| Icon | Subject | Placeholder URL |
-|---|---|---|
-| icon1 | Passport / boarding-pass cutout | `https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260730_230438_d526b8b6-8a2e-4e3b-9993-3908acae03a7.png` |
-| icon2 | Suitcase / camera cutout | `https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260730_230442_140bc25b-b165-4249-904a-f708bff6970e.png` |
-| icon3 | Compass / globe cutout | `https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260730_230448_825949c9-ccdb-4857-b4a6-e349eccc9010.png` |
-
-Every icon must be a **single object, centred, on transparency, no ground shadow, no text** — they sit at 67.2×67.2px on a cream card, so silhouette legibility matters more than detail.
+```
+data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 600'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='60%25' r='60%25'%3E%3Cstop offset='0%25' stop-color='%23ffd9a0' stop-opacity='0.95'/%3E%3Cstop offset='45%25' stop-color='%23ff9f5a' stop-opacity='0.35'/%3E%3Cstop offset='100%25' stop-color='%23000000' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='1600' height='600' fill='url(%23g)'/%3E%3C/svg%3E
+```
 
 Favicon: `<link rel="icon" href="data:," />`
 
-### 1.2 Asset swap contract
-
-Each of the 10 URLs above appears **exactly once** in `index.html`, in the DOM order of §3. Directly above `<main class="site-shell">`, emit an HTML comment listing all 10 slot IDs and their current URLs, so a later pass can find and replace them without reading the whole file:
+Directly above `<main class="site-shell">`, emit an HTML comment listing the eight slot IDs and their URLs, so a later pass can swap assets without reading the whole file:
 
 ```html
-<!-- ASSET MAP
-  SKY      = ...
-  GLOW     = ...
-  SKYLINE  = ...
-  SPLIT_L  = ...
-  SPLIT_R  = ...
-  HERO     = ...
-  REVEAL   = ...
-  ICON1    = ...
-  ICON2    = ...
-  ICON3    = ...
--->
+<!-- ASSET MAP: SKY / SKYLINE / SPLIT / HERO / REVEAL / ICON1 / ICON2 / ICON3 -->
 ```
 
-**Optional video slot (only if a video file URL is supplied):** `REVEAL` may be swapped from `<img>` to `<video class="scene-img frame-two-img" autoplay muted loop playsinline preload="metadata" poster="…">` with no CSS or JS changes whatsoever — the class carries all positioning. Nothing else on the page may become a video.
+**Optional video slot:** `REVEAL` may later be swapped from `<img>` to `<video class="scene-img frame-two-img" autoplay muted loop playsinline preload="metadata" poster="…">` with no CSS or JS change whatsoever — the class carries all positioning. Build it as an `<img>` now. Nothing else on the page may become a video.
 
 ---
 
@@ -97,7 +85,7 @@ main.site-shell
       │  │     ├─ span "ES"
       │  │     └─ span[aria-hidden="true"] "⌄"
       │  ├─ div.back-stack
-      │  │  ├─ img.scene-img.back-img.back-four      → GLOW
+      │  │  ├─ img.scene-img.back-img.back-four      → GLOW (data URI)
       │  │  ├─ section.sights-slider#destinos        [aria-label="Destinos destacados"]
       │  │  │  └─ div.sights-track
       │  │  │     └─ 5 × article.sight-card [tabindex="0" role="button"]
@@ -106,13 +94,13 @@ main.site-shell
       │  │  ├─ button.sight-nav.sight-prev "←"       [aria-label="Destino anterior"]
       │  │  └─ button.sight-nav.sight-next "→"       [aria-label="Destino siguiente"]
       │  ├─ h1.hero-title                            "VIAJE"
-      │  ├─ img.scene-img.splitframe-img.splitframe-left   → SPLIT_L
-      │  ├─ img.scene-img.splitframe-img.splitframe-right  → SPLIT_R
+      │  ├─ img.scene-img.splitframe-img.splitframe-left   → SPLIT
+      │  ├─ img.scene-img.splitframe-img.splitframe-right  → SPLIT (same URL)
       │  ├─ img.scene-img.bridge-img                 → HERO
       │  ├─ img.scene-img.frame-two-img              → REVEAL
       │  └─ div.shade
       ├─ section.intro-copy                          [aria-label="Presentación"]
-      ├─ section.story-panel.story-panel-bridge#mundo   [aria-label="Viajes al exterior"]
+      ├─ section.story-panel.story-panel-bridge#mundo    [aria-label="Viajes al exterior"]
       └─ section.story-panel.story-panel-bazaar#paraguay [aria-label="Turismo en Paraguay"]
 ```
 
@@ -124,11 +112,11 @@ All `img.scene-img` have `alt=""`.
 
 | # | aria-label | kicker | h3 | p | pin |
 |---|---|---|---|---|---|
-| 1 | Abrir destino Miami | Estados Unidos | Miami | Conexión corta, outlets, playa y parques a pocas horas de vuelo. | icon1 |
-| 2 | Abrir destino Madrid | Europa | Madrid | La puerta de entrada a Europa, con las salidas más frecuentes del año. | icon2 |
-| 3 | Abrir destino Tokio | Asia | Tokio | Ruta larga planificada al detalle: templos, trenes bala y comida. | icon3 |
-| 4 | Abrir destino Río de Janeiro | Sudamérica | Río de Janeiro | Escapada corta y accesible: playa, samba y vista desde el Corcovado. | icon1 |
-| 5 | Abrir destino Encarnación | Paraguay | Encarnación | Costanera, carnaval y las Misiones Jesuíticas declaradas Patrimonio Mundial. | icon2 |
+| 1 | Abrir destino Miami | Estados Unidos | Miami | Conexión corta, outlets, playa y parques a pocas horas de vuelo. | ICON1 |
+| 2 | Abrir destino Madrid | Europa | Madrid | La puerta de entrada a Europa, con las salidas más frecuentes del año. | ICON2 |
+| 3 | Abrir destino Tokio | Asia | Tokio | Ruta larga planificada al detalle: templos, trenes bala y comida. | ICON3 |
+| 4 | Abrir destino Río de Janeiro | Sudamérica | Río de Janeiro | Escapada corta y accesible: playa, samba y vista desde el Corcovado. | ICON1 |
+| 5 | Abrir destino Encarnación | Paraguay | Encarnación | Costanera, carnaval y las Misiones Jesuíticas declaradas Patrimonio Mundial. | ICON2 |
 
 **intro-copy content:** `<p>Vuelos, paquetes y rutas armadas desde Asunción: Estados Unidos, Europa y Asia — y también el Paraguay que todavía no viste.</p>` then `div.hero-tags[aria-label="Destacados"]` with three spans: `Salidas desde ASU`, `Cuotas en guaraníes`, `Asistencia 24/7`.
 
@@ -136,7 +124,7 @@ All `img.scene-img` have `alt=""`.
 
 **story-panel-bazaar (`#paraguay`):** `h2` = `Paraguay también es destino.`; `p` = `Chaco, Misiones, Ñeembucú y el Lago Ypacaraí: rutas cortas, fines de semana largos y guías propias.`; then `button.note-button` containing `span[aria-hidden="true"] ↗` and `span Ver ofertas del mes`.
 
-> **Conversion note (allowed deviation, and the only one):** `.note-button` may instead be `<a class="note-button" href="https://wa.me/595XXXXXXXXX?text=Hola%2C%20quiero%20ver%20las%20ofertas%20del%20mes" target="_blank" rel="noopener">` with `text-decoration:none` added to its rule. Everything else about it — markup order, sizing, styling — is unchanged. If no WhatsApp number is supplied, ship the `<button>`.
+> **Conversion note (the only permitted deviation):** `.note-button` may instead be `<a class="note-button" href="https://wa.me/595XXXXXXXXX?text=Hola%2C%20quiero%20ver%20las%20ofertas%20del%20mes" target="_blank" rel="noopener">` with `text-decoration:none` added to its rule. Everything else about it — markup order, sizing, styling — unchanged. If no WhatsApp number is supplied, ship the `<button>`.
 
 ---
 
@@ -175,8 +163,6 @@ All `img.scene-img` have `alt=""`.
 }
 ```
 
-> `--blur-tint` is the RGB triplet of the atmospheric wash that rises during the blur segment. It must match the dominant sky colour of the delivered `SKY` image. Keep `74, 181, 224` unless the generated sky is materially warmer, in which case use its sampled mid-tone.
-
 Global: `* { box-sizing: border-box }`; `html { min-height:100%; scroll-behavior:smooth; background:#0b1110 }`; `body { min-height:100%; margin:0; overflow-x:clip; background:#0b1110 }`; `button { border:0; font:inherit }`; `.site-shell { min-height:100vh }`.
 
 ---
@@ -213,7 +199,7 @@ Global: `* { box-sizing: border-box }`; `html { min-height:100%; scroll-behavior
 
 **`.sight-card`** — `position:relative; flex: 0 0 clamp(360px, 19.4vw, 430px); height:220px; padding:24px; overflow:hidden; border:1px solid rgba(253,241,225,0.42); border-radius:24px; color:#000; background:#fdf1e1; box-shadow: 0 18px 52px rgba(2,47,64,0.12); backdrop-filter:none; cursor:pointer; pointer-events:auto; user-select:none`. `::before/::after { content:none }`. Kicker/h3/p carry `text-shadow:none` and `position:relative; z-index:1`. `:focus-visible` and `.is-active` → `outline:none`.
 - `.sight-kicker` — `display:block; margin-bottom:56px; color:#000; font-size:12px; font-weight:500; line-height:1.05; text-transform:uppercase`
-- `.sight-pin` — `position:absolute; top:24px; right:24px; width:67.2px; height:67.2px; pointer-events:none`
+- `.sight-pin` — `position:absolute; top:24px; right:24px; width:67.2px; height:67.2px; object-fit:contain; pointer-events:none`
 - `.sight-card h3` — `position:absolute; left:24px; right:24px; bottom: calc(24px + (16px * 1.16 * 2) + 12px); max-width: calc(100% - 76px); margin:0; color:#000; font-size:24px; font-weight:800; line-height:0.95; overflow:hidden; text-overflow:ellipsis; white-space:nowrap`
 - `.sight-card p` — `position:absolute; left:24px; right:24px; bottom:24px; max-width:100%; margin:12px 0 0; color:#000; font-size:16px; font-weight:400; line-height:1.16; display:-webkit-box; max-height: calc(2em * 1.16); overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2`
 
@@ -226,7 +212,9 @@ Global: `* { box-sizing: border-box }`; `html { min-height:100%; scroll-behavior
 
 **`.splitframe-img` (z 6)** — `left:50%; bottom:-2vh; width: min(118vw, 2240px); height:auto; pointer-events:none`
 - `.splitframe-left` — `transform: translate3d(var(--split-left-x), var(--split-left-y), 0) scale(var(--split-left-scale)); transform-origin: 21% 52%`
-- `.splitframe-right` — `transform: translate3d(var(--split-right-x), var(--split-right-y), 0) scale(var(--split-right-scale)); transform-origin: 79% 52%`
+- `.splitframe-right` — `transform: translate3d(var(--split-right-x), var(--split-right-y), 0) scale(var(--split-right-scale)) scaleX(-1); transform-origin: 79% 52%`
+
+> The trailing `scaleX(-1)` on `.splitframe-right` is what turns one colonnade plate into a mirrored pair. It must come **last** in the transform list, after the scale. This is the only difference between the two splitframe rules besides the origin.
 
 **`.frame-two-img` (z 5)** — `filter: none !important; backdrop-filter:none; left:50%; top:50%; width: min(122vw, 2160px); height:auto;` `opacity: var(--frame2-opacity);` `transform: translate3d(var(--frame2-x), var(--frame2-y), 0) scale(var(--frame2-scale)); transform-origin: 50% 48%`
 
@@ -309,7 +297,7 @@ background: linear-gradient(180deg,
 }
 ```
 
-> `Río de Janeiro` is the longest `h3` and it is `white-space:nowrap` with `text-overflow:ellipsis` at `max-width: calc(100% - 76px)`. Verify it does not clip at the 640px breakpoint (`max-width: 78%`); if it does, shorten the card title to `Río`, never change the CSS.
+> `Río de Janeiro` is the longest `h3` and it is `white-space:nowrap` with `text-overflow:ellipsis`. Verify it does not clip at the 640px breakpoint (`max-width: 78%`); if it does, shorten that card title to `Río`, never change the CSS.
 
 ---
 
@@ -478,8 +466,8 @@ Cards are **presentational only** in this build — clicking one recentres the t
 
 Scrubbing ~3700px through the sticky stage must produce, in order:
 
-1. **0–650px:** `VIAJE` rises `-210px` while scaling to `0.92` and fading out; the Spanish intro paragraph + 3 cream pills sink `+90px` and fade. Sky, back-stack, hero aircraft, and splitframes drift subtly with the pointer the whole time.
-2. **560–1620px:** the hero aircraft widens `67.2vw → 105vw`, its bottom lifts `5vh → -8vh`, then it launches up `-760px` and scales `+0.46` on exit — reading as a takeoff. The two splitframe halves part symmetrically to ∓`46vw` (eased `enter^1.5`), rise `-180px`, scale `+0.74`. The Paraguay aerial reveal fades in behind them. Global blur ramps to `14px`, brightness drops ~25.5%, and the `74,181,224` shade gradient rises to alphas `0.465 / 0.42 / 0.51`. The `#mundo` panel fades in at `top:60%`, sliding from `+58px` to `-86px`.
+1. **0–650px:** `VIAJE` rises `-210px` while scaling to `0.92` and fading out; the Spanish intro paragraph + 3 cream pills sink `+90px` and fade. Sky, back-stack, aircraft, and colonnade drift subtly with the pointer the whole time.
+2. **560–1620px:** the airliner widens `67.2vw → 105vw`, its bottom lifts `5vh → -8vh`, then it launches up `-760px` and scales `+0.46` on exit — reading as a takeoff. The mirrored colonnade halves part symmetrically to ∓`46vw` (eased `enter^1.5`), rise `-180px`, scale `+0.74`. The Paraná aerial fades in behind them. Global blur ramps to `14px`, brightness drops ~25.5%, and the `74,181,224` shade gradient rises to alphas `0.465 / 0.42 / 0.51`. The `#mundo` panel fades in at `top:60%`, sliding from `+58px` to `-86px`.
 3. **1760–2700px:** the skyline layer gains `+0.18` saturation while the `#mundo` panel exits; the `#paraguay` panel fades in at `top:29%` with the same `+58px → -86px` slide and its `Ver ofertas del mes` pill.
 4. **2760–3560px:** the destinations slider flies in from `420vw` on X (`enter^1.55` easing), becoming visible past `0.01`, counter-scaled by `1 / backScale` so cards stay screen-true while the back stack keeps zooming; its top is solved so cards sit at `clamp(innerHeight*0.19, 112, 220) - 50` px on screen.
 5. **3360–3660px:** the two round `←` `→` buttons fade in at `left:48px` beneath the cards and become clickable only past `0.98`. Prev/next and card clicks slide the track with the `640ms cubic-bezier(0.22, 1, 0.36, 1)` transition and loop seamlessly via the 3-set clone + instant-jump normalization.
@@ -488,20 +476,15 @@ Under `prefers-reduced-motion`, scroll smoothing and pointer parallax are bypass
 
 ---
 
-## 10. Image generation briefs (for the asset swap in §1.2)
+## Appendix — regenerating an asset
 
-Generate at **21:9** unless noted. Every layer except `SKY` must be delivered with a **transparent background** (generate on a plain contrasting backdrop, then cut out). No text, no logos, no watermarks, no visible faces in any scene layer.
+Only needed if a plate is replaced. Scene layers 21:9; icons 1:1. Every layer except `SKY`, `SPLIT` and `REVEAL` must be delivered as a **transparent cutout** (generate on flat white, then remove the background). No text, no logos, no watermarks, no faces in any layer.
 
-| Slot | Prompt brief | Notes |
-|---|---|---|
-| `SKY` | *Wide cinematic dawn sky over open horizon, warm amber low band grading into clean cyan-blue, thin high cirrus, no sun disc, no land, no aircraft, photographic, ultra wide.* | Opaque. Sample its mid-tone into `--blur-tint`. |
-| `GLOW` | *Soft anamorphic light bloom, warm golden horizontal flare band on pure black, no lens artifacts, no subject.* | Screen-blended — must be bright-on-black. |
-| `SKYLINE` | *Continuous silhouetted skyline band merging a Manhattan tower cluster, a European cathedral spire and a Japanese pagoda into one horizon, hazy backlit dusk, transparent sky, flat bottom edge, ultra wide.* | Sits at 112% width, bottom-anchored. Keep the composition busy at the centre, empty at the far edges. |
-| `SPLIT_L` / `SPLIT_R` | *Warm arched stone colonnade opening onto a bright sunlit view, symmetrical, golden hour, shallow depth, ultra wide, centred vanishing point.* | Generate **once**, then slice down the exact centre into two equal PNGs. |
-| `HERO` | *Wide-body passenger aircraft photographed from below and slightly ahead, wings fully spread, nose climbing to the right, clean underside, bright neutral livery, isolated on transparent background, no background sky.* | The single most-seen object on the page. Worth several attempts. |
-| `REVEAL` | *Aerial golden-hour view of the Paraná river bend at Encarnación, Paraguay — wide meander, green riverbanks, sandbanks, soft haze, no buildings in focus, ultra wide.* | Fades in behind the parting halves. Full-bleed, opaque is fine. |
-| `ICON1` | *Single open passport with a boarding pass tucked inside, three-quarter view, soft studio light, isolated on transparent background, no shadow, no text on pages.* | Square 1:1. |
-| `ICON2` | *Single vintage-modern travel suitcase, three-quarter view, soft studio light, isolated on transparent background, no shadow.* | Square 1:1. |
-| `ICON3` | *Single brass nautical compass, top-down, soft studio light, isolated on transparent background, no shadow, no legible markings.* | Square 1:1. |
+- `SKY` — *Ultra wide cinematic dawn sky over an empty horizon, warm amber lower band grading into clean cyan blue, thin high cirrus, no sun disc, no land, no aircraft.* Opaque; its mid-tone sets `--blur-tint`.
+- `SKYLINE` — *Continuous backlit skyline silhouette band on flat white: Manhattan cluster left, gothic cathedral spire centre, Japanese pagoda right, merged into one unbroken horizon, flat bottom edge, nothing above the rooflines.* Sits at 112% width, bottom-anchored; keep it dense at centre, sparse at the edges.
+- `SPLIT` — *Warm sunlit arched stone colonnade seen head on, perfectly symmetrical, receding to a central vanishing point that opens onto daylight, golden hour, no people.* Must be left–right symmetrical — the page mirrors it.
+- `HERO` — *Wide-body airliner from below and slightly ahead, wings fully spread, nose climbing to the upper right, gear retracted, clean unmarked livery, flat white background.* The most-seen object on the page; worth several attempts.
+- `REVEAL` — *Aerial golden-hour Paraná river meander in Paraguay, green banks and pale sandbars, low haze, no buildings or boats.*
+- `ICON1/2/3` — *A single passport with boarding pass / tan hard-shell suitcase / brass nautical compass, three-quarter view, soft studio light, flat white background, no shadow, no text.* They render at 67.2px on a cream card, so silhouette legibility beats detail.
 
-Deliver each as a hosted HTTPS URL and substitute it into the matching line of the ASSET MAP comment and the corresponding `src` attribute.
+**Before launch:** these CloudFront URLs and the Ogg font are hotlinked third-party hosts. Download all eight PNGs plus the woff2, self-host them under `viaje.com.py`, and update the ASSET MAP. Do not ship production depending on someone else's CDN.
