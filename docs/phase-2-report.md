@@ -38,6 +38,16 @@
 - `content/pages/contacto.md` embeds a Google Maps iframe for Edificio Skytower, Asunción (Parsedown passes
   raw HTML through by design, spec §3).
 
+- Blog-post differentiation (plan §6, an Opus subagent task): `destinos-imperdibles-2026.md` is re-angled
+  from "10 best destinations" (duplicating the pillar) to "when to go and how to fit it into a weekend" —
+  new title/H1 "Cuándo Ir y Cómo Armar tu Escapada de Fin de Semana en Paraguay", same URL. Encarnación,
+  Colonia Independencia, Saltos del Monday and El Chaco sections are trimmed to 2–3 sentences each with
+  unique facts kept and a link to the pillar post's matching H2 anchor; Asunción (not one of the pillar's
+  10 destinations) is kept and lightly expanded since it's this post's own unique content. Adds a
+  `:::tip Cuándo ir` callout and a new "qué combina con qué" route-planning section. The pillar post
+  (`paraguay-destinos-imprescindibles-2026.md`) was not touched. `php tools/verify.php viaje.com.py` still
+  exits 0 (217 checks) after the edit.
+
 ## Decisions made (not asked, per autonomy protocol §4)
 
 - **Homepage "Destinos Locales" city cards and their "% Off" discount badges were not ported.** The scan

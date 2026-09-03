@@ -326,6 +326,44 @@ on a missing description, a hero without alt, a duplicate path or any leftover "
 - Director session id for status messages is now `session_016yin5ETmxXTCT2qPPmRBur`.
 - Phase 2 spawned on Sonnet from the director session.
 
+### 2026-09-03 — Phase 2 complete (Sonnet, branch `phase/2-content`)
+
+**What exists.** Every real page/post from `docs/viaje-com-py-scan.md` §3 ported into
+`sites/viaje.com.py/` per `docs/site-spec-viaje.md`: 5 service pages, home, nosotros, faq,
+contacto, `/blog/`, both posts — theme-demo leftovers dropped (TourDen footer, discount
+badges, "0+" counters, lorem, newsletter widget). Fraunces display font wired via
+`head_extra`. FAQ merged 16→13 deduped Q&As. 6 new activity pages + 3 new trip pages seed
+`/actividades/` and `/viajes/` (now in nav), cross-linked to service pages and to the
+pillar post's H2 anchors. `docs/imagery-manifest.json`: 18 images generated via the
+Higgsfield MCP, **20 of the 700-credit cap spent, no ids dropped**; every hero/gallery
+`src` points at the manifest's remote CDN URL (v1 — this sandbox cannot reach the CDN to
+download; phase 4's `tools/localize-media.php` does that). Blog-post differentiation
+(plan §6) done by an Opus subagent inside this phase: `destinos-imperdibles-2026.md`
+re-angled to a seasonal/weekend-planning intent, `paraguay-destinos-imprescindibles-2026.md`
+untouched.
+
+**Verification.** `php tools/verify.php viaje.com.py` → 217 checks, 0 failures.
+`php tools/verify.php thingstodoinparaguay.com` → unchanged, 90 checks, 0 failures (fixture
+untouched). `grep -rn "TODO-PHASE-2" sites/viaje.com.py/` → empty. `grep -ri
+"tourden|harbert|lorem|viaje\.com[^.]" sites/viaje.com.py/` → empty. Manual read of the
+built-in server's rendered HTML for `/`, one service, `/faq/`, `/contacto/`, both posts,
+one activity and one trip: single `<h1>`, correct JSON-LD types (`FAQPage` only on
+`/faq/`), WhatsApp links carry `595995628862`, footer/mailto is `hola@viaje.com.py`, no
+`<img>` without `alt`, every internal link added (pillar anchors, activity/trip
+cross-links) resolves 200.
+
+**Deviations, logged in `KNOWN-ISSUES.md` "Phase 2":** homepage "Destinos Locales" city
+cards / discount badges not ported (decorative leftovers per scan §8 item 5, no
+card-grid slot in the frozen `home.php`); hub hero images (manifest ids 11, 26) unused
+(`hub.php` has no hero slot); imagery stays remote-URL v1 until phase 4 localizes it.
+
+**Where phase 4 should look first.** `docs/phase-2-report.md` has the full decision log.
+Still-open human inputs from plan §7: `wp-content/uploads` folder (item 5, still not
+supplied — `urls.txt` has no rows for it), real counters or confirmed removal (item 7,
+removed by default), social profile URLs (item 11, `null`/skipped), VenderCRM tenant key
+(item 9, leads work without it). Phase 4 is deploy + cutover only; it does not need to
+touch content.
+
 ## 10. Backlog
 - Cinematic scroll homepage hero as an opt-in section (needs SEO-safe text fallback).
 - Newsletter capture.
