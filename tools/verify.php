@@ -130,7 +130,7 @@ foreach ($expect200 as $path) {
     if ($path === '/feed/' || str_ends_with($path, '.xml') || $path === '/robots.txt') {
         continue;
     }
-    if (isNoindex($siteDir, $path)) {
+    if (isNoindex($siteDir, $path, $cfg)) {
         continue;
     }
     if (!in_array($baseUrl . $path, $locs, true)) {
@@ -319,28 +319,42 @@ function checkHtml(array &$failures, string $path, string $html, string $baseUrl
     }
 }
 
-/** True when the content file behind $path is marked noindex. */
-function isNoindex(string $siteDir, string $path): bool
+/** True when the content file behind $path is marked noindex or draft. */
+function isNoindex(string $siteDir, string $path, array $cfg = []): bool
 {
     static $map = null;
     if ($map === null) {
         $map = [];
-        foreach (glob($siteDir . '/content/*/*.md') ?: [] as $file) {
-            $raw = (string)file_get_contents($file);
-            if (!preg_match('/^---\R(.*?)\R---/s', $raw, $m)) {
-                continue;
+        $folders = ['page' => 'pages', 'service' => 'services', 'post' => 'posts',
+                    'news' => 'news', 'trip' => 'trips', 'activity' => 'activities'];
+        foreach ($folders as $type => $folder) {
+            foreach (glob($siteDir . '/content/' . $folder . '/*.md') ?: [] as $file) {
+                $raw = (string)file_get_contents($file);
+                if (!preg_match('/^---\R(.*?)\R---/s', $raw, $m)) {
+                    continue;
+                }
+                $fm   = $m[1];
+                $slug = basename($file, '.md');
+                $p    = contentPath($fm, $type, $slug, $cfg);
+                $map[$p] = (bool)preg_match('/^noindex:\s*true/m', $fm)
+                    || (bool)preg_match('/^draft:\s*true/m', $fm);
             }
-            $fm   = $m[1];
-            $slug = basename($file, '.md');
-            $p    = preg_match('/^path:\s*(\S+)/m', $fm, $pm) ? '/' . trim($pm[1], '"\'/') . '/' : null;
-            if ($p === '//') {
-                $p = '/';
-            }
-            $key = $p ?? $slug;
-            $map[$key] = (bool)preg_match('/^noindex:\s*true/m', $fm) || (bool)preg_match('/^draft:\s*true/m', $fm);
         }
     }
     return $map[$path] ?? false;
+}
+
+/** The URL a content file resolves to, mirroring Content::meta(). */
+function contentPath(string $fm, string $type, string $slug, array $cfg): string
+{
+    if (preg_match('/^path:\s*(\S+)/m', $fm, $pm)) {
+        $p = rtrim('/' . trim($pm[1], "\"'/"), '/') . '/';
+        return $p === '/' ? '/' : $p;
+    }
+    if ($type === 'page' && $slug === 'home') {
+        return '/';
+    }
+    return rtrim((string)($cfg['type_paths'][$type] ?? '/'), '/') . '/' . $slug . '/';
 }
 
 /** @return list<array{0:string,1:string}> */
@@ -375,12 +389,7 @@ function contentIssues(string $siteDir, array $cfg): array
             $fm    = $m[1];
             $slug  = basename($file, '.md');
             $draft = (bool)preg_match('/^draft:\s*true/m', $fm);
-            $path  = preg_match('/^path:\s*(\S+)/m', $fm, $pm)
-                ? rtrim('/' . trim($pm[1], "\"'/"), '/') . '/'
-                : rtrim((string)($cfg['type_paths'][$typePath] ?? '/'), '/') . '/' . $slug . '/';
-            if ($typePath === 'page' && $slug === 'home' && !preg_match('/^path:/m', $fm)) {
-                $path = '/';
-            }
+            $path  = contentPath($fm, (string)$typePath, $slug, $cfg);
             if (isset($paths[$path])) {
                 $issues[] = [$rel, 'duplicate path ' . $path . ' (also ' . $paths[$path] . ')'];
             }
