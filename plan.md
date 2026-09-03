@@ -364,6 +364,65 @@ removed by default), social profile URLs (item 11, `null`/skipped), VenderCRM te
 (item 9, leads work without it). Phase 4 is deploy + cutover only; it does not need to
 touch content.
 
+### 2026-09-03 — Phase 4 complete (Sonnet, branch `phase/4-deploy`)
+
+**What exists.** `tools/localize-media.php` (downloads `docs/imagery-manifest.json`
+images into `sites/<domain>/assets/img/`, generates WebP variants at
+`Images::WIDTHS` — 480/960/1600, not the prompt's literal 640/1280/1920, see
+KNOWN-ISSUES #14 — and rewrites every remote-URL reference across
+`content/**`, `content/data/*.json` and `config.php`; idempotent, `--force` to
+redo). `.github/workflows/deploy.yml`: manual-dispatch FTP deploy for
+viaje.com.py only via `SamKirkland/FTP-Deploy-Action@v4.3.5`, builds +
+verifies before upload, excludes `site/{content,media,data,cache}` and
+`site/config.local.php`, inert until `FTP_HOST_VIAJE`/`FTP_USER_VIAJE`/
+`FTP_PASS_VIAJE` exist. `engine/bin/backup.php`: weekly-cron-ready backup
+script (content+media+leads zip, same scope as the admin export button,
+keeps newest 8) for Hostinger's Cron Jobs. `docs/cutover-runbook.md`:
+15 numbered sections covering hosting/PHP/upload-path setup, imagery
+localization, `config.local.php` on the server (password hash + the
+staging `force_host` gotcha below), the legacy uploads copy, staging
+verify, manual QA, DNS cutover, flipping staging off, post-cutover verify,
+Search Console, the 14-day watch, the backup cron wiring, and rollback.
+
+**Deviations, logged in `KNOWN-ISSUES.md` "Phase 4":** localize-media's WebP
+widths follow the frozen `Images` class instead of the prompt's literal
+numbers (#14); found and documented that `config.php`'s hard-coded
+`force_host` 301-loops staging to production unless `config.local.php`
+overrides it — confirmed with a faked `Host` header against the local
+built-in server, fixed via `config.local.example.php` guidance and runbook
+step 5, not an engine change (#15); `tools/verify.php --base=` needed no
+code change for remote/staging checks after reading it closely and testing
+it against a local stand-in server — the one gap (asserting the host/scheme
+redirect itself) stays a manual runbook step because which host is
+canonical is still open, plan §7 item 4 (#16); backup retention (8) is a
+default, not a plan value (#17).
+
+**Verification.** `php -l` clean on all 66 PHP files. `php tools/verify.php
+viaje.com.py` → 217 checks, 0 failures; `php tools/verify.php
+thingstodoinparaguay.com` → 90 checks, 0 failures (both unchanged from phase
+2 — this phase touches deploy tooling and docs, not content). `deploy.yml`
+validated with `actionlint` (schema/expression checks — caught and fixed a
+`secrets` context misuse in a job-level `if`, then a `inputs.<hyphenated-name>`
+expression-parsing gotcha) and `yamllint`, both clean.
+`localize-media.php` tested end-to-end against a local fixture manifest
+(two generated images, one larger than the widest variant, one smaller than
+the narrowest, exercising both the multi-variant and skip-upscale paths):
+images landed in `assets/img/`, all 5 real references across 4 content
+files + `config.php` rewrote correctly, `tools/verify.php` still passed
+(217/0) against the localized build, the homepage's `<picture>` element
+picked up the generated WebP srcset with no engine change, re-running was a
+clean no-op (idempotent). `engine/bin/backup.php` tested against a real
+built `dist/viaje.com.py`: zipped 25–26 real files across two runs, and a
+10-fake-backup fixture proved retention prunes down to the newest 8.
+`force_host`/staging behavior verified with `curl -H "Host: <fake-staging>"`
+against the local built-in server: without a `config.local.php` override,
+every request 301s to `https://viaje.com.py/`; with `force_host => null`, it
+serves directly (still upgrades http→https, which is correct).
+
+**For the human (Anton) — see the closing report on this phase**, sent as this
+session's final message and to the director session. Nothing further is
+queued to spawn automatically; phase 4 was the last phase in plan §0's table.
+
 ## 10. Backlog
 - Cinematic scroll homepage hero as an opt-in section (needs SEO-safe text fallback).
 - Newsletter capture.
