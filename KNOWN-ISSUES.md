@@ -50,4 +50,30 @@ pick it up. Nothing here blocks the phase it was written in.
 
 10. **Content is seeded with `TODO-PHASE-2` / `TODO-PHASE-3` markers.** Every URL in the
     contract resolves and passes the SEO checks, but the copy is placeholder. Phases 2
-    and 3 replace it. `grep -rn "TODO-PHASE" sites/` lists what is left.
+    and 3 replace it. `grep -rn "TODO-PHASE" sites/` lists what is left. *(Phase 2 cleared
+    every `TODO-PHASE-2` marker in `sites/viaje.com.py/`; `TODO-PHASE-3` markers remain in
+    `sites/thingstodoinparaguay.com/` by design — that site is the engine's second-site
+    fixture, not a phase this repo runs. See plan.md §9 director entry, 2026-09-03.)*
+
+## Phase 2 — viaje.com.py content
+
+11. **Imagery is v1 (remote URLs), not downloaded.** `docs/imagery-manifest.json`'s 18
+    images are referenced by their Higgsfield CDN `url` directly in content front matter
+    (`hero:`) and `content/data/gallery.json` — this sandbox cannot reach the CDN to
+    download them. `Images::picture()` renders them as plain `<img>` (no local dimensions,
+    no WebP responsive variants, since `Images::localFile()` returns null for an external
+    URL). `tools/localize-media.php` (phase 4) downloads them into
+    `sites/viaje.com.py/assets/img/` under the manifest's `file` names and rewrites every
+    reference. *(Phase 4.)*
+
+12. **Hub hero images (manifest ids 11, 26) are unused.** `docs/site-spec-viaje.md`'s page
+    map assigns hero id 11 to `/blog/` and 26 to `/servicios/`, but `hub.php` has no
+    hero-image slot and the `hubs` config schema has no `hero` key (both frozen this
+    phase). The site-wide `default_og_image` (id 01) still covers their `og:image`.
+    *(Backlog — would need an engine change to add a hub hero slot.)*
+
+13. **Homepage "Destinos Locales" city cards were not ported.** The scan (§3.1, §8 item 5)
+    flags these — and their "% Off" discount badges — as decorative theme-card leftovers
+    with no real discount mechanic anywhere else on the live site, and `home.php` has no
+    card-grid slot for them. Confirm with Anton whether a real discount ever existed
+    before considering adding a city-highlights section as new scope. *(Backlog.)*

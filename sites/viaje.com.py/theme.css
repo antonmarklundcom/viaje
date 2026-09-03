@@ -1,5 +1,4 @@
-/* viaje.com.py — token overrides on top of the engine's base.css.
-   Phase 2 fills in the rest of the visual identity (docs/site-spec-viaje.md §1). */
+/* viaje.com.py — token overrides on top of the engine's base.css (docs/site-spec-viaje.md §1). */
 
 :root {
   --color-bg: #FAF7F2;
@@ -12,6 +11,13 @@
   --color-accent: #D9772B;
   --color-border: #E6E0D6;
   --radius: 14px;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+body { font-family: var(--font-body); }
+h1, h2, h3, .brand__text, .page__title, .feature__title, .section__title {
+  font-family: var(--font-display);
 }
 
 .site-header { background: var(--color-bg); }

@@ -1,12 +1,67 @@
 [
   {
-    "q": "¿Se puede recorrer Paraguay sin 4x4?",
-    "a": "TODO-PHASE-2: respuesta real del scan §4. Los dos sets de preguntas del sitio actual se fusionan en este archivo.",
-    "tags": ["faq", "home", "servicios"]
+    "q": "¿Es seguro viajar por el interior de Paraguay por mi cuenta?",
+    "a": "Totalmente. Paraguay es un país hospitalario por naturaleza y las rutas principales están en buen estado. Lo ideal es viajar de día, con información actualizada sobre el estado de los caminos (especialmente si vas al Chaco o zonas de saltos) y algún contacto local a mano. Nosotros te damos esa \"hoja de ruta\" para que te muevas con total confianza.",
+    "tags": ["faq", "home", "servicios", "nosotros"]
   },
   {
-    "q": "¿Cuál es la mejor época del año para viajar?",
-    "a": "TODO-PHASE-2: respuesta real del scan §3.9.",
-    "tags": ["faq", "home", "nosotros"]
+    "q": "¿Necesito una camioneta 4x4 para conocer los destinos que recomiendan?",
+    "a": "No para todos. Los destinos principales (Itapúa, Guairá, Paraguarí) son accesibles con un auto sedán convencional. Para el Chaco profundo, ciertos saltos o accesos más exigentes en el Guairá, un vehículo alto es clave. En cada una de nuestras guías te especificamos qué tipo de vehículo necesitás para no pasar malos ratos.",
+    "tags": ["faq", "home", "servicios", "nosotros"]
+  },
+  {
+    "q": "¿Cuál es la mejor época para viajar?",
+    "a": "Depende de qué busques. Para ver los saltos en su máximo esplendor, la época de lluvias (primavera/verano) es ideal, aunque el calor puede ser intenso. Si preferís un clima más agradable para caminar y hacer senderismo, de marzo a junio y de septiembre a noviembre los paisajes están verdes, el calor no es tan extremo y los caudales, aunque algo más bajos, siguen valiendo la pena.",
+    "tags": ["faq", "home", "servicios", "nosotros"]
+  },
+  {
+    "q": "¿Cómo funcionan sus servicios de traslados privados?",
+    "a": "Es simple: nos decís dónde estás y a dónde querés ir. No es un taxi común; es un servicio con conductores que conocen las rutas turísticas, en vehículos cómodos y con espacio para tu equipo de aventura. Ideal si querés olvidarte de manejar y solo mirar el paisaje.",
+    "tags": ["faq", "home", "servicios", "nosotros"]
+  },
+  {
+    "q": "¿Qué pasa si llueve durante mi viaje programado?",
+    "a": "En Paraguay el clima es dinámico. Si tenés un itinerario con nosotros, siempre tenemos un \"Plan B\" bajo la manga (actividades bajo techo, museos o rutas gastronómicas) para que la lluvia no arruine tu experiencia, sino que le dé otro color.",
+    "tags": ["faq", "home", "servicios", "nosotros"]
+  },
+  {
+    "q": "¿Cómo puedo reservar un paquete de vacaciones?",
+    "a": "Podés elegir uno de nuestros itinerarios sugeridos o escribirnos directamente para armar algo desde cero. No creemos en paquetes rígidos; nos gusta conversar, entender qué buscás y armar algo que realmente te haga sentido.",
+    "tags": ["faq", "home", "servicios", "nosotros"]
+  },
+  {
+    "q": "¿Hay transporte público a los destinos turísticos?",
+    "a": "Sí, Paraguay tiene una red de buses muy amplia. Desde la Terminal de Asunción salen buses a casi todos los rincones del país.",
+    "tags": ["faq"]
+  },
+  {
+    "q": "¿Cómo están las rutas en el Chaco?",
+    "a": "La Transchaco ha tenido muchas mejoras, pero siempre es bueno consultar el estado de rutas antes de salir, en especial si vas a desviarte de la ruta principal.",
+    "tags": ["faq"]
+  },
+  {
+    "q": "¿Es difícil subir los cerros de Paraguay?",
+    "a": "La mayoría (como el Cerro Acahay o el Tres Kandú) tienen dificultad media alta. Se recomienda calzado con buen agarre y mucha agua.",
+    "tags": ["faq"]
+  },
+  {
+    "q": "¿Hay buena señal de celular en las reservas naturales?",
+    "a": "En los picos de los cerros suele haber señal, pero en los valles o selvas profundas la conexión es limitada. ¡Ideal para desconectarse!",
+    "tags": ["faq"]
+  },
+  {
+    "q": "¿Paraguay es apto para viajar con niños?",
+    "a": "¡Totalmente! Es un país muy familiar y la mayoría de los destinos tienen actividades para los más chicos.",
+    "tags": ["faq"]
+  },
+  {
+    "q": "¿Aceptan tarjetas de crédito en el interior?",
+    "a": "En ciudades grandes sí, pero en pueblos pequeños o posadas rurales, el efectivo (guaraníes) es el rey.",
+    "tags": ["faq"]
+  },
+  {
+    "q": "¿Qué es una \"Posada Turística\"?",
+    "a": "Son casas familiares adaptadas para recibir turistas. Es la mejor forma de vivir la hospitalidad paraguaya y comer comida casera.",
+    "tags": ["faq"]
   }
 ]

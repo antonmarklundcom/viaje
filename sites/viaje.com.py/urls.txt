@@ -16,6 +16,19 @@
 /paraguay-destinos-imprescindibles-2026/ 200
 /destinos-imperdibles-2026/              200
 
+# --- phase 2: new hubs and seed content ---------------------------------------
+/actividades/                                       200
+/viajes/                                             200
+/actividades/saltos-del-monday/                      200
+/actividades/misiones-jesuiticas-trinidad-jesus/     200
+/actividades/chaco-paraguayo/                        200
+/actividades/lago-ypacarai-san-bernardino/           200
+/actividades/encarnacion-costanera/                  200
+/actividades/salto-suizo-ybytyruzu/                  200
+/viajes/fin-de-semana-en-encarnacion/                200
+/viajes/ruta-del-chaco-3-dias/                       200
+/viajes/escapada-a-las-misiones-jesuiticas/          200
+
 # --- engine routes -----------------------------------------------------------
 /sitemap.xml                             200
 /robots.txt                              200
