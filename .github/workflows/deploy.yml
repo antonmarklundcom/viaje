@@ -1,0 +1,80 @@
+name: Deploy viaje.com.py
+
+# Manual only. thingstodoinparaguay.com is deployed from its own repo
+# (plan.md §3.2) — this workflow never touches it.
+on:
+  workflow_dispatch:
+    inputs:
+      server_dir:
+        description: >
+          Remote FTP directory to upload into (Hostinger document root for the
+          site — an addon domain is usually /domains/viaje.com.py/public_html/,
+          the primary domain on the account is usually /public_html/). Point
+          this at the staging document root first; re-run pointed at the real
+          one only after the runbook's staging checks pass.
+        required: true
+        default: /public_html/
+      protocol:
+        description: FTP protocol (ftps is encrypted and is Hostinger's default; use ftp only if ftps fails to connect)
+        required: true
+        default: ftps
+        type: choice
+        options: [ftps, ftp]
+      dry_run:
+        description: Dry run — log what would change, upload nothing
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: gd, mbstring, fileinfo, zip
+          coverage: none
+
+      - name: Check FTP secrets are configured
+        # Gated per plan §1 / §7 item 6: this job stays inert until FTP_HOST_VIAJE /
+        # FTP_USER_VIAJE / FTP_PASS_VIAJE exist (repo Settings → Secrets and variables →
+        # Actions). Fails loudly and early rather than attempting FTP with empty creds.
+        run: |
+          missing=()
+          [ -z "${{ secrets.FTP_HOST_VIAJE }}" ] && missing+=(FTP_HOST_VIAJE)
+          [ -z "${{ secrets.FTP_USER_VIAJE }}" ] && missing+=(FTP_USER_VIAJE)
+          [ -z "${{ secrets.FTP_PASS_VIAJE }}" ] && missing+=(FTP_PASS_VIAJE)
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing repo secret(s): ${missing[*]}. See docs/cutover-runbook.md."
+            exit 1
+          fi
+
+      - name: Build dist/viaje.com.py
+        run: php tools/build.php viaje.com.py --fresh
+
+      - name: Verify before deploying
+        run: php tools/verify.php viaje.com.py
+
+      - name: FTP deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST_VIAJE }}
+          username: ${{ secrets.FTP_USER_VIAJE }}
+          password: ${{ secrets.FTP_PASS_VIAJE }}
+          protocol: ${{ inputs.protocol }}
+          local-dir: ./dist/viaje.com.py/
+          server-dir: ${{ inputs.server_dir }}
+          dry-run: ${{ inputs.dry_run }}
+          log-level: verbose
+          # The server is the source of truth for these after cutover (plan §2.4) —
+          # never let a deploy clobber admin-published content, uploads, leads or the cache.
+          exclude: |
+            **/site/content/**
+            **/site/media/**
+            **/site/data/**
+            **/site/cache/**
+            **/site/config.local.php

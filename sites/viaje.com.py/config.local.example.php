@@ -29,4 +29,12 @@ return [
     // Staging installs: noindex header + meta on every response, no analytics.
     'staging' => false,
     'debug'   => false,
+
+    // Staging on a *.hostingersite.com temp domain (docs/cutover-runbook.md step 5):
+    // config.php hard-codes force_host to viaje.com.py, so every request to the
+    // staging hostname 301s straight to the (not yet live) production domain unless
+    // this overrides it. Set BOTH of these on staging, then remove/revert both at
+    // cutover:
+    //   'staging'    => true,
+    //   'force_host' => null,   // or the exact staging hostname
 ];
