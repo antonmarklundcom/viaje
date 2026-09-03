@@ -1,0 +1,12 @@
+/* thingstodoinparaguay.com — token overrides. Phase 3 gives this site its own identity. */
+
+:root {
+  --color-bg: #FFFFFF;
+  --color-surface: #F3F6F5;
+  --color-text: #17242B;
+  --color-muted: #4D5C66;
+  --color-primary: #0F5C4A;
+  --color-primary-dark: #0A4436;
+  --color-accent: #C2571C;
+  --color-border: #DDE3E6;
+}

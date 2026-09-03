@@ -1,0 +1,18 @@
+/* viaje.com.py — token overrides on top of the engine's base.css.
+   Phase 2 fills in the rest of the visual identity (docs/site-spec-viaje.md §1). */
+
+:root {
+  --color-bg: #FAF7F2;
+  --color-surface: #FFFFFF;
+  --color-text: #1E2420;
+  --color-muted: #5B655F;
+  --color-primary: #0F5C4A;
+  --color-primary-dark: #0A4436;
+  --color-primary-contrast: #FFFFFF;
+  --color-accent: #D9772B;
+  --color-border: #E6E0D6;
+  --radius: 14px;
+}
+
+.site-header { background: var(--color-bg); }
+.hero { background: linear-gradient(180deg, #F2ECE1, var(--color-bg)); }

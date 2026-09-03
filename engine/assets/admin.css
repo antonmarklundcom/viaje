@@ -1,0 +1,84 @@
+/* Admin UI. Deliberately plain: it is a tool, not a page. */
+:root {
+  --adm-bg: #f4f6f7; --adm-surface: #fff; --adm-text: #17242b; --adm-muted: #5b6b74;
+  --adm-border: #d8e0e3; --adm-primary: #0e6f66; --adm-danger: #b3261e; --adm-radius: 10px;
+}
+* { box-sizing: border-box; }
+body.admin { margin: 0; background: var(--adm-bg); color: var(--adm-text);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--adm-primary); }
+code { background: #eef2f3; padding: .1em .35em; border-radius: 4px; font-size: .9em; }
+
+.adm-header { background: #10262c; color: #fff; }
+.adm-header__inner { max-width: 1200px; margin-inline: auto; padding: .7rem 1rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+.adm-brand { color: #fff; font-weight: 700; text-decoration: none; }
+.adm-nav { margin-left: auto; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+.adm-nav a { color: #cfe0e4; text-decoration: none; }
+.adm-nav a:hover { color: #fff; text-decoration: underline; }
+.adm-logout button { background: none; border: 1px solid rgba(255,255,255,.4); color: #fff; border-radius: 6px; padding: .3rem .7rem; cursor: pointer; }
+
+.adm-main { max-width: 1200px; margin-inline: auto; padding: 1.25rem 1rem 4rem; }
+.adm-card { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius); padding: 1.2rem; margin-bottom: 1.25rem; }
+.adm-card--narrow { max-width: 30rem; margin-inline: auto; }
+.adm-card--warn { border-color: #e9c46a; background: #fdf6e3; }
+.adm-card__head { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.adm-card h1, .adm-card h2 { margin: 0 0 .6rem; }
+
+.adm-field { display: grid; gap: .3rem; margin-bottom: 1rem; }
+.adm-field > label, .adm-field > span { font-weight: 600; font-size: .9rem; }
+input[type=text], input[type=password], input[type=date], input[type=number], input[type=email], input[type=file], select, textarea {
+  width: 100%; padding: .55rem .7rem; border: 1px solid var(--adm-border); border-radius: 8px; font: inherit; background: #fff; color: inherit;
+}
+textarea { resize: vertical; }
+.adm-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13.5px; line-height: 1.5; }
+.has-error input, .has-error textarea { border-color: var(--adm-danger); }
+.adm-check { display: flex; align-items: center; gap: .5rem; font-weight: 500; margin-bottom: .6rem; }
+.adm-check input { width: auto; }
+
+.adm-btn { display: inline-flex; align-items: center; gap: .4rem; padding: .5rem .9rem; border-radius: 8px;
+  border: 1px solid var(--adm-border); background: #fff; color: var(--adm-text); font-weight: 600; cursor: pointer; text-decoration: none; }
+.adm-btn:hover { background: #eef2f3; }
+.adm-btn--primary { background: var(--adm-primary); border-color: var(--adm-primary); color: #fff; }
+.adm-btn--primary:hover { background: #0a534c; color: #fff; }
+.adm-link-danger { background: none; border: 0; color: var(--adm-danger); cursor: pointer; padding: 0; font: inherit; text-decoration: underline; }
+
+.adm-table { width: 100%; border-collapse: collapse; font-size: .93rem; }
+.adm-table th, .adm-table td { border-bottom: 1px solid var(--adm-border); padding: .5rem .4rem; text-align: left; vertical-align: top; }
+.adm-actions { display: flex; gap: .75rem; align-items: center; }
+.adm-muted { color: var(--adm-muted); }
+.adm-ok { color: #14622f; font-weight: 600; }
+.adm-error { color: var(--adm-danger); font-weight: 600; }
+.adm-help { color: var(--adm-muted); font-size: .85rem; margin: .2rem 0 0; }
+.adm-links { list-style: none; padding: 0; display: grid; gap: .4rem; }
+.adm-inline { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+.adm-inline input { width: auto; flex: 1 1 14rem; }
+
+.adm-counts { list-style: none; padding: 0; margin: 0; display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+.adm-counts a { display: block; background: #eef2f3; border-radius: var(--adm-radius); padding: .9rem; text-decoration: none; color: inherit; font-weight: 600; }
+.adm-count { display: block; font-size: 1.6rem; color: var(--adm-primary); }
+
+.adm-cols { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+@media (min-width: 1000px) { .adm-cols { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); align-items: start; } }
+
+.adm-toolbar { display: flex; gap: .35rem; flex-wrap: wrap; margin-bottom: .35rem; }
+.adm-toolbar button { border: 1px solid var(--adm-border); background: #fff; border-radius: 6px; padding: .25rem .55rem; cursor: pointer; font: inherit; }
+.adm-counter { font-size: .8rem; color: var(--adm-muted); margin: 0; }
+.adm-counter.is-over { color: var(--adm-danger); font-weight: 600; }
+.adm-preview { background: #fff; border: 1px dashed var(--adm-border); border-radius: 8px; padding: 1rem; margin-top: .6rem; }
+.adm-preview img { max-width: 100%; height: auto; }
+
+.adm-snippet { background: #fff; border: 1px solid var(--adm-border); border-radius: 8px; padding: .8rem; margin-bottom: 1rem; }
+.adm-snippet__url { color: #3c7a3c; font-size: .8rem; margin: 0 0 .15rem; word-break: break-all; }
+.adm-snippet__title { color: #1a0dab; font-size: 1.05rem; margin: 0 0 .15rem; }
+.adm-snippet__desc { color: #4d5156; font-size: .85rem; margin: 0; }
+
+.adm-row { border: 1px solid var(--adm-border); border-radius: 8px; padding: .8rem; margin-bottom: .8rem; display: grid; gap: .5rem; }
+.adm-row legend { font-size: .8rem; color: var(--adm-muted); }
+.adm-facts { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+.adm-facts label { display: grid; gap: .2rem; font-size: .85rem; }
+.adm-image { display: flex; gap: .5rem; align-items: center; }
+.adm-thumb { max-width: 220px; border-radius: 8px; margin-top: .5rem; }
+.adm-media-grid { list-style: none; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); }
+.adm-media-grid img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid var(--adm-border); }
+.adm-copy { font-size: .78rem; margin-top: .3rem; }
+.adm-steps { padding-left: 1.2em; }

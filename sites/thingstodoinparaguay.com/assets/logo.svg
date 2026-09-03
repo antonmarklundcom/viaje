@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 48" width="260" height="48" role="img" aria-label="Things to do in Paraguay">
+  <path d="M22 8l5 12 12 5-12 5-5 12-5-12-12-5 12-5z" fill="#C2571C"/>
+  <text x="46" y="22" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#0F5C4A">Things to do</text>
+  <text x="46" y="39" font-family="system-ui, sans-serif" font-size="15" font-weight="500" fill="#4D5C66">in Paraguay</text>
+</svg>

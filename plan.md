@@ -257,6 +257,62 @@ Rules the router enforces: exact match, one 301 hop maximum, no redirect chains 
   `prompts/CONTINUE-fable.md` is superseded by these and kept only for reference.
 - Phase 1 spawned on Opus from this session. Fable is next needed only for the pre-cutover review (§11).
 
+### 2026-09-03 — Phase 1 complete (Opus, session `phase-1-engine`)
+
+**What exists.** The whole of engine spec §0 is on disk and green: `bootstrap.php`, `dev-router.php`,
+`htaccess.template`, `lib/{config,frontmatter,i18n,types,util,markdown,content,seo,render,images,leads,
+admin,router}.php`, 9 page templates + 17 partials + 8 admin templates, `assets/{base.css,site.js,
+admin.css,admin.js}`, `lang/{es,en}.php` (159 keys each, in parity), `bin/hash-password.php`,
+`tools/{build,verify,serve}.php`, both `sites/<domain>/` seeds, `.github/workflows/ci.yml`, `README.md`,
+`KNOWN-ISSUES.md`. The five inherited lib files were read against their spec sections and kept; the only
+change to them was making the timezone a config key (see deviations). 64 PHP files, `php -l` clean.
+
+**Deviations from the spec, and why.**
+1. *Trailing-slash 301 only fires towards a path that resolves.* Spec §5 step 3 redirects every
+   extension-less path without a slash. That turned `/wp-json/wp/v2/posts` — which plan §5 requires to
+   404 — into a 301 to a 404. The router now checks the slash form against content, hubs, hub pagination,
+   redirects and the gone list first, and 404s directly otherwise. No redirect chain, contract satisfied.
+2. *No `sitemap.php` / `feed.php` / `robots.php` files.* Plan §2.2 sketches them; spec §0's `lib/` listing
+   does not include them. They are `Seo::sitemap()/feed()/robots()` behind the router's fixed routes.
+3. *Timezone is `config['timezone']`, defaulting to `America/Asuncion`.* Spec §6 hard-codes it in
+   bootstrap, which would have been the one site-specific value inside `engine/` (spec §15.7).
+4. *The contact page and any request with a query string are never page-cached.* The lead form carries a
+   signed, time-limited `ts`; caching it would eventually serve an expired stamp, and `?enviado=1` would
+   have poisoned the cached `/contacto/` with a success banner.
+5. *Empty hubs are left out of `sitemap.xml`.* `/novedades/`, `/viajes/`, `/actividades/` are enabled on
+   viaje but have no content yet.
+Everything else in KNOWN-ISSUES.md is a gap, not a deviation.
+
+**Smoke-test evidence** (PHP 8.4 built-in server on the built `dist/`):
+- `php tools/verify.php viaje.com.py` → `129 checks, 0 failure(s)`;
+  `php tools/verify.php thingstodoinparaguay.com` → `90 checks, 0 failure(s)`.
+- Admin (spec §15.3): login `303 → /admin/dashboard`; upload wrote
+  `foto-prueba.png` + `foto-prueba-480.webp` + `foto-prueba-960.webp`; publish `303`;
+  the public page rendered
+  `<picture><source type="image/webp" srcset="/media/2026/09/foto-prueba-480.webp 480w, …960w">` and
+  `<aside class="tip tip--tip"><p class="tip__label">Dato de viajero">…`, `<h2 id="un-subtitulo">`;
+  second load `X-Cache: HIT`; `sitemap.xml` and `/feed/` both listed it; after delete the URL returned
+  `404` and the file was in `site/data/trash/`.
+- Lead form (spec §15.4): valid POST → `303 → /contacto/?enviado=1` and
+  `{"name":"Ana Prueba","phone":"0995628862",…,"when":"2026-09-03T08:44:47-03:00"}` in
+  `site/data/leads/2026-09.jsonl`; honeypot → `303 …?enviado=1` with **no** line written; a stamp younger
+  than 3 s and a forged stamp → `303 …?error=1`. Login rate limit: `401 401 401 401 401 429`.
+- Hardening: `/engine/lib/config.php`, `/site/config.php`, `/site/content/pages/home.md` → `403`;
+  `/engine/assets/base.css` → `200`; preview with a valid HMAC → `200 + X-Robots-Tag: noindex, nofollow`,
+  with a bad token → `404`; a POST with a wrong CSRF token → `403`; with no password hash configured
+  `/admin/` shows the setup page and the public site still returns `200`.
+- JSON-LD spot-check: `FAQPage` only on `/faq/`, `BlogPosting` + `BreadcrumbList` on posts, `Service` on
+  service pages, `TravelAgency` + `WebSite` everywhere. Exactly one `<h1>` on all eight sampled URLs.
+
+**Where phase 2 should look first.** `docs/site-spec-viaje.md` is the build contract; the engine and
+`tools/` are frozen for it (autonomy protocol item 7). Start from `grep -rn "TODO-PHASE-2" sites/` — every
+stub carries one. Real copy goes into the existing files (the front matter keys the templates read are
+already there: `intro`, `included`, `features`, `facts`, `itinerary`, `faq_tags`). The FAQ merge lands in
+`sites/viaje.com.py/content/data/faq.json`, testimonials/team/gallery in the sibling JSON files — all four
+are editable at `/admin/data/<name>`. `urls.txt` must gain a row for every new activity/trip URL and the
+`/wp-content/uploads/**` images once Anton supplies the folder. `verify.php` is the gate: it already fails
+on a missing description, a hero without alt, a duplicate path or any leftover "TourDen"/"Lorem"/"0+".
+
 ## 10. Backlog
 - Cinematic scroll homepage hero as an opt-in section (needs SEO-safe text fallback).
 - Newsletter capture.

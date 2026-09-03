@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48" width="200" height="48" role="img" aria-label="Viaje.com.py">
+  <circle cx="22" cy="24" r="15" fill="none" stroke="#0F5C4A" stroke-width="2.5"/>
+  <path d="M22 12l4.5 9.5L36 26l-9.5 4.5L22 40l-4.5-9.5L8 26l9.5-4.5z" fill="#D9772B"/>
+  <text x="46" y="31" font-family="Georgia, serif" font-size="22" font-weight="600" fill="#0F5C4A">viaje</text>
+  <text x="112" y="31" font-family="Georgia, serif" font-size="22" font-weight="600" fill="#D9772B">.com.py</text>
+</svg>
