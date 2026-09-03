@@ -1,0 +1,274 @@
+# viaje.com.py + thingstodoinparaguay.com — Migration & Build Plan
+
+Status: **APPROVED 2026-09-03 (Anton). Decisions in §1 are locked. Build in progress; see §9.**
+Source of truth for existing content: `viaje-com-py-scan.md` (Anton's manual extraction, 2026-09-02).
+Only §1, §2, §6, §7, §8 of that file were read for this plan. §3/§5 are consumed by the build sessions.
+
+| Phase | Model | Prompt file (written after approval) | What it delivers |
+|---|---|---|---|
+| 0 | Fable (this conversation) | — | This plan, the engine spec, the URL contract. |
+| 1 | Opus | `prompts/opus-1-engine.md` | Shared PHP flat-file engine: router, content model, SEO head, admin publishing, redirects, sitemap, lead form. |
+| 2 | Sonnet | `prompts/sonnet-2-viaje-site.md` | viaje.com.py theme + every real page/post ported from scan §3, images, FAQ merge, footer/brand fixes. |
+| 3 | Sonnet | `prompts/sonnet-3-ttdp-site.md` | thingstodoinparaguay.com on the same engine (path A: port extraction; path B: net-new seed content). |
+| 4 | Sonnet | `prompts/sonnet-4-deploy-cutover.md` | Deploy pipeline, staging, URL-audit script, cutover runbook, Search Console steps. |
+| R | Fable (Anton opens it) | — | One pre-cutover review of the staging site against the URL contract. Optional; see §11. |
+
+---
+
+## 1. Decisions — LOCKED (Anton, 2026-09-03). Build sessions never reopen these.
+
+Anton's approval notes: two separate Hostinger HTML/PHP installs (one per domain), no further questions, keep the old URLs in v1, make the best possible site, Fable directs from its own conversation and Sonnet/Opus do 95%+ of the work.
+
+Defaults chosen for the items that were open (no questions asked, per Anton):
+- Positioning: **domestic Paraguay tourism** (the ranking content). The cinematic outbound prompt stays parked in `docs/`.
+- thingstodoinparaguay.com is built **net-new in English** on the same engine (path B). Before its cutover the runbook checks the live domain's sitemap; if real indexed content turns up, that cutover pauses and gets its own URL contract.
+- Deploy: `tools/build.php` produces a per-site document root in `dist/<domain>/` that works with hPanel File Manager upload, FTP, or hPanel Git; a GitHub Actions FTP job is included but stays inert until FTP secrets exist.
+- Legacy `/wp-content/uploads/` images: the scan holds no image URLs and this environment cannot reach the live site. The `static/wp-content/uploads/` slot is structured; Anton copies the folder from hPanel before cutover (runbook step). New site imagery comes from the image pass in phase 2/3.
+- Counters removed; email `hola@viaje.com.py`; blog posts differentiated (§6); FAQ merged.
+
+1. **Replace WordPress with a shared PHP flat-file engine**, one codebase, two site configs. Not a static generator, not a database CMS. Reasoning in §2.
+2. **Publishing = a password-protected `/admin/` form** that writes a markdown file and uploads images. No code touched per post. Content also lives as plain files, so it is diff-able and backup-able.
+3. **Every real path in scan §1 resolves to the same URL, 200, self-canonical.** Placeholder paths get 301s or 410s (table in §5). WordPress image URLs under `/wp-content/uploads/` are kept byte-for-byte.
+4. **Contact email = `hola@viaje.com.py`** everywhere. The `.com` variants are typos. Anton confirms the mailbox exists (§7).
+5. **`/paquetes/`, `/paquete-individual/`, `/servicio-unico/` are not rebuilt.** The site's own copy is explicitly anti-catalog. "Paquetes" leaves the nav; the paths 301 to `/servicios/`.
+6. **The two real blog posts are kept as two URLs and differentiated, not merged.** Default position; §6 explains, and GSC data can flip it.
+7. **"0+" counters are removed**, replaced by non-numeric proof (founder story, testimonial, "desde 20XX"), unless Anton supplies real figures.
+8. **Contact form is real:** PHP handler, WhatsApp-first composer, email delivery, optional VenderCRM lead push (existing skill covers the endpoint).
+9. **JSON-LD on every page:** `TravelAgency` (site-wide), `BlogPosting` + `BreadcrumbList` on posts, `FAQPage` on `/faq/` only, `WebSite` on home.
+10. **Fable is never a subagent, spawned session, or build-phase model.** Phases run on Opus and Sonnet only (fable-cost-guardrail).
+
+Open items that need Anton before the corresponding phase: §7.
+
+---
+
+## 2. Architecture — how "publish a post with good SEO" works on shared Hostinger
+
+### 2.1 Options considered
+
+| Option | Publish flow | Verdict |
+|---|---|---|
+| Markdown in git → static generator (Eleventy/Hugo) → FTP via GitHub Actions | Commit a `.md` file, wait for the action | Rejected. "Commit a file" is touching code for most people, builds fail silently, image handling is manual, and Actions→FTP is the flaky link. |
+| Off-the-shelf PHP flat-file CMS (Grav, Kirby, Pico) | Their admin | Rejected. Grav/Kirby are as heavy as WordPress to reason about, ship their own upgrade treadmill, and constrain URL routing in ways that fight the "exact legacy paths" requirement. |
+| Database CMS (Node/Next + MySQL admin) | Custom admin | Rejected. Burns a scarce Hostinger Node slot on a content site; overkill for ~20 pages. |
+| **Custom PHP flat-file engine + tiny admin** | Fill a form, click Publish | **Chosen.** ~1.5k lines of PHP, zero dependencies beyond a vendored markdown parser, runs on any Hostinger shared plan, and we own every byte of the `<head>`. |
+
+### 2.2 The engine
+
+```
+engine/                      shared, identical on both sites
+  index.php                  front controller (.htaccess rewrites everything here)
+  lib/router.php             path → content file | redirect | 404/410
+  lib/content.php            front-matter + markdown loader, type registry, listing/pagination
+  lib/seo.php                <title>, meta description, canonical, OG/Twitter, JSON-LD builders
+  lib/render.php             template rendering, page cache (HTML files in cache/, invalidated on publish)
+  lib/markdown/Parsedown.php vendored single file
+  lib/images.php             upload, resize to max widths, WebP + fallback, requires alt text
+  lib/leads.php              form handler: validation, honeypot, rate limit, mail(), WhatsApp URL, VenderCRM push
+  templates/                 base.php, home.php, service.php, hub.php, post.php, faq.php, contact.php, 404.php
+  admin/                     login, list, edit form (per type), image upload, SEO preview, publish/draft
+  sitemap.php, feed.php, robots.php
+
+sites/viaje.com.py/          per-site
+  config.php                 domain, lang (es-PY), brand, NAP, socials, nav, footer, schema defaults, redirect map
+  config.local.php           admin password hash, SMTP/VenderCRM keys — NOT in git
+  theme.css                  design tokens + overrides on top of engine base CSS
+  content/<type>/<slug>.md   pages, services, trips, activities, posts, news
+  assets/                    logo, hero images
+  static/wp-content/uploads/ legacy WordPress images at their original paths
+
+sites/thingstodoinparaguay.com/   same shape, lang en, its own content and theme
+```
+
+**Content types** (one folder each, one template each): `page`, `service`, `trip`, `activity`, `post`, `news`. Each markdown file carries front matter:
+
+```
+title, seo_title (optional), description (required, length-checked), path (optional override),
+date, updated, author, hero, hero_alt (required if hero), excerpt, tags, region,
+draft, noindex, canonical (override), schema extras per type (e.g. trip: duration, price_from)
+```
+
+**Default URL scheme per type**, with `path:` overriding for legacy slugs:
+
+| Type | Default path | Hub |
+|---|---|---|
+| page | `/<slug>/` | — |
+| service | `/<slug>/` (matches the 5 existing) | `/servicios/` |
+| trip | `/viajes/<slug>/` | `/viajes/` |
+| activity | `/actividades/<slug>/` | `/actividades/` |
+| post | `/blog/<slug>/` (the two legacy posts override to root via `path:`) | `/blog/` |
+| news | `/novedades/<slug>/` | `/novedades/` |
+
+Hubs list their type's published items newest-first with pagination at `/blog/page/2/`. Every hub gets a self-canonical; the missing canonical on `/blog/` is fixed structurally.
+
+**What the admin form does that makes SEO "good by default":**
+- Title and meta description fields with live pixel/character counters and a Google-snippet preview.
+- Slug auto-generated from title, editable, checked against the router for collisions and against the redirect map.
+- Image upload refuses to save without alt text; generates WebP + responsive widths; stores under `/media/<yyyy>/<file>`.
+- A "tip callout" block syntax (`:::tip … :::`) so the flagship post's inline-tip pattern becomes a reusable styled component.
+- Publish writes the `.md`, clears the page cache, regenerates `sitemap.xml` and the RSS feed, pings nothing (Google dropped sitemap pings; Search Console picks it up).
+- Draft/preview mode via a signed URL, served with `X-Robots-Tag: noindex`.
+
+**Security baseline for `/admin/`**: single bcrypt-hashed password in `config.local.php`, PHP session with `SameSite=Strict`, CSRF token on every write, login rate-limit, uploads restricted by MIME sniff and re-encoded through GD, `.htaccess` denies direct execution in `media/` and `content/`. No user table, no roles: one owner, two sites.
+
+### 2.3 Shared engine or separate?
+
+**One engine, two deployments.** The sites share everything except config, theme tokens, and content. Bug fixes and admin improvements land once. The engine is language-aware from the first commit (all UI strings in `lang/es.php` / `lang/en.php`, `<html lang>` from config). They do not share a database or a login, and there is no hreflang between them because they are not translations of each other.
+
+### 2.4 Content on the server vs. content in git
+
+After cutover, **the server is the source of truth for `content/` and `media/`** (the admin writes there). Git holds the engine plus the seeded migration content. The deploy step (§8) syncs `engine/`, `sites/<x>/config.php`, `theme.css`, `assets/` and **never overwrites** `content/`, `media/`, `config.local.php`, or `cache/`. The admin has an "Export backup (zip)" button, and phase 4 adds a weekly Hostinger cron that zips content + media into a dated backup folder.
+
+---
+
+## 3. What the two sites are
+
+### 3.1 viaje.com.py — migration
+Rebuild the 13 real URLs from scan §1 with identical paths, port the copy from §3 verbatim (with the fixes in §6), add the new content types so future trips/activities/news have a home.
+
+**Positioning conflict to resolve (§7 item 1):** the repo already contains `PROMPT-viaje-cinematic-scroll.md`, which positions viaje.com.py as *outbound* travel (USA, Europe, Asia from Asunción) with a JS-driven single-screen homepage. The live site that currently ranks is *inbound/domestic* Paraguay tourism. The ranking pages are the domestic ones. Recommendation: keep the domestic positioning for the migration and treat the cinematic page as a later homepage-hero experiment, not the launch homepage. A homepage whose text lives inside a scroll-driven sticky stage is a worse crawl surface than the current one.
+
+### 3.2 thingstodoinparaguay.com — status unknown
+This session cannot reach the domain (network egress is blocked here, and was for viaje.com.py too). The plan handles both cases; **Anton answers which one applies (§7 item 2)**:
+
+- **Path A — it is live with real content.** It needs the same extraction pass as viaje (sitemap → every URL → verbatim copy, titles, metas, images, redirect candidates). Anton runs the same manual scan, or a session with network access does it. Phase 3 then ports it exactly like phase 2 does for viaje, with its own URL contract table.
+- **Path B — parked, empty, or a default install.** Net-new English site on the same engine. Phase 3 configures it, writes 8–12 seed articles (activity and trip pages keyed to real Paraguay destinations, using the viaje posts as factual source material but written fresh in English, no translation), and sets up the cross-links: TTDP articles link to viaje's Spanish service pages as the "book it" path, and viaje's English-speaking visitors are pointed to TTDP.
+
+Either way the engine (phase 1) is unaffected, so phase 3 can be scoped precisely after the answer arrives without blocking phases 1–2.
+
+---
+
+## 4. Autonomy protocol (copied into every phase prompt)
+
+1. Work until the phase's exit criteria all pass; never ask permission for in-plan work.
+2. One PR per phase: branch `phase/<id>` off latest main; create, watch, and merge the PR when green. A red build is the session's own work. Never start on top of an unmerged previous phase.
+3. Minor non-blocking issues → `KNOWN-ISSUES.md`, keep building.
+4. Stop and ask only for: a missing credential with no graceful fallback, or a decision that would force a rewrite if guessed wrong (URL contract changes, content model shape, admin security model). Everything else: choose reasonably, record it in the build log, continue.
+5. Missing env/config values never block: document in `config.local.example.php`, degrade gracefully.
+6. Every phase prompt is re-runnable: check what exists on the branch first, continue from the first unmet exit criterion.
+7. Sonnet-phase hard limits: no changes to the router, content model, SEO builders, admin write path, or redirect semantics. Work around and note in Backlog.
+8. **Model cost guardrail:** Fable is never used for build phases, subagents, or spawned sessions. If a session believes it needs Fable, it stops and asks Anton with the reason.
+9. Phase handoff only after four gates: PR merged green; exit checklist passed; pre-handoff audit (re-run verify scripts, adversarially re-read own merged diff); build-log entry committed. Then spawn the next phase as a new session (`create_session`, inherit environment and permission mode, never `plan`, model per the phase table, prompt `Read prompts/<next>.md in this repo and execute it.`).
+10. Build log: before merging, append a dated 5–10 line entry to §9.
+
+---
+
+## 5. URL contract (viaje.com.py) — the non-negotiable table
+
+Every row is checked by `tools/url-audit.php` (phase 4) against staging and again after cutover.
+
+| Legacy path | Action | Target / notes |
+|---|---|---|
+| `/` | 200, keep | Gets a real `<title>` and description (currently none). H1 stays. |
+| `/agencia-de-viaje/` | 200, keep | service template |
+| `/asistencia-personalizada/` | 200, keep | service template |
+| `/gestion-de-visas/` | 200, keep | service template |
+| `/traslados/` | 200, keep | service template |
+| `/vacaciones/` | 200, keep | service template |
+| `/servicios/` | 200, keep | hub template + site-wide FAQ widget |
+| `/nosotros/` | 200, keep | page template |
+| `/faq/` | 200, keep | faq template, merged 16→deduped set, `FAQPage` schema |
+| `/contacto/` | 200, keep | contact template with the real form |
+| `/blog/` | 200, keep | hub template, **self-canonical added** |
+| `/paraguay-destinos-imprescindibles-2026/` | 200, keep | post, `path:` override to root |
+| `/destinos-imperdibles-2026/` | 200, keep | post, `path:` override to root |
+| `/paquetes/` | **301** | → `/servicios/` |
+| `/paquete-individual/` | **301** | → `/servicios/` |
+| `/servicio-unico/` | **301** | → `/servicios/` |
+| `/elementor-9/` | **410** | orphan empty draft |
+| `/hello-world/` | **410** | WP default post; no equity worth passing |
+| `/category/uncategorized/` | **301** | → `/blog/` |
+| `/wp-sitemap.xml` and `/wp-sitemap-*.xml` | **301** | → `/sitemap.xml` |
+| `/feed/` | 200, keep | engine RSS (WP emitted one; readers/aggregators may hold it) |
+| `/wp-content/uploads/**` | 200, keep | served as static files at original paths (image search + hotlinks) |
+| `/wp-json/*`, `/xmlrpc.php`, `/wp-login.php`, `?s=` | 404/410 | nothing to preserve |
+| Missing trailing slash on any of the above | 301 | → trailing-slash form |
+| http / www variants | 301 | → whatever the live site canonicalises to today (verify in §7 item 4) |
+
+Rules the router enforces: exact match, one 301 hop maximum, no redirect chains through the WP forms, canonical always equals the final URL, 404 template returns a real 404 status.
+
+**Ranking-preservation rules beyond URLs:**
+- Titles of the 13 real pages: keep the existing H1 and slug; the new `<title>` is the H1 plus a short brand suffix, and hand-written meta descriptions are added. No rewriting the ranking posts' body copy except the differentiation in §6.
+- Internal links: the header nav keeps every real destination; footer nav links the 13 real URLs.
+- Staging is served with `X-Robots-Tag: noindex` (header, not `robots.txt`, so Google can still crawl it if asked and the header is dropped at cutover).
+- Cutover runbook (phase 4): lower DNS TTL 48h ahead if hosting changes; swap; remove noindex header; submit `sitemap.xml` in Search Console; check Coverage and the "Pages" report daily for two weeks; keep the WordPress export and a full `wp-content/uploads` copy as rollback.
+
+---
+
+## 6. Fixes baked in (from scan §2 / §8)
+
+| Gap | Fix | Phase |
+|---|---|---|
+| Missing `<title>` on home, template-default titles elsewhere | Hand-written `seo_title` per page, H1-first | 2 |
+| No meta descriptions anywhere | Required field; Sonnet writes one per page from §3 copy | 2 |
+| No canonical on `/blog/` | Structural: every route emits self-canonical | 1 |
+| No JSON-LD | `TravelAgency` site-wide (NAP from config), `BlogPosting`+`BreadcrumbList` on posts, `FAQPage` on `/faq/`, `WebSite` on home | 1 (builders), 2 (data) |
+| Email inconsistency | Single `contact.email` in config = `hola@viaje.com.py`; nothing hard-coded in templates | 1 + 2 |
+| No contact form | `lib/leads.php` + contact template: name, phone (WhatsApp), email, message, trip type; WhatsApp composer button as the primary CTA; email + optional VenderCRM push | 1 (handler), 2 (page) |
+| Missing image alt text | Admin requires alt; migration alt text written per image by Sonnet from surrounding copy and §8 item 4 category labels | 1 + 2 |
+| "TourDen" footer, fake "Tour Packages" menu, "Harbert Spin" author widget, "BLOG Details" lorem kicker, "No content is added yet." blocks | None of it is ported. Footer = real brand blurb, real nav, contact block. Posts show a real author (Anton / "Equipo Viaje.com.py"). | 2 |
+| "0+" counters | Removed (see Decision 7) | 2 |
+| Two FAQ sets (6 + 10) | One canonical deduped set in `content/faq.md`; `/faq/` shows all, the site-wide widget shows a tagged subset of 5–6; schema only on `/faq/` | 2 |
+| Blog-post overlap / cannibalization | **Differentiate, don't merge.** Keep `/paraguay-destinos-imprescindibles-2026/` as the pillar untouched. Re-angle `/destinos-imperdibles-2026/`: distinct title/H1 and intro around a different intent (seasonal/when-to-go or weekend-escape planning), trim the destination sections that duplicate the pillar to short summaries linking to the pillar's H2 anchors. Reasoning: both are indexed, both are real, and a 301 forfeits whatever the second one ranks for on its own. **Gate:** if Search Console shows the second post with ~zero impressions over 3 months, merge and 301 instead. This one edit is an Opus task inside phase 2 (judgment over two long texts), not Sonnet. | 2 |
+| Iguazú stock hero on both posts | Replace on the differentiated post with a Paraguay image; keep on the pillar unless Anton objects | 2 |
+| Discount badges "10% Off" etc. | Not ported | 2 |
+| Team bios (names only) | Names + roles only, no invented bios; expandable later via admin | 2 |
+| Newsletter "No content is added yet." | Dropped; can return later as a lead-form variant | — |
+
+---
+
+## 7. Human inputs (Anton) — and when each is first needed
+
+| # | Needed | First needed by |
+|---|---|---|
+| 1 | Positioning: domestic-tourism (live site) vs outbound (cinematic prompt). Recommendation: domestic for launch. | Phase 2 |
+| 2 | thingstodoinparaguay.com: live with content, or empty/parked? If live: run the same extraction and save it as `ttdp-scan.md`. | Phase 3 |
+| 3 | Confirm `hola@viaje.com.py` mailbox exists (or create it in hPanel). | Phase 2 |
+| 4 | Canonical host of the live site (www or not, https) and current hosting: is WP on the same Hostinger account the new site will use? | Phase 4 |
+| 5 | The `wp-content/uploads` folder (download via hPanel File Manager and drop into `sites/viaje.com.py/static/wp-content/uploads/`, or share access). This sandbox cannot fetch from the live site. | Phase 2 |
+| 6 | What "hostinger-html-php-deploy" refers to: an existing script/skill of yours, hPanel's Git deploy, or FTP? It is not present in this session. | Phase 4 |
+| 7 | Real numbers for the counters, or confirm removal. | Phase 2 |
+| 8 | Live check the current contact page: does any form actually exist (network tab)? Affects nothing structural, only whether an old form endpoint should be redirected. | Phase 2 |
+| 9 | VenderCRM tenant key for viaje leads (optional; form works without it). | Phase 2 |
+| 10 | Search Console access confirmed for both domains; a 3-month performance export for the two blog posts (decides §6 merge gate). | Phase 2 / 4 |
+| 11 | Social profile URLs for the footer and `sameAs` schema. | Phase 2 |
+| 12 | Staging hostname (a Hostinger `*.hostingersite.com` or a subdomain). | Phase 4 |
+
+---
+
+## 8. Repo, GitHub, and deploy
+
+- **Repo:** `antonmarklundcom/viaje` becomes the monorepo (`engine/`, `sites/`, `tools/`, `prompts/`, `plan.md`, `KNOWN-ISSUES.md`). `PROMPT-viaje-cinematic-scroll.md` moves to `docs/` untouched.
+- **Branching:** `main` protected by convention; `phase/<id>` branches, one PR per phase, merged green before the next starts. Plan PR first, so phase 1 branches from a main that contains the plan.
+- **CI (cheap, GitHub Actions):** `php -l` on every file, a PHPUnit-free smoke test (`tools/url-audit.php --local`) that boots the engine with PHP's built-in server and asserts every row of §5 plus title/description/canonical presence on every content file. Green CI is the merge gate.
+- **Deploy (phase 4):** `tools/build.php <site>` assembles `dist/<site>/` (engine + site config/theme/assets + `.htaccess`). Delivery to Hostinger via whichever mechanism item 6 in §7 names; default assumption is hPanel Git deploy of the `dist` branch or an Actions FTP step with an explicit **exclude list** (`content/`, `media/`, `cache/`, `config.local.php`). Staging first, always.
+- **Cutover:** the runbook in §5, executed by Anton with the phase-4 checklist, not by an agent (DNS and hosting swaps are the irreversible steps).
+
+---
+
+## 9. Build log & handoff
+_(empty — phases append here)_
+
+## 10. Backlog
+- Cinematic scroll homepage hero as an opt-in section (needs SEO-safe text fallback).
+- Newsletter capture.
+- Real trip/package products if the anti-catalog positioning changes.
+- Second admin user / roles (not needed for one owner).
+- Per-type schema extras (`TouristTrip` on trips) once trips exist.
+
+---
+
+## 11. Model / effort map and the orchestration shape
+
+**ROI split**
+
+| Work | Model | Why |
+|---|---|---|
+| Plan, engine spec, URL contract, this document | Fable, this conversation | Ambiguity and irreversible-risk decisions are the work here. |
+| Phase 1 engine: router, content model, SEO builders, admin write path, upload security, redirect semantics | **Opus** | The one place a defect poisons everything after it; needs judgment on security and edge cases the spec cannot enumerate fully. ~1.5k lines. |
+| Phase 2 viaje port: theme, templates fill, 13 pages + 2 posts from §3, alt text, metas, FAQ merge, footer | **Sonnet** | Fully specified, reference content exists, repetitive. |
+| The blog-post differentiation edit (inside phase 2) | **Opus** subagent spawned by the phase-2 session for that one task | Editorial judgment over two long texts; small token cost. |
+| Phase 3 TTDP | **Sonnet** | Config + content on a finished engine. Path B seed writing is Sonnet-grade with a tight brief. |
+| Phase 4 deploy, audit script, runbook | **Sonnet** | Mechanical once §7 item 6 is answered. |
+| Pre-cutover review of staging against §5 | **Fable, in a conversation Anton opens** (or Opus if budget matters more) | Ranking loss is the one irreversible outcome; a single review pass is cheap relative to it. |
+
+**Shape: Fable is not the long-running orchestrator.** Fable does the two ends (spec now, review before cutover). Execution runs as fresh Opus/Sonnet sessions per phase, each spawning the next. Details and the reasoning for rejecting the "Fable leads, spawns Sonnet subagents" shape are in the conversation summary and in the phase prompts' handoff footers.
