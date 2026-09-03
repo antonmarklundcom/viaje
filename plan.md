@@ -8,8 +8,8 @@ Only §1, §2, §6, §7, §8 of that file were read for this plan. §3/§5 are c
 |---|---|---|---|
 | 0 | Fable (this conversation) | — | This plan, the engine spec, the URL contract. |
 | 1 | Opus | `prompts/opus-1-engine.md` | Shared PHP flat-file engine: router, content model, SEO head, admin publishing, redirects, sitemap, lead form. |
-| 2 | Sonnet | `prompts/sonnet-2-viaje-site.md` | viaje.com.py theme + every real page/post ported from scan §3, images, FAQ merge, footer/brand fixes. |
-| 3 | Sonnet | `prompts/sonnet-3-ttdp-site.md` | thingstodoinparaguay.com on the same engine (path A: port extraction; path B: net-new seed content). |
+| 2 | Sonnet | `prompts/sonnet-2-content.md` (covers phase 3 too) | viaje.com.py theme + every real page/post ported from scan §3, images, FAQ merge, footer/brand fixes. |
+| 3 | Sonnet | folded into `prompts/sonnet-2-content.md` | thingstodoinparaguay.com on the same engine (path A: port extraction; path B: net-new seed content). |
 | 4 | Sonnet | `prompts/sonnet-4-deploy-cutover.md` | Deploy pipeline, staging, URL-audit script, cutover runbook, Search Console steps. |
 | R | Fable (Anton opens it) | — | One pre-cutover review of the staging site against the URL contract. Optional; see §11. |
 
@@ -246,7 +246,16 @@ Rules the router enforces: exact match, one 301 hop maximum, no redirect chains 
 ---
 
 ## 9. Build log & handoff
-_(empty — phases append here)_
+
+### 2026-09-03 — Director restart (Fable, session `archive-exhausted-chats`)
+- The first Fable director session ran phase 1 as an in-session Opus subagent and died at the usage
+  limit with the engine ~⅓ built; the snapshot was merged to `main` as a WIP commit. That shape
+  (Fable kept alive while a subagent works) is the cache-waste pattern §11 rejects.
+- Fix: phases now run as fresh Opus/Sonnet sessions that chain themselves, per §4 item 9. Prompt
+  files written: `prompts/opus-1-engine.md` (finish the engine from the snapshot),
+  `prompts/sonnet-2-content.md` (phases 2 + 3 + imagery, one PR), `prompts/sonnet-4-deploy-cutover.md`.
+  `prompts/CONTINUE-fable.md` is superseded by these and kept only for reference.
+- Phase 1 spawned on Opus from this session. Fable is next needed only for the pre-cutover review (§11).
 
 ## 10. Backlog
 - Cinematic scroll homepage hero as an opt-in section (needs SEO-safe text fallback).
