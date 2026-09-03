@@ -260,3 +260,50 @@ final class Response
         echo $this->body;
     }
 }
+
+/**
+ * Tiny file-based rate limiter. One JSON file per bucket+key under site/cache/ratelimit/.
+ * Good enough for a single-server shared host; not a distributed limiter.
+ */
+final class RateLimit
+{
+    private static function file(string $bucket, string $key): string
+    {
+        $bucket = preg_replace('/[^a-z0-9_-]/', '', strtolower($bucket)) ?: 'default';
+        return VJ_SITE . '/cache/ratelimit/' . $bucket . '-' . Util::ipKey($key) . '.json';
+    }
+
+    /** Number of hits recorded in the last $windowSeconds. */
+    public static function count(string $bucket, string $key, int $windowSeconds): int
+    {
+        $file = self::file($bucket, $key);
+        if (!is_file($file)) {
+            return 0;
+        }
+        $hits = Util::readJsonFile($file);
+        $now  = time();
+        $hits = array_filter($hits, static fn($t): bool => is_int($t) && $t > $now - $windowSeconds);
+        return count($hits);
+    }
+
+    public static function exceeded(string $bucket, string $key, int $max, int $windowSeconds): bool
+    {
+        return self::count($bucket, $key, $windowSeconds) >= $max;
+    }
+
+    public static function hit(string $bucket, string $key, int $windowSeconds): void
+    {
+        $file = self::file($bucket, $key);
+        Util::mkdirp(dirname($file));
+        $hits = Util::readJsonFile($file);
+        $now  = time();
+        $hits = array_values(array_filter($hits, static fn($t): bool => is_int($t) && $t > $now - $windowSeconds));
+        $hits[] = $now;
+        Util::atomicWrite($file, (string)json_encode(array_slice($hits, -50)));
+    }
+
+    public static function clear(string $bucket, string $key): void
+    {
+        @unlink(self::file($bucket, $key));
+    }
+}
