@@ -67,6 +67,7 @@ final class Config
     private static function withDefaults(array $c): array
     {
         $d = [
+            'timezone'         => 'America/Asuncion',
             'force_https'      => true,
             'force_host'       => null,
             'locale_og'        => 'es_ES',

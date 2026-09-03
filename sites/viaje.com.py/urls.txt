@@ -1,0 +1,54 @@
+# viaje.com.py — URL contract (plan §5). Every row is asserted by tools/verify.php.
+# Format: <path> <status> [<redirect target>]
+
+# --- the 13 real pages: same path, 200, self-canonical -----------------------
+/                                        200
+/agencia-de-viaje/                       200
+/asistencia-personalizada/               200
+/gestion-de-visas/                       200
+/traslados/                              200
+/vacaciones/                             200
+/servicios/                              200
+/nosotros/                               200
+/faq/                                    200
+/contacto/                               200
+/blog/                                   200
+/paraguay-destinos-imprescindibles-2026/ 200
+/destinos-imperdibles-2026/              200
+
+# --- engine routes -----------------------------------------------------------
+/sitemap.xml                             200
+/robots.txt                              200
+/feed/                                   200
+
+# --- placeholders that must not come back ------------------------------------
+/paquetes/                               301 /servicios/
+/paquete-individual/                     301 /servicios/
+/servicio-unico/                         301 /servicios/
+/category/uncategorized/                 301 /blog/
+/elementor-9/                            410
+/hello-world/                            410
+
+# --- WordPress leftovers ------------------------------------------------------
+/wp-sitemap.xml                          301 /sitemap.xml
+/wp-sitemap-posts-post-1.xml             301 /sitemap.xml
+/wp-sitemap-posts-page-1.xml             301 /sitemap.xml
+/wp-sitemap-taxonomies-category-1.xml    301 /sitemap.xml
+/wp-sitemap-users-1.xml                  301 /sitemap.xml
+/wp-json/wp/v2/posts                     404
+/xmlrpc.php                              404
+/wp-login.php                            404
+/?s=asuncion                             404
+
+# --- trailing slash normalisation --------------------------------------------
+/blog                                    301 /blog/
+/servicios                               301 /servicios/
+/nosotros                                301 /nosotros/
+/feed                                    301 /feed/
+
+# --- nothing else resolves ----------------------------------------------------
+/definitely-missing/                     404
+
+# NOTE: /wp-content/uploads/** rows are added in phase 2, once the legacy uploads
+# folder is copied into static/wp-content/uploads/ (plan §7 item 5). http/www
+# canonicalisation is host-level and is verified on staging in phase 4, not here.

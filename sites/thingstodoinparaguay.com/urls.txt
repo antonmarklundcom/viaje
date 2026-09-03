@@ -1,0 +1,26 @@
+# thingstodoinparaguay.com — URL contract. Net-new site (plan §3.2, path B):
+# nothing legacy to preserve. Phase 4's runbook re-checks the live domain's
+# sitemap before cutover; if real indexed content exists, its rows land here first.
+
+/                                        200
+/about/                                  200
+/contact/                                200
+/faq/                                    200
+/blog/                                   200
+/things-to-do/                           200
+/trips/                                  200
+
+/blog/why-paraguay-is-worth-the-detour/   200
+/things-to-do/saltos-del-monday/          200
+/trips/three-days-in-the-chaco/           200
+
+/sitemap.xml                             200
+/robots.txt                              200
+/feed/                                   200
+
+/blog                                    301 /blog/
+/things-to-do                            301 /things-to-do/
+/feed                                    301 /feed/
+
+/definitely-missing/                     404
+/wp-login.php                            404
