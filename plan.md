@@ -1,6 +1,6 @@
 # viaje.com.py + thingstodoinparaguay.com — Migration & Build Plan
 
-Status: **DRAFT v1 — awaiting Anton's feedback and explicit approval. Nothing is built yet.**
+Status: **APPROVED 2026-09-03 (Anton). Decisions in §1 are locked. Build in progress; see §9.**
 Source of truth for existing content: `viaje-com-py-scan.md` (Anton's manual extraction, 2026-09-02).
 Only §1, §2, §6, §7, §8 of that file were read for this plan. §3/§5 are consumed by the build sessions.
 
@@ -15,7 +15,16 @@ Only §1, §2, §6, §7, §8 of that file were read for this plan. §3/§5 are c
 
 ---
 
-## 1. Decisions (proposed — become "locked" once Anton approves)
+## 1. Decisions — LOCKED (Anton, 2026-09-03). Build sessions never reopen these.
+
+Anton's approval notes: two separate Hostinger HTML/PHP installs (one per domain), no further questions, keep the old URLs in v1, make the best possible site, Fable directs from its own conversation and Sonnet/Opus do 95%+ of the work.
+
+Defaults chosen for the items that were open (no questions asked, per Anton):
+- Positioning: **domestic Paraguay tourism** (the ranking content). The cinematic outbound prompt stays parked in `docs/`.
+- thingstodoinparaguay.com is built **net-new in English** on the same engine (path B). Before its cutover the runbook checks the live domain's sitemap; if real indexed content turns up, that cutover pauses and gets its own URL contract.
+- Deploy: `tools/build.php` produces a per-site document root in `dist/<domain>/` that works with hPanel File Manager upload, FTP, or hPanel Git; a GitHub Actions FTP job is included but stays inert until FTP secrets exist.
+- Legacy `/wp-content/uploads/` images: the scan holds no image URLs and this environment cannot reach the live site. The `static/wp-content/uploads/` slot is structured; Anton copies the folder from hPanel before cutover (runbook step). New site imagery comes from the image pass in phase 2/3.
+- Counters removed; email `hola@viaje.com.py`; blog posts differentiated (§6); FAQ merged.
 
 1. **Replace WordPress with a shared PHP flat-file engine**, one codebase, two site configs. Not a static generator, not a database CMS. Reasoning in §2.
 2. **Publishing = a password-protected `/admin/` form** that writes a markdown file and uploads images. No code touched per post. Content also lives as plain files, so it is diff-able and backup-able.
