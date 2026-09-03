@@ -1,3 +1,6 @@
+> **ARCHIVED 2026-09-03 — do not execute.** thingstodoinparaguay.com is built in its own repo
+> (`antonmarklundcom/thingstodoinparaguay`). Kept for reference only; see `plan.md` §3.2.
+
 # Site spec — thingstodoinparaguay.com (phase 3)
 
 Net-new English site on the shared engine (`docs/engine-spec.md`). Engine and tools are frozen; work only

@@ -8,9 +8,9 @@ Only §1, §2, §6, §7, §8 of that file were read for this plan. §3/§5 are c
 |---|---|---|---|
 | 0 | Fable (this conversation) | — | This plan, the engine spec, the URL contract. |
 | 1 | Opus | `prompts/opus-1-engine.md` | Shared PHP flat-file engine: router, content model, SEO head, admin publishing, redirects, sitemap, lead form. |
-| 2 | Sonnet | `prompts/sonnet-2-content.md` (covers phase 3 too) | viaje.com.py theme + every real page/post ported from scan §3, images, FAQ merge, footer/brand fixes. |
-| 3 | Sonnet | folded into `prompts/sonnet-2-content.md` | thingstodoinparaguay.com on the same engine (path A: port extraction; path B: net-new seed content). |
-| 4 | Sonnet | `prompts/sonnet-4-deploy-cutover.md` | Deploy pipeline, staging, URL-audit script, cutover runbook, Search Console steps. |
+| 2 | Sonnet | `prompts/sonnet-2-content.md` | viaje.com.py theme + every real page/post ported from scan §3, images, FAQ merge, footer/brand fixes. |
+| 3 | — | **superseded 2026-09-03** | thingstodoinparaguay.com is built in its own repo, `antonmarklundcom/thingstodoinparaguay` (own plan.md, native PHP + SQLite, its own phase table). Nothing in this repo ships for that domain. The `sites/thingstodoinparaguay.com/` seed stays only as the engine's second-site test fixture. |
+| 4 | Sonnet | `prompts/sonnet-4-deploy-cutover.md` | Deploy pipeline, staging, URL-audit script, cutover runbook, Search Console steps — viaje.com.py only. |
 | R | Fable (Anton opens it) | — | One pre-cutover review of the staging site against the URL contract. Optional; see §11. |
 
 ---
@@ -21,7 +21,7 @@ Anton's approval notes: two separate Hostinger HTML/PHP installs (one per domain
 
 Defaults chosen for the items that were open (no questions asked, per Anton):
 - Positioning: **domestic Paraguay tourism** (the ranking content). The cinematic outbound prompt stays parked in `docs/`.
-- thingstodoinparaguay.com is built **net-new in English** on the same engine (path B). Before its cutover the runbook checks the live domain's sitemap; if real indexed content turns up, that cutover pauses and gets its own URL contract.
+- ~~thingstodoinparaguay.com is built net-new in English on the same engine (path B).~~ **Superseded 2026-09-03:** the domain turned out to be live with 121 indexed URLs, and it is being rebuilt with its own URL contract in `antonmarklundcom/thingstodoinparaguay`. This repo ships viaje.com.py only.
 - Deploy: `tools/build.php` produces a per-site document root in `dist/<domain>/` that works with hPanel File Manager upload, FTP, or hPanel Git; a GitHub Actions FTP job is included but stays inert until FTP secrets exist.
 - Legacy `/wp-content/uploads/` images: the scan holds no image URLs and this environment cannot reach the live site. The `static/wp-content/uploads/` slot is structured; Anton copies the folder from hPanel before cutover (runbook step). New site imagery comes from the image pass in phase 2/3.
 - Counters removed; email `hola@viaje.com.py`; blog posts differentiated (§6); FAQ merged.
@@ -127,7 +127,9 @@ Rebuild the 13 real URLs from scan §1 with identical paths, port the copy from 
 
 **Positioning conflict to resolve (§7 item 1):** the repo already contains `PROMPT-viaje-cinematic-scroll.md`, which positions viaje.com.py as *outbound* travel (USA, Europe, Asia from Asunción) with a JS-driven single-screen homepage. The live site that currently ranks is *inbound/domestic* Paraguay tourism. The ranking pages are the domestic ones. Recommendation: keep the domestic positioning for the migration and treat the cinematic page as a later homepage-hero experiment, not the launch homepage. A homepage whose text lives inside a scroll-driven sticky stage is a worse crawl surface than the current one.
 
-### 3.2 thingstodoinparaguay.com — status unknown
+### 3.2 thingstodoinparaguay.com — RESOLVED: Path A, built in its own repo
+
+**Resolved 2026-09-03 (director).** The domain is live with real content (121 URLs). Its extraction, URL contract and rebuild live in `antonmarklundcom/thingstodoinparaguay` on a separate native PHP + SQLite codebase. No phase in this repo builds, fills or deploys that site; `docs/site-spec-ttdp.md` is archived, and `sites/thingstodoinparaguay.com/` remains only as the engine's second-site verify fixture. The text below is kept for history.
 This session cannot reach the domain (network egress is blocked here, and was for viaje.com.py too). The plan handles both cases; **Anton answers which one applies (§7 item 2)**:
 
 - **Path A — it is live with real content.** It needs the same extraction pass as viaje (sitemap → every URL → verbatim copy, titles, metas, images, redirect candidates). Anton runs the same manual scan, or a session with network access does it. Phase 3 then ports it exactly like phase 2 does for viaje, with its own URL contract table.
@@ -221,7 +223,7 @@ Rules the router enforces: exact match, one 301 hop maximum, no redirect chains 
 | # | Needed | First needed by |
 |---|---|---|
 | 1 | Positioning: domestic-tourism (live site) vs outbound (cinematic prompt). Recommendation: domestic for launch. | Phase 2 |
-| 2 | thingstodoinparaguay.com: live with content, or empty/parked? If live: run the same extraction and save it as `ttdp-scan.md`. | Phase 3 |
+| 2 | ~~thingstodoinparaguay.com: live with content, or empty/parked?~~ Resolved: live; handled in its own repo. | — |
 | 3 | Confirm `hola@viaje.com.py` mailbox exists (or create it in hPanel). | Phase 2 |
 | 4 | Canonical host of the live site (www or not, https) and current hosting: is WP on the same Hostinger account the new site will use? | Phase 4 |
 | 5 | The `wp-content/uploads` folder (download via hPanel File Manager and drop into `sites/viaje.com.py/static/wp-content/uploads/`, or share access). This sandbox cannot fetch from the live site. | Phase 2 |
@@ -313,6 +315,17 @@ are editable at `/admin/data/<name>`. `urls.txt` must gain a row for every new a
 `/wp-content/uploads/**` images once Anton supplies the folder. `verify.php` is the gate: it already fails
 on a missing description, a hero without alt, a duplicate path or any leftover "TourDen"/"Lorem"/"0+".
 
+### 2026-09-03 — Director (Fable, session `session_016yin5ETmxXTCT2qPPmRBur`): phase 3 superseded
+- thingstodoinparaguay.com is live with 121 indexed URLs and is being rebuilt in its own repo
+  (`antonmarklundcom/thingstodoinparaguay`, O1–O2 merged there). Building it a second time on this
+  engine (old phase 3 / step D of the phase-2 prompt) would have produced two competing sites for one
+  domain. Phase 3 is struck from the table; phase 2 builds viaje.com.py only; phase 4 deploys viaje only.
+- `sites/thingstodoinparaguay.com/` and its CI verify step stay as-is (engine fixture, `TODO-PHASE-3`
+  markers are expected there). `docs/site-spec-ttdp.md` is archived, not executed.
+- Imagery pool: generate only the ids `docs/site-spec-viaje.md` references; skip TTDP-only ids.
+- Director session id for status messages is now `session_016yin5ETmxXTCT2qPPmRBur`.
+- Phase 2 spawned on Sonnet from the director session.
+
 ## 10. Backlog
 - Cinematic scroll homepage hero as an opt-in section (needs SEO-safe text fallback).
 - Newsletter capture.
@@ -332,7 +345,7 @@ on a missing description, a hero without alt, a duplicate path or any leftover "
 | Phase 1 engine: router, content model, SEO builders, admin write path, upload security, redirect semantics | **Opus** | The one place a defect poisons everything after it; needs judgment on security and edge cases the spec cannot enumerate fully. ~1.5k lines. |
 | Phase 2 viaje port: theme, templates fill, 13 pages + 2 posts from §3, alt text, metas, FAQ merge, footer | **Sonnet** | Fully specified, reference content exists, repetitive. |
 | The blog-post differentiation edit (inside phase 2) | **Opus** subagent spawned by the phase-2 session for that one task | Editorial judgment over two long texts; small token cost. |
-| Phase 3 TTDP | **Sonnet** | Config + content on a finished engine. Path B seed writing is Sonnet-grade with a tight brief. |
+| ~~Phase 3 TTDP~~ | — | Superseded: built in `antonmarklundcom/thingstodoinparaguay`. |
 | Phase 4 deploy, audit script, runbook | **Sonnet** | Mechanical once §7 item 6 is answered. |
 | Pre-cutover review of staging against §5 | **Fable, in a conversation Anton opens** (or Opus if budget matters more) | Ranking loss is the one irreversible outcome; a single review pass is cheap relative to it. |
 
