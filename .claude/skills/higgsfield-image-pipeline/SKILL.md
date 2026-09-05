@@ -34,36 +34,36 @@ If a manifest exists but images are missing, the job is **localize**, not genera
 the result URLs in the manifest stay downloadable for weeks (the 2026-09-03 URLs still
 served on 2026-09-05). Re-generating a planned image is a bug, not a shortcut.
 
-## Rule 1: the model is verified by the ledger, not by the job's `model` string
+## Rule 1: the model is always `nano_banana_pro`. Verify it by the ledger.
 
-Measured on this account (2026-09-05):
+Anton's standing decision (2026-09-05): **every website image is generated with
+`nano_banana_pro`** (Nano Banana Pro, 2 credits at 2K). No `nano_banana_2`, no
+`nano_banana_2_lite`, no "cheaper model for cards". A plan or skill that names another
+Nano Banana model is out of date; use Pro and say so. Budget maths is simply
+2 credits x images.
 
-| Catalog id you pass | `jobs_wait` reports `model` | `transactions` display_name | credits |
-|---|---|---|---|
-| `nano_banana_2` | `nano_banana_flash` | Nano Banana 2 | 1.5 (1K) / 2 (2K) |
-| `nano_banana_2_lite` | `nano_banana_2_lite` | Nano Banana 2 Lite | 1 |
-| `nano_banana_pro` | (not measured) | Nano Banana Pro | 2 |
-| `nano_banana_flash` | **not a catalog id** (`models_explore get` errors) | | |
-
-So `model: "nano_banana_flash"` in result metadata is Nano Banana 2's backend name, not a
-downgrade. The viaje "silent substitution" never happened: the 2K heroes were charged as
-Nano Banana 2 at 2 credits and came back 3168x1344. The skill table in
-`higgsfield-web-imagery` that lists `nano_banana_flash` as the Lite model is wrong; the
-Lite id is `nano_banana_2_lite`.
+Why the job metadata must not be trusted for this: measured on this account, jobs
+requested as `nano_banana_2` come back with `model: "nano_banana_flash"` in `jobs_wait`,
+while the credit ledger charges them as "Nano Banana 2". That is a backend alias, not a
+substitution, and `nano_banana_flash` is not even a catalog id (`models_explore get`
+errors). The old skill table that lists it as the Lite model is wrong. None of this
+matters once Pro is the only model, but it is why verification uses the ledger.
 
 Fail-loud procedure, every batch:
 
-1. `models_explore action=get model_id=<id>` for each id in the plan. An error means the
-   id does not exist: stop and fix the plan, do not guess a neighbour.
-2. `generate_image get_cost:true` per model at the target resolution; write the number
-   into the manifest `_notes.cost_preflight`.
-3. After `jobs_wait`: check result pixel size against the plan (2K 21:9 ≈ 3168x1344,
-   1K 16:9 ≈ 1376x768). Wrong class = wrong model or resolution.
-4. `transactions size:<n>` and match one ledger line per job: display name AND credits
-   must equal the preflight. Any mismatch is reported to Anton before continuing, with
-   job ids. Record the ledger check in `_notes.actual_spend_credits`.
+1. `models_explore action=get model_id=nano_banana_pro` once per session; it must
+   return `resolution` options including `2k` (default).
+2. `generate_image get_cost:true` with `model: nano_banana_pro`, `resolution: "2k"` and
+   the slot's ratio; write the number into the manifest `_notes.cost_preflight`.
+3. Pass `model: "nano_banana_pro"` and `resolution: "2k"` explicitly in every batch
+   request. Never let a default choose.
+4. After `jobs_wait`: every result must be 2K-class (21:9 about 3168x1344, 16:9 about
+   2752x1536). A 1376x768-class result is the wrong model or resolution: stop.
+5. `transactions size:<n>`: one ledger line per job, display name "Nano Banana Pro",
+   credits equal to the preflight. Any other display name = stop, report job ids to
+   Anton, do not place the images. Record the check in `_notes.ledger_checked`.
 
-Never pass `use_unlim`. Never "correct" a model id on your own; the plan names it.
+Never pass `use_unlim`. Never pick a cheaper model on your own initiative.
 
 ## Rule 2: the download path is the environment allowlist. Nothing else.
 
