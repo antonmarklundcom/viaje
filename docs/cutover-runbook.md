@@ -49,22 +49,29 @@ steps 9–13 happens until staging (step 7) passes clean.
    credentials for this site — host, username, password. These are
    `FTP_HOST_VIAJE` / `FTP_USER_VIAJE` / `FTP_PASS_VIAJE` if you're using path A.
 
-## 2. Localize the imagery (run once, from your own machine, before the first deploy)
+## 2. Localize the imagery (once, from a cloud session in the allowlisted environment)
 
-The build sandbox that produced `docs/imagery-manifest.json` cannot reach the
-Higgsfield CDN, so the site's images still point at remote CDN URLs (KNOWN-ISSUES
-#11). From a machine with normal internet access:
+Already done for the 18-image set on 2026-09-05 (commit 7290348); `bash
+tools/imagery-preflight.sh` exits 3 to confirm it. Keep this section for the next set.
+
+Generation works from any Claude Code cloud session, but downloading the result bytes
+needs the Higgsfield CDN on the environment's allowlist. The standard, per
+`.claude/skills/higgsfield-image-pipeline/SKILL.md`: edit the cloud environment,
+Network access **Custom**, Allowed domains `*.cloudfront.net`, keep the default package
+managers. Then, in a session in that environment:
 
 ```
+bash tools/imagery-preflight.sh          # must exit 0 with CDN reachable
 php tools/localize-media.php viaje.com.py
+php tools/verify.php viaje.com.py
 ```
 
 This downloads every manifest image into `sites/viaje.com.py/assets/img/`, generates
-the responsive WebP variants the templates already know how to render, and rewrites
-every `hero:`/gallery/`default_og_image` reference in `sites/viaje.com.py/` from the
-remote URL to the local path. Review the diff (`git status`, `git diff`), commit it,
-push, and let CI (`php tools/verify.php viaje.com.py`) confirm nothing broke before
-merging to `main` — the deploy in step 4 builds from `main`.
+the responsive WebP variants the templates already render, and rewrites every
+`hero:`/gallery/`default_og_image` reference in `sites/viaje.com.py/` from the remote URL
+to the local path. Commit the assets together with the rewritten content, push, and let
+CI confirm nothing broke before merging to `main`. Running the script on a laptop is the
+fallback only when the environment setting is not available, not the default.
 
 ## 3. Build and sanity-check locally
 
