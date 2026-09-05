@@ -1,6 +1,6 @@
 ---
 name: higgsfield-image-pipeline
-description: Standing process for getting Higgsfield-generated website images into a repo from a Claude Code cloud session without duplicate generation, silent model surprises, or manual download round-trips. Use BEFORE any Higgsfield generate_image / generate_image_batch call in any site repo, whenever a session says "the images aren't in the repo", "can't download from the CDN", "localize the imagery", or a manifest like docs/imagery-manifest.json exists. Overrides the network/download sections of higgsfield-web-imagery and webimg-pipeline.
+description: Standing process for getting website images into a repo from a Claude Code cloud session, whatever their source (Higgsfield generation, an old WordPress site being migrated, or files from Anton's PC), without duplicate generation, wrong models, or manual download round-trips. Use BEFORE any Higgsfield generate_image call, whenever a site needs images, whenever images must be pulled from an existing/old site (WordPress media, wp-content/uploads), whenever a session says "can't download", "the images aren't in the repo", "localize the imagery", "kör bilder", or "do X website". Overrides the model and network/download sections of higgsfield-web-imagery and webimg-pipeline.
 ---
 
 # Higgsfield image pipeline: the one standard path
@@ -113,6 +113,34 @@ fable-cost-guardrail applies as usual: this is Sonnet/Opus work.
 If the preflight exits 4 in a session that must finish today and Anton is not reachable
 to change the environment, stop after writing/committing the manifest with result URLs
 and say exactly that. Do not spend credits on a set nobody can download.
+
+## Rule 4: images from an existing site (WordPress migration) use the same pipeline
+
+When the site replaces an old WordPress site (thingstodoinparaguay.com and similar),
+the images already exist and **nothing is generated**. The source is the old site's
+media library; the rest is identical to the Higgsfield path:
+
+1. Inventory: fetch `https://<old-site>/wp-json/wp/v2/media?per_page=100&page=N` until
+   empty (falls back to crawling `wp-content/uploads` links from the old pages if the
+   REST API is off). Record each image's source URL, the page/post it belonged to, its
+   original alt text and caption. Write that into `docs/imagery-manifest.json` with
+   `source: "wordpress"` and the planned `file`/`alt` per image, in the same shape as a
+   Higgsfield manifest, so Rule 0 finds it next time.
+2. Choose: keep only images that map to a slot in the new site spec. Old WP uploads are
+   usually many duplicates and thumbnails (`-150x150`, `-300x200` suffixes); take the
+   original only. Anything not mapped to a slot is left out, not migrated "for later".
+3. Download bytes require the old site's host on the environment allowlist, exactly
+   like the CDN: add `<old-site-domain>` (and its CDN host if it uses one, e.g.
+   `*.wp.com`, `i0.wp.com`) to Allowed domains next to `*.cloudfront.net`. Same 403 rule:
+   if `curl -sI` fails, stop and report; do not ask a human to download.
+4. Convert with webimg straight from the URLs (`file` column = source URL), with the new
+   SEO slug and alt text, place, verify, commit. Original WP filenames and alt are never
+   reused as-is.
+5. Gaps: slots with no usable old image are generated with `nano_banana_pro` under Rules
+   1 and 2. Mark them `source: "higgsfield"` in the same manifest.
+
+Images from Anton's PC follow `webimg-pipeline` ("When the images start on Anton's PC")
+and are then recorded in the manifest with `source: "local"`.
 
 ## Manifest contract (what makes Rule 0 work next time)
 
