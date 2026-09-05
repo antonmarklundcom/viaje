@@ -150,3 +150,7 @@ sites/*/media/*
 sites/*/data/*
 !sites/*/data/.gitkeep
 sites/*/config.local.php
+
+# webimg pipeline working files (contain temporary generation URLs, not source-of-truth)
+jobs.csv
+assets/img/manifest.json
