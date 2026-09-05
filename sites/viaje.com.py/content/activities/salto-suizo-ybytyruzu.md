@@ -4,7 +4,7 @@ seo_title: Salto Suizo y Colonia Independencia — Guía | Viaje.com.py
 description: Cómo llegar al Salto Suizo en Colonia Independencia, con la Cordillera del Ybytyruzú, gastronomía alemana y vinos artesanales.
 date: 2026-09-03
 region: Guairá
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155613_5161296a-25f1-4361-be70-25761466eba0.png
+hero: /assets/img/salto-suizo-colonia-independencia.jpg
 hero_alt: El Salto Suizo cae en un delgado hilo de agua hacia una poza forestal en las colinas del Ybytyruzú, cerca de Colonia Independencia.
 facts:
   location: Colonia Independencia, Guairá

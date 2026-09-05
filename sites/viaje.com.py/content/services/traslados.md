@@ -4,7 +4,7 @@ seo_title: Traslados Privados en Paraguay — Aeropuerto, ciudades e interior | 
 description: Traslados privados en Paraguay con flota moderna y choferes profesionales, del aeropuerto al interior, con monitoreo en tiempo real.
 date: 2026-09-03
 order: 3
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155724_5c24ae48-1183-41f1-8e2e-345d449e83a5.png
+hero: /assets/img/traslado-privado-van-amanecer.jpg
 hero_alt: Una van de pasajeros negra y prolija avanza por una carretera tranquila al amanecer, con las luces encendidas.
 intro: Ofrecemos un servicio de transporte dedicado que combina la seguridad de una conducción profesional con el confort de una flota de alta gama. Ya sea para traslados ejecutivos en la ciudad o expediciones a zonas remotas del interior, garantizamos una logística de movilidad puntual, discreta y eficiente.
 included:

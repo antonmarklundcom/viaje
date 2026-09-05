@@ -5,7 +5,7 @@ description: Agencia de viajes en Paraguay. Rutas a medida, traslados, asistenci
 path: /
 layout: home
 date: 2026-09-03
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155435_31413825-d228-42ad-88d5-84cad8c062e9.png
+hero: /assets/img/camino-de-tierra-roja-4x4-paraguay.jpg
 hero_alt: Una camioneta 4x4 avanza por un camino de tierra roja entre colinas verdes al amanecer, con niebla en los valles y lapachos alrededor.
 hero_kicker: Tu guía definitiva de turismo en Paraguay
 hero_title: Descubrí el Paraguay que pocos conocen

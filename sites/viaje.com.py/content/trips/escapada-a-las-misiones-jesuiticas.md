@@ -4,7 +4,7 @@ seo_title: Escapada a las Misiones Jesuíticas de Paraguay | Viaje.com.py
 description: Escapada corta a las Misiones Jesuíticas de Trinidad y Jesús, Patrimonio de la Humanidad, con recorrido diurno y nocturno.
 date: 2026-09-03
 region: Itapúa
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155613_8d6f6280-f1ab-40c7-b5a1-d635e25a9462.png
+hero: /assets/img/ruinas-jesuiticas-trinidad-atardecer.jpg
 hero_alt: Los arcos de piedra de las ruinas jesuíticas de la Santísima Trinidad del Paraná se iluminan con la luz dorada del atardecer.
 facts:
   duration: 1 a 2 días

@@ -4,7 +4,7 @@ seo_title: Agencia de Viaje en Paraguay — Viajes a medida sin paquetes rígido
 description: Agencia de viajes en Paraguay que diseña itinerarios a medida, con acceso a lugares que no están en las apps de reserva ni en los catálogos.
 date: 2026-09-03
 order: 1
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155613_3e981991-ad8f-4483-9f33-7d956dd6835f.png
+hero: /assets/img/agencia-de-viaje-planificacion-mapa.jpg
 hero_alt: Un escritorio visto desde arriba con un mapa de Paraguay, cuaderno, café y teléfono, listo para planificar un viaje.
 intro: Dejá atrás los paquetes rígidos de catálogo. Nos especializamos en diseñar itinerarios a medida que conectan con la esencia del país, desde los saltos más escondidos hasta expediciones privadas en el Chaco. Combinamos logística inteligente con acceso exclusivo para transformar coordenadas en el mapa en experiencias memorables y fluidas.
 included:

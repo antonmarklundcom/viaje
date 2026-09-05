@@ -3,7 +3,7 @@ title: Nosotros
 seo_title: Nosotros — Quiénes somos en Viaje.com.py
 description: Quiénes somos: un equipo que recorre Paraguay y arma viajes a medida, desde Asunción hacia todo el país, con Anton Marklund a la cabeza.
 date: 2026-09-03
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155613_06870088-7eff-437c-891e-0df33cc71d23.png
+hero: /assets/img/cerro-cora-parque-nacional.jpg
 hero_alt: Las colinas redondeadas del Parque Nacional Cerro Corá emergen entre la neblina matinal de la sabana.
 show_team: true
 faq_tags:

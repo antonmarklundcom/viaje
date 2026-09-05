@@ -4,7 +4,7 @@ seo_title: Gestión de Visas desde Paraguay — Asesoría y trámites | Viaje.co
 description: Gestión experta de visas y trámites migratorios desde Paraguay para turistas, inversores y extranjeros que buscan establecerse en el país.
 date: 2026-09-03
 order: 5
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155613_2eff136b-2553-4760-816c-c60937ea2c32.png
+hero: /assets/img/gestion-de-visas-pasaporte-documentos.jpg
 hero_alt: Un pasaporte junto a formularios impresos y un pasaje de embarque sobre un escritorio ordenado con luz suave de ventana.
 intro: Simplificamos los procesos burocráticos para tu ingreso y permanencia en el país. Ofrecemos una gestión experta en trámites migratorios para turistas, inversores y extranjeros que buscan establecerse en Paraguay, garantizando que cada documento cumpla con las normativas vigentes de forma ágil y segura.
 included:

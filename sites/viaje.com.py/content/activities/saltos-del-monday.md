@@ -4,7 +4,7 @@ seo_title: Saltos del Monday — Qué hacer y cuándo ir | Viaje.com.py
 description: Guía de los Saltos del Monday cerca de Ciudad del Este, con ascensor panorámico, senderismo y arborismo en el Bosque Atlántico.
 date: 2026-09-03
 region: Alto Paraná
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155613_a15b0c40-5702-48f5-b35f-409cbd98214c.png
+hero: /assets/img/saltos-del-monday-cascada.jpg
 hero_alt: La cascada de los Saltos del Monday cae en un amplio velo de agua blanca hacia un cañón selvático cerca de Ciudad del Este.
 facts:
   location: Presidente Franco, Alto Paraná

@@ -4,7 +4,7 @@ seo_title: Lago Ypacaraí y San Bernardino — Qué hacer | Viaje.com.py
 description: Guía de San Bernardino y el Lago Ypacaraí, con historia de colonos alemanes, atardeceres, glamping y la Escalinata de la Virgen.
 date: 2026-09-03
 region: Cordillera
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155613_2293480d-2b1e-4503-b9a1-bea444cb1c87.png
+hero: /assets/img/lago-ypacarai-san-bernardino.jpg
 hero_alt: Un muelle de madera se adentra en las aguas calmas del lago Ypacaraí, visto desde San Bernardino en la tarde.
 facts:
   location: San Bernardino, Cordillera

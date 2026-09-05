@@ -4,7 +4,7 @@ seo_title: Contacto — Escribinos por WhatsApp o email
 description: Escribinos por WhatsApp, teléfono o email y armamos tu viaje por Paraguay a medida. Respondemos de lunes a sábado desde Asunción.
 layout: contact
 date: 2026-09-03
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155724_204c7b07-c20a-43bb-9919-5fba23c68f3b.png
+hero: /assets/img/asuncion-skyline-oficinas.jpg
 hero_alt: El skyline moderno de Asunción con sus torres de oficinas se recorta contra el cielo azul del atardecer, visto desde el otro lado del río.
 ---
 

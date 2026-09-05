@@ -4,7 +4,7 @@ seo_title: Fin de Semana en Encarnación — Ruta de 2 días | Viaje.com.py
 description: Escapada de fin de semana a Encarnación con costanera, Playa San José y las Misiones Jesuíticas de Trinidad y Jesús a medida.
 date: 2026-09-03
 region: Itapúa
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155613_d11cf677-1fa0-4cc8-a70c-6ba3e61d5035.png
+hero: /assets/img/encarnacion-playa-san-jose.jpg
 hero_alt: La Playa San José de Encarnación muestra su arena suave junto a la costanera y las palmeras bajo el sol del verano.
 facts:
   duration: 2 días

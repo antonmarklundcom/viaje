@@ -4,7 +4,7 @@ seo_title: Costanera de Encarnación y Playa San José | Viaje.com.py
 description: Qué hacer en la costanera de Encarnación y la Playa San José, la "Perla del Sur" de Paraguay, en cualquier época del año.
 date: 2026-09-03
 region: Itapúa
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155613_d11cf677-1fa0-4cc8-a70c-6ba3e61d5035.png
+hero: /assets/img/encarnacion-playa-san-jose.jpg
 hero_alt: La Playa San José de Encarnación muestra su arena suave junto a la costanera y las palmeras bajo el sol del verano.
 facts:
   location: Encarnación, Itapúa

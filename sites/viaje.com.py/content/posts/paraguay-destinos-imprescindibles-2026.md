@@ -6,7 +6,7 @@ path: /paraguay-destinos-imprescindibles-2026/
 date: 2026-02-03
 author: Yanina — Equipo Viaje.com.py
 region: Paraguay
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155613_a15b0c40-5702-48f5-b35f-409cbd98214c.png
+hero: /assets/img/saltos-del-monday-cascada.jpg
 hero_alt: La cascada de los Saltos del Monday cae en un amplio velo de agua blanca hacia un cañón selvático cerca de Ciudad del Este.
 tags:
   - destinos

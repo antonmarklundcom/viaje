@@ -1,0 +1,164 @@
+{
+  "generated_at": "2026-09-05T15:24:18.196Z",
+  "images": [
+    {
+      "filename_base": "turistas-cataratas-iguazu",
+      "source": "https://viaje.com.py/wp-content/uploads/2026/02/cataratas-iguacu1-scaled.jpg",
+      "prompt": "tourists in ponchos at cataratas del iguazu",
+      "alt_text": "Un grupo de turistas con ponchos impermeables celebra frente a las imponentes Cataratas del Iguazú",
+      "naming_source": "fallback",
+      "aspect_ratio": "21:9",
+      "files": [
+        {
+          "file": "turistas-cataratas-iguazu-480.avif",
+          "format": "avif",
+          "width": 480,
+          "height": 206,
+          "kb": 12.2
+        },
+        {
+          "file": "turistas-cataratas-iguazu-480.webp",
+          "format": "webp",
+          "width": 480,
+          "height": 206,
+          "kb": 15.3
+        },
+        {
+          "file": "turistas-cataratas-iguazu-960.avif",
+          "format": "avif",
+          "width": 960,
+          "height": 411,
+          "kb": 39.9
+        },
+        {
+          "file": "turistas-cataratas-iguazu-960.webp",
+          "format": "webp",
+          "width": 960,
+          "height": 411,
+          "kb": 54.1
+        },
+        {
+          "file": "turistas-cataratas-iguazu-1600.avif",
+          "format": "avif",
+          "width": 1600,
+          "height": 686,
+          "kb": 81.3
+        },
+        {
+          "file": "turistas-cataratas-iguazu-1600.webp",
+          "format": "webp",
+          "width": 1600,
+          "height": 686,
+          "kb": 114.6
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"sites/viaje.com.py/assets/img/turistas-cataratas-iguazu-480.avif 480w, sites/viaje.com.py/assets/img/turistas-cataratas-iguazu-960.avif 960w, sites/viaje.com.py/assets/img/turistas-cataratas-iguazu-1600.avif 1600w\">\n  <source type=\"image/webp\" srcset=\"sites/viaje.com.py/assets/img/turistas-cataratas-iguazu-480.webp 480w, sites/viaje.com.py/assets/img/turistas-cataratas-iguazu-960.webp 960w, sites/viaje.com.py/assets/img/turistas-cataratas-iguazu-1600.webp 1600w\">\n  <img src=\"sites/viaje.com.py/assets/img/turistas-cataratas-iguazu-960.webp\" alt=\"Un grupo de turistas con ponchos impermeables celebra frente a las imponentes Cataratas del Iguazú\" width=\"960\" height=\"411\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "atardecer-bahia-asuncion",
+      "source": "https://viaje.com.py/wp-content/uploads/2026/02/sunset-asuncion.jpg",
+      "prompt": "sunset skyline over asuncion bay",
+      "alt_text": "Atardecer anaranjado sobre la bahía de Asunción con la silueta de los edificios del centro",
+      "naming_source": "fallback",
+      "aspect_ratio": "21:9",
+      "files": [
+        {
+          "file": "atardecer-bahia-asuncion-480.avif",
+          "format": "avif",
+          "width": 480,
+          "height": 206,
+          "kb": 1.9
+        },
+        {
+          "file": "atardecer-bahia-asuncion-480.webp",
+          "format": "webp",
+          "width": 480,
+          "height": 206,
+          "kb": 2.5
+        },
+        {
+          "file": "atardecer-bahia-asuncion-960.avif",
+          "format": "avif",
+          "width": 960,
+          "height": 411,
+          "kb": 4.3
+        },
+        {
+          "file": "atardecer-bahia-asuncion-960.webp",
+          "format": "webp",
+          "width": 960,
+          "height": 411,
+          "kb": 6.4
+        },
+        {
+          "file": "atardecer-bahia-asuncion-1600.avif",
+          "format": "avif",
+          "width": 1600,
+          "height": 686,
+          "kb": 7.2
+        },
+        {
+          "file": "atardecer-bahia-asuncion-1600.webp",
+          "format": "webp",
+          "width": 1600,
+          "height": 686,
+          "kb": 12.8
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"sites/viaje.com.py/assets/img/atardecer-bahia-asuncion-480.avif 480w, sites/viaje.com.py/assets/img/atardecer-bahia-asuncion-960.avif 960w, sites/viaje.com.py/assets/img/atardecer-bahia-asuncion-1600.avif 1600w\">\n  <source type=\"image/webp\" srcset=\"sites/viaje.com.py/assets/img/atardecer-bahia-asuncion-480.webp 480w, sites/viaje.com.py/assets/img/atardecer-bahia-asuncion-960.webp 960w, sites/viaje.com.py/assets/img/atardecer-bahia-asuncion-1600.webp 1600w\">\n  <img src=\"sites/viaje.com.py/assets/img/atardecer-bahia-asuncion-960.webp\" alt=\"Atardecer anaranjado sobre la bahía de Asunción con la silueta de los edificios del centro\" width=\"960\" height=\"411\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "vista-aerea-asuncion-paraguay",
+      "source": "https://viaje.com.py/wp-content/uploads/2026/04/asuncion-paraguay.jpg",
+      "prompt": "aerial drone shot of asuncion cityscape",
+      "alt_text": "Vista aérea del paisaje urbano de Asunción con edificios modernos rodeados de vegetación",
+      "naming_source": "fallback",
+      "aspect_ratio": "3:2",
+      "files": [
+        {
+          "file": "vista-aerea-asuncion-paraguay-480.avif",
+          "format": "avif",
+          "width": 480,
+          "height": 320,
+          "kb": 20.8
+        },
+        {
+          "file": "vista-aerea-asuncion-paraguay-480.webp",
+          "format": "webp",
+          "width": 480,
+          "height": 320,
+          "kb": 24.3
+        },
+        {
+          "file": "vista-aerea-asuncion-paraguay-960.avif",
+          "format": "avif",
+          "width": 960,
+          "height": 640,
+          "kb": 61
+        },
+        {
+          "file": "vista-aerea-asuncion-paraguay-960.webp",
+          "format": "webp",
+          "width": 960,
+          "height": 640,
+          "kb": 75.2
+        },
+        {
+          "file": "vista-aerea-asuncion-paraguay-1600.avif",
+          "format": "avif",
+          "width": 1600,
+          "height": 1067,
+          "kb": 101.3
+        },
+        {
+          "file": "vista-aerea-asuncion-paraguay-1600.webp",
+          "format": "webp",
+          "width": 1600,
+          "height": 1067,
+          "kb": 135.7
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"sites/viaje.com.py/assets/img/vista-aerea-asuncion-paraguay-480.avif 480w, sites/viaje.com.py/assets/img/vista-aerea-asuncion-paraguay-960.avif 960w, sites/viaje.com.py/assets/img/vista-aerea-asuncion-paraguay-1600.avif 1600w\">\n  <source type=\"image/webp\" srcset=\"sites/viaje.com.py/assets/img/vista-aerea-asuncion-paraguay-480.webp 480w, sites/viaje.com.py/assets/img/vista-aerea-asuncion-paraguay-960.webp 960w, sites/viaje.com.py/assets/img/vista-aerea-asuncion-paraguay-1600.webp 1600w\">\n  <img src=\"sites/viaje.com.py/assets/img/vista-aerea-asuncion-paraguay-960.webp\" alt=\"Vista aérea del paisaje urbano de Asunción con edificios modernos rodeados de vegetación\" width=\"960\" height=\"640\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    }
+  ]
+}

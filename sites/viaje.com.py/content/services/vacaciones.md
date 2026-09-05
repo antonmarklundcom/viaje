@@ -4,7 +4,7 @@ seo_title: Vacaciones en Paraguay a tu medida — Escapadas y rutas | Viaje.com.
 description: Vacaciones en Paraguay diseñadas a tu medida, con estancias de primer nivel y logística resuelta desde tu salida hasta tu retorno.
 date: 2026-09-03
 order: 4
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155724_54bbf897-a69f-4d78-b974-52d6fea45bda.png
+hero: /assets/img/vacaciones-familia-lago.jpg
 hero_alt: Una familia vista de espaldas camina hacia la orilla de un lago con toallas y una conservadora, bajo luz dorada.
 intro: Diseñamos y gestionamos paquetes vacacionales donde la logística no es una preocupación para vos. Seleccionamos destinos exclusivos y estancias de primer nivel en todo el país, asegurando una coordinación impecable desde tu salida hasta tu retorno. Disfrutá de un Paraguay auténtico con el respaldo de una gestión profesional.
 included:

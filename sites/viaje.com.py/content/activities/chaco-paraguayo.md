@@ -4,7 +4,7 @@ seo_title: Chaco Paraguayo — Lagunas Saladas y turismo cultural | Viaje.com.py
 description: Guía del Chaco Central paraguayo, con las Lagunas Saladas, avistaje de flamencos rosados y la historia de las colonias menonitas.
 date: 2026-09-03
 region: Chaco Central
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155613_6bb1d682-37a0-4f4a-bf12-ac4d156e2e74.png
+hero: /assets/img/chaco-paraguayo-palmares-atardecer.jpg
 hero_alt: La sabana de palmeras del Chaco paraguayo se extiende bajo un cielo ámbar al atardecer, con un camino de tierra cruzando el paisaje.
 facts:
   location: Loma Plata / Filadelfia, Chaco Central

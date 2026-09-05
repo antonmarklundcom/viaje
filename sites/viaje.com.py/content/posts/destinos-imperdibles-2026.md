@@ -6,7 +6,7 @@ path: /destinos-imperdibles-2026/
 date: 2026-04-10
 author: Equipo Viaje.com.py
 region: Paraguay
-hero: https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260903_155613_8d6f6280-f1ab-40c7-b5a1-d635e25a9462.png
+hero: /assets/img/ruinas-jesuiticas-trinidad-atardecer.jpg
 hero_alt: Los arcos de piedra de las ruinas jesuíticas de la Santísima Trinidad del Paraná se iluminan con la luz dorada del atardecer.
 tags:
   - destinos
