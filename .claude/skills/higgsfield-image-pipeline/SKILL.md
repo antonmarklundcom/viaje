@@ -11,28 +11,30 @@ wired), misread the model metadata as a silent downgrade, then could not downloa
 bytes and fell back to a human running PHP locally. Every step below exists to make
 one of those four things impossible.
 
-## Rule 0: run the preflight before touching a generation tool
+## Rule 0: prove "not already done" before touching a generation tool
 
-```
-bash tools/imagery-preflight.sh
-```
+Do these checks yourself, in the repo, before any `generate_image*` call. If the repo has
+`tools/imagery-preflight.sh` (viaje and its successors) run that instead; it does the
+same thing and prints a verdict.
 
-(Copy `tools/imagery-preflight.sh` from antonmarklundcom/viaje into any repo that lacks
-it. It is plain bash + python3, nothing to install.) It prints:
+1. `git ls-files | grep -Ei 'imagery|image-generation|jobs\.csv|assets/img/manifest'`
+   and read anything found (`docs/imagery-manifest.json`, `docs/image-generation-plan.md`,
+   `docs/imagery-brief.md`, `jobs.csv`, `assets/img/manifest.json`).
+2. `git log --oneline -i -E --grep='imag|higgsfield|localize|webimg|photo'`.
+3. For every image named in a manifest, check whether its files already exist under
+   `assets/img/` (any `*/assets/img/<basename>*`).
+4. `curl -sI -m 15 <any https://*.cloudfront.net URL>`: HTTP 200 means downloads work
+   here; 403 or 000 means this environment is not allowlisted (Rule 2).
 
-1. every tracked manifest / plan / brief (`docs/imagery-manifest.json`,
-   `docs/image-generation-plan.md`, `assets/img/manifest.json`, `jobs.csv`),
-2. every prior commit mentioning image/imagery/higgsfield/localize/webimg,
-3. per manifest: how many planned images are already on disk under `assets/img/`,
-4. whether THIS session can HEAD the Higgsfield CDN (`*.cloudfront.net`).
+Verdicts:
 
-Exit 3 means "already generated and localized": do not generate, go edit content.
-Exit 4 means "generation would strand the bytes": fix the environment first (Rule 2).
-Only exit 0 permits a generation call, and only for the images step 3 listed as missing.
+- Manifest exists and all files exist: **done**. Do not generate. Edit content only.
+- Manifest exists, files missing: **localize**, do not generate. The result URLs stay
+  downloadable for weeks (the 2026-09-03 URLs still served on 2026-09-05).
+- No manifest: generate, but only after Rule 1 and Rule 2 pass.
+- CDN unreachable: stop before spending credits and tell Anton the one-line fix in Rule 2.
 
-If a manifest exists but images are missing, the job is **localize**, not generate:
-the result URLs in the manifest stay downloadable for weeks (the 2026-09-03 URLs still
-served on 2026-09-05). Re-generating a planned image is a bug, not a shortcut.
+Re-generating a planned image is a bug, not a shortcut.
 
 ## Rule 1: the model is always `nano_banana_pro`. Verify it by the ledger.
 
@@ -74,12 +76,13 @@ done once per environment and inherited by every later session and every repo:
 
 > claude.ai/code → environment selector → edit the environment → **Network access:
 > Custom** → **Allowed domains**: `*.cloudfront.net` → tick "Also include default list
-> of common package managers" → save. Start a new session in that environment.
-> Docs: https://code.claude.com/docs/en/cloud-environments#access-levels
+> of common package managers" → save, and make it the **default** environment so no
+> session ever has to pick it. Docs:
+> https://code.claude.com/docs/en/cloud-environments#access-levels
 
-Anton: create one environment named **"Sites (Higgsfield CDN)"** with that list and use it
-for every site repo. That is the whole fix; it needs no code, no secrets, no PHP on a
-laptop.
+Status: Anton set this up on his Default environment (update this line with the date
+when done). If a session still gets 403, the fix above was not applied; report that,
+do not work around it.
 
 With the allowlist in place the session runs the repo's own localizer in-session:
 
@@ -119,9 +122,11 @@ One tracked file per site, `docs/imagery-manifest.json`, with `_notes` carrying
 url, width, height, job_id`. The `file` name is decided before generation. Update
 `download_status` in the same commit that adds the local files.
 
-## Kick-off line for any site session
+## What Anton says to start it
 
-> Images: run `bash tools/imagery-preflight.sh` first. If it exits 3 the set exists;
-> localize/edit only. Verify models via `transactions`, not the job metadata. Download
-> path is the environment allowlist (`*.cloudfront.net`); if the preflight exits 4,
-> tell me and stop before generating.
+Nothing image-specific. "Do X website" or "kör bilder" is enough: this skill is synced
+to his account and triggers on any site work that needs images. Art direction, prompt
+writing, Elements and slot planning still come from `higgsfield-web-imagery` (Steps 1,
+3, 4, 5) and file conversion, naming and alt text from `webimg-pipeline`; this skill
+overrides their model choice, environment check and download sections. If those skills
+disagree with this one, this one wins.
