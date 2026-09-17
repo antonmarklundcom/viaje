@@ -422,6 +422,47 @@ serves directly (still upgrades http→https, which is correct).
 **For the human (Anton) — see the closing report on this phase**, sent as this
 session's final message and to the director session. Nothing further is
 queued to spawn automatically; phase 4 was the last phase in plan §0's table.
+*(No standalone closing-report file exists in the repo — 2026-09-17 audit
+below could not verify it was ever committed anywhere; treat that message as
+unverifiable from this repo alone.)*
+
+### 2026-09-17 — Post-launch audit (Sonnet manager session + Codex read-only scan, session `01a0afd9-7563-7240-8dac-b869da809f9c`): "fully finished and deployed" is not true
+
+- **The one production deploy attempt failed.** The `Deploy viaje.com.py` GitHub
+  Actions run on 2026-09-05 (`workflow_dispatch`, run `33977058196`) failed at the
+  FTP-deploy step with `Error: Timeout (control socket)`. No later run exists.
+- **Live-site check (curl + browser) confirms a broken, partial deploy.** The new
+  PHP engine itself is live at `viaje.com.py` (correct branding, assets, custom
+  404 page — not WordPress), but `/`, `/contacto/`, `/nosotros/`, `/faq/`, both blog
+  posts and all 5 service-detail pages return 404. Only `/servicios/` and `/blog/`
+  return 200, and both render empty ("Todavía no hay contenido publicado en esta
+  sección.") — no page content ever reached the server. `/wp-content/uploads/`
+  also 404s, so the legacy-image contract is unmet too. Lead capture is
+  effectively dead in production: `/contacto/` doesn't resolve.
+- **Root cause is structural, not just the timeout.** `.github/workflows/deploy.yml`
+  excludes `site/content/**` and `site/media/**` on every run, unconditionally —
+  correct post-cutover (§2.4: the server becomes source of truth for admin edits),
+  but wrong for a first deploy to an empty server, since there is no admin-authored
+  content to protect yet. `docs/cutover-runbook.md` §4 ("First deploy — to staging")
+  never has a step that seeds `site/content`/`site/media` onto a fresh server by any
+  route (FTP, File Manager, or otherwise). Even a successful FTP run on 2026-09-05
+  would have produced exactly the empty shell that is live today.
+- **Two commits landed after this phase without a build-log entry**: `7290348`
+  ("Localize imagery: download and convert 18 manifest images") and `fbc8899`
+  ("Remove unused stray images from local imagery pass"). `7290348` added the 18
+  real localized image sets but also 3 unrelated sets plus
+  `sites/viaje.com.py/assets/img/manifest.json`; `fbc8899` deleted those 3 extra
+  sets' files but left the manifest tracked (despite `.gitignore`) still
+  referencing all 18 of its own files, none of which exist anymore.
+- **A correctness bug in the lead handler**: `engine/lib/leads.php`'s `Leads::handle()`
+  reports success to the visitor even when both file storage and `mail()` fail
+  (with VenderCRM disabled) — a lead can silently vanish. Not previously in
+  KNOWN-ISSUES.md.
+- Full findings, an improvement plan with tier estimates, and the fixes actually
+  applied from it are tracked outside this file for now; see the session that ran
+  this audit. Deploy remediation (a one-time content-seeding step for the fresh
+  server, plus a post-deploy smoke check against the real URL contract) is
+  designed but **not yet built or re-deployed** as of this entry.
 
 ## 10. Backlog
 - Cinematic scroll homepage hero as an opt-in section (needs SEO-safe text fallback).

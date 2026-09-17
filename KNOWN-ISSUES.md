@@ -123,3 +123,30 @@ pick it up. Nothing here blocks the phase it was written in.
     job is inert (a step fails fast with a clear message) until repo secrets
     `FTP_HOST_VIAJE` / `FTP_USER_VIAJE` / `FTP_PASS_VIAJE` exist — plan §7 item 6,
     `docs/cutover-runbook.md` step 0.
+
+## Post-launch audit — 2026-09-17
+
+19. **Production has no page content deployed at all.** `deploy.yml`'s exclude list
+    (`site/content/**`, `site/media/**`) is unconditional, correct for protecting
+    admin-authored edits after cutover but never satisfied for a first deploy to an
+    empty server — there was no content to protect yet, so none ever uploaded.
+    `docs/cutover-runbook.md` §4 has no step that seeds content onto a fresh server
+    by any route. Combined with the 2026-09-05 FTP timeout, live `viaje.com.py`
+    today serves the new engine's assets and a styled 404 for every content page;
+    only `/servicios/` and `/blog/` return 200, and both are empty hub shells.
+    `/contacto/` 404s, so lead capture is currently unreachable in production.
+    Needs a one-time content-seed mechanism (deploy input flag, or a documented
+    manual FTP/File-Manager upload) plus a post-deploy smoke check against the
+    real URL contract so a future silent partial deploy is caught automatically.
+
+20. **`Leads::handle()` (`engine/lib/leads.php`) reports success to the visitor even
+    when both JSONL storage and `mail()` fail** (with VenderCRM disabled, the only
+    two delivery paths currently active). A submission can silently vanish while
+    the contact page shows a success state. Found during the 2026-09-17 audit, not
+    previously documented.
+
+21. **Orphaned `sites/viaje.com.py/assets/img/manifest.json`.** Commit `7290348`
+    added it alongside 3 image sets unrelated to the 18 real localized images;
+    commit `fbc8899` deleted those 3 sets' files but left the manifest tracked
+    (despite the `.gitignore` rule for `assets/img/manifest.json`), still
+    referencing 18 files that no longer exist. Needs regenerating or removing.
