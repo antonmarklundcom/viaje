@@ -153,4 +153,5 @@ sites/*/config.local.php
 
 # webimg pipeline working files (contain temporary generation URLs, not source-of-truth)
 jobs.csv
+jobs-harvest.csv
 assets/img/manifest.json
