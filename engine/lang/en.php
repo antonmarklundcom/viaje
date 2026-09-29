@@ -103,6 +103,7 @@ return [
     'err_too_fast'      => 'The form was submitted too quickly. Please try again.',
     'err_expired'       => 'The form expired. Reload the page and try again.',
     'err_rate'          => 'We received several enquiries from your connection. Try again in an hour or message us on WhatsApp.',
+    'err_delivery'      => 'We could not send your message. Please message us on WhatsApp at +595 995 628 862 or email hola@viaje.com.py.',
 
     // 404 / 410
     '404_title'         => 'Page not found',

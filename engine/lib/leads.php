@@ -96,9 +96,13 @@ final class Leads
 
         $lead['ip']   = Util::clientIp();
         $lead['when'] = date('c');
-        self::store($lead);
-        self::mail($lead);
+        $stored = self::store($lead);
+        $mailed = self::mail($lead);
         self::pushCrm($lead);
+        // Never tell a visitor "sent" when no delivery path actually took the lead.
+        if (!$stored && !$mailed) {
+            return ['ok' => false, 'errors' => ['_delivery' => I18n::t('err_delivery')], 'lead' => $lead];
+        }
         return ['ok' => true, 'errors' => [], 'lead' => $lead];
     }
 
@@ -120,24 +124,26 @@ final class Leads
     }
 
     /** Append to site/data/leads/YYYY-MM.jsonl — always, this is the record of last resort. */
-    private static function store(array $lead): void
+    private static function store(array $lead): bool
     {
         $dir = VJ_SITE . '/data/leads';
         if (!Util::mkdirp($dir)) {
             Util::log('Cannot create leads dir: ' . $dir);
-            return;
+            return false;
         }
         $line = json_encode($lead, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if (@file_put_contents($dir . '/' . date('Y-m') . '.jsonl', $line . "\n", FILE_APPEND | LOCK_EX) === false) {
             Util::log('Cannot append lead to ' . $dir);
+            return false;
         }
+        return true;
     }
 
-    private static function mail(array $lead): void
+    private static function mail(array $lead): bool
     {
         $to = (string)Config::v('leads.to', '');
         if ($to === '' || !function_exists('mail')) {
-            return;
+            return false;
         }
         $subject = (string)Config::v('leads.subject_prefix', '')
             . ($lead['topic'] !== '' ? $lead['topic'] . ' – ' : '') . $lead['name'];
@@ -161,7 +167,9 @@ final class Leads
         $subject = str_replace(["\r", "\n"], ' ', $subject);
         if (!@mail($to, $subject, $body, implode("\r\n", $headers))) {
             Util::log('mail() failed for lead from ' . $lead['name']);
+            return false;
         }
+        return true;
     }
 
     /** Optional VenderCRM push. Never blocks or surfaces to the visitor. */

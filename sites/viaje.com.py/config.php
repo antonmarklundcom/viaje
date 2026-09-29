@@ -131,6 +131,8 @@ return [
         '/paquete-individual/'              => '/servicios/',
         '/servicio-unico/'                  => '/servicios/',
         '/category/uncategorized/'          => '/blog/',
+        '/author/yanina/'                   => '/nosotros/',
+        '/author/marklundmailgmail-com/'    => '/nosotros/',
         '/wp-sitemap.xml'                   => '/sitemap.xml',
         '/wp-sitemap-posts-post-1.xml'      => '/sitemap.xml',
         '/wp-sitemap-posts-page-1.xml'      => '/sitemap.xml',

@@ -84,7 +84,7 @@ Both must pass before uploading anywhere.
 
 ## 4. First deploy — to staging
 
-- **Path A**: Actions → **Deploy viaje.com.py** → Run workflow. Set `server_dir` to
+- **Path A**: Actions → **Deploy viaje.com.py** → Run workflow. **On the very first deploy tick `seed_content`** (uploads pages and images to an empty server; never tick it again, it overwrites admin edits). Set `server_dir` to
   the staging site's document root (Hostinger calls it out on the website's
   dashboard, typically `/public_html/` for that temp subdomain), `protocol` to
   `ftps` (Hostinger's default; only switch to `ftp` if the connection fails), leave

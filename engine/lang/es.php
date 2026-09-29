@@ -103,6 +103,7 @@ return [
     'err_too_fast'      => 'El formulario se envió demasiado rápido. Probá de nuevo.',
     'err_expired'       => 'El formulario expiró. Recargá la página e intentá de nuevo.',
     'err_rate'          => 'Recibimos varias consultas desde tu conexión. Probá de nuevo en una hora o escribinos por WhatsApp.',
+    'err_delivery'      => 'No pudimos enviar tu mensaje. Escribinos por WhatsApp al +595 995 628 862 o a hola@viaje.com.py.',
 
     // 404 / 410
     '404_title'         => 'Página no encontrada',
