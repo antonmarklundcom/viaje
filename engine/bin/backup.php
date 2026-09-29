@@ -22,6 +22,9 @@ if (!class_exists('ZipArchive')) {
 }
 
 $site = dirname(__DIR__, 2) . '/site';
+if (!is_dir($site) && is_dir(dirname(__DIR__, 2) . '/sites/viaje.com.py')) {
+    $site = dirname(__DIR__, 2) . '/sites/viaje.com.py';   // repo-root (Git) deploy layout
+}
 if (!is_dir($site)) {
     fwrite(STDERR, "No site/ directory next to engine/ — this script must run from a deployed document root.\n");
     exit(1);
