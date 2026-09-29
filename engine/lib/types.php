@@ -38,7 +38,9 @@ final class Types
                 'folder'   => 'posts',
                 'template' => 'post',
                 'schema'   => 'BlogPosting',
-                'fields'   => [],
+                'fields'   => [
+                    ['name' => 'faq', 'type' => 'faq', 'label' => 'faq_field'],
+                ],
             ],
             'news' => [
                 'folder'   => 'news',
@@ -47,6 +49,7 @@ final class Types
                 'fields'   => [
                     ['name' => 'source_url', 'type' => 'text', 'label' => 'source_url'],
                     ['name' => 'source_name', 'type' => 'text', 'label' => 'source_name'],
+                    ['name' => 'faq', 'type' => 'faq', 'label' => 'faq_field'],
                 ],
             ],
             'trip' => [
@@ -58,6 +61,7 @@ final class Types
                     ['name' => 'facts', 'type' => 'facts', 'label' => 'facts',
                      'keys' => ['duration', 'price_from', 'currency', 'departure', 'group_size', 'best_season', 'difficulty']],
                     ['name' => 'itinerary', 'type' => 'itinerary', 'label' => 'itinerary'],
+                    ['name' => 'faq', 'type' => 'faq', 'label' => 'faq_field'],
                 ],
             ],
             'activity' => [
@@ -69,6 +73,7 @@ final class Types
                     ['name' => 'facts', 'type' => 'facts', 'label' => 'facts',
                      'keys' => ['location', 'duration', 'price_from', 'currency', 'best_season', 'difficulty']],
                     ['name' => 'map_url', 'type' => 'text', 'label' => 'map_url'],
+                    ['name' => 'faq', 'type' => 'faq', 'label' => 'faq_field'],
                 ],
             ],
         ];
@@ -163,6 +168,8 @@ final class Types
         $common = [
             ['name' => 'title', 'type' => 'text', 'label' => 'title', 'required' => true, 'counter' => 60],
             ['name' => 'slug', 'type' => 'text', 'label' => 'slug', 'required' => true],
+            ['name' => 'keyword', 'type' => 'text', 'label' => 'keyword'],
+            ['name' => 'quick_answer', 'type' => 'textarea', 'label' => 'quick_answer_field', 'rows' => 3],
             ['name' => 'description', 'type' => 'textarea', 'label' => 'description', 'required' => true, 'counter' => 160, 'rows' => 3],
             ['name' => 'seo_title', 'type' => 'text', 'label' => 'seo_title', 'counter' => 60],
             ['name' => 'path', 'type' => 'text', 'label' => 'path', 'help' => 'path_help'],

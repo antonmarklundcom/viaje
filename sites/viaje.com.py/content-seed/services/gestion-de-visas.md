@@ -1,12 +1,14 @@
 ---
 title: Gestión de Visas
-seo_title: Gestión de Visas en Paraguay — Trámites | Viaje.com.py
-description: Gestión experta de visas y trámites migratorios desde Paraguay para turistas, inversores y extranjeros que buscan establecerse en el país.
+seo_title: "Gestión de Visas en Paraguay: Turismo y Residencia"
+keyword: gestión de visas
+description: "Gestión de visas y trámites migratorios en Paraguay para turistas, inversores y residentes: revisamos tus documentos y te guiamos paso a paso. Consultá."
 date: 2026-09-03
+updated: 2026-09-29
 order: 5
 hero: /assets/img/gestion-de-visas-pasaporte-documentos.jpg
 hero_alt: Un pasaporte junto a formularios impresos y un pasaje de embarque sobre un escritorio ordenado con luz suave de ventana.
-intro: Simplificamos los procesos burocráticos para tu ingreso y permanencia en el país. Ofrecemos una gestión experta en trámites migratorios para turistas, inversores y extranjeros que buscan establecerse en Paraguay, garantizando que cada documento cumpla con las normativas vigentes de forma ágil y segura.
+intro: Nuestra gestión de visas simplifica los procesos burocráticos para tu ingreso y permanencia en el país. Ofrecemos una gestión experta en trámites migratorios para turistas, inversores y extranjeros que buscan establecerse en Paraguay, garantizando que cada documento cumpla con las normativas vigentes de forma ágil y segura.
 included:
   - Visas de Turista y Negocios
   - Residencia Temporal y Permanente

@@ -23,3 +23,19 @@ already on disk (from the concurrent session) or from this session's harvest. Re
 once that other session's work is reconciled, in case any of its filename-to-subject mappings are
 approximate (e.g. `salto-suizo-colonia-independencia.jpg` for the Salto Suizo Ybytyruzú page — verify
 the actual subject before wiring it in).
+
+## On-page SEO pass (2026-09-29) — nothing new is blocked, one slot stays empty
+
+No image was generated for this pass; every page already has a hero with descriptive alt text,
+width/height and WebP variants. The only slots that still want art are the people ones, and the
+site renders fine without them (the author box and the team grid skip a missing photo):
+
+| Slot | File to create | Alt text | Aspect ratio | Prompt |
+|---|---|---|---|---|
+| Author avatar — Anton Marklund (author box on posts) | `assets/img/autor-anton-marklund.jpg` | Retrato de Anton Marklund, fundador de Viaje.com.py | 1:1 | Natural-light portrait of a friendly Nordic-looking man in his 30s, casual linen shirt, standing outdoors on a red-earth road in Paraguay at golden hour, soft green hills behind, shallow depth of field, honest documentary style, no text, no logos. |
+| Author avatar — Equipo Viaje.com.py | `assets/img/autor-equipo-viaje.jpg` | Equipo de Viaje.com.py recorriendo un camino de tierra en Paraguay | 1:1 | Three travellers seen from behind walking a red-earth road toward a hazy valley at sunrise, backpacks and a tereré thermos, warm documentary light, no faces, no text. |
+| `content/data/team.json` portraits (4 rows, `photo: null`) | `assets/img/equipo-<nombre>.jpg` | Retrato de <nombre>, <rol> en Viaje.com.py | 1:1 | Only with real staff photos; do not generate lookalikes of real people. |
+
+To wire an avatar in later: add a `photo` key under the author in `config.php` `authors` and render it
+in `engine/templates/partials/author-box.php` (a 5-line change), then run `tools/verify.php --strict`.
+

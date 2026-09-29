@@ -1,8 +1,15 @@
 ---
 title: Salto Suizo y el Ybytyruzú
-seo_title: Salto Suizo y Colonia Independencia — Guía | Viaje.com.py
-description: Cómo llegar al Salto Suizo en Colonia Independencia, con la Cordillera del Ybytyruzú, gastronomía alemana y vinos artesanales.
+seo_title: "Salto Suizo y Ybytyruzú: cómo llegar | Viaje.com.py"
+keyword: Salto Suizo
+description: "Cómo llegar al Salto Suizo, en Colonia Independencia: acceso, cuándo ir, el mirador del Cerro Akatí y las bodegas artesanales del Ybytyruzú, con consejos."
+quick_answer: >
+  El Salto Suizo, en Colonia Independencia (Guairá), tiene una caída de más de 60 metros y una
+  piscina natural. Se llega en vehículo alto o con una caminata entre cañaverales y monte, y se
+  visita en medio día. Mayo a agosto es la mejor época para el trekking y noviembre-diciembre para
+  la fiesta de la uva.
 date: 2026-09-03
+updated: 2026-09-29
 region: Guairá
 hero: /assets/img/salto-suizo-colonia-independencia.jpg
 hero_alt: El Salto Suizo cae en un delgado hilo de agua hacia una poza forestal en las colinas del Ybytyruzú, cerca de Colonia Independencia.
@@ -15,9 +22,30 @@ facts:
 tags:
   - naturaleza
   - trekking
+  - guaira
+  - destinos
+faq:
+  - q: ¿Cómo se llega al Salto Suizo?
+    a: >
+      El acceso exige un vehículo alto o una caminata entre cañaverales y monte. Es camino de
+      tierra, así que evitá los días posteriores a lluvias fuertes.
+  - q: ¿Cuánto se tarda desde Asunción?
+    a: >
+      Unas tres horas de ruta: el Guairá es el destino de naturaleza más cercano a Asunción, por
+      eso entra bien en un fin de semana corto.
+  - q: ¿Qué más se puede hacer en la zona?
+    a: >
+      Subir al mirador del Cerro Akatí, con posiblemente la mejor vista panorámica de la Región
+      Oriental, y visitar bodegas artesanales.
+  - q: ¿Cuál es la mejor época para ir?
+    a: >
+      De mayo a agosto para el trekking, aunque el caudal es menor. En noviembre y diciembre se
+      suma la fiesta de la uva, un buen momento para las bodegas.
+related:
+  - /destinos-imperdibles-2026/
 ---
 
-Ubicada bajo la sombra de la Cordillera del Ybytyruzú, Colonia Independencia es un enclave donde el tiempo parece correr más lento. La fuerte influencia alemana se nota en la arquitectura, en la gente y, sobre todo, en su gastronomía — es difícil irse sin probar una torta de miel o sus embutidos caseros. Es un destino tan de naturaleza como de "turismo de bienestar".
+El Salto Suizo se esconde bajo la sombra de la Cordillera del Ybytyruzú, en Colonia Independencia, un enclave donde el tiempo parece correr más lento. La fuerte influencia alemana se nota en la arquitectura, en la gente y, sobre todo, en su gastronomía — es difícil irse sin probar una torta de miel o sus embutidos caseros. Es un destino tan de naturaleza como de "turismo de bienestar".
 
 ## La Joya De La Corona
 

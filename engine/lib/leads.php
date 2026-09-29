@@ -58,7 +58,8 @@ final class Leads
             'email'   => trim((string)($post['email'] ?? '')),
             'topic'   => trim((string)($post['topic'] ?? '')),
             'message' => trim((string)($post['message'] ?? '')),
-            'page'    => trim((string)($post['page'] ?? '')),
+            'page'    => self::cleanPage((string)($post['page'] ?? '')),
+            'page_title' => Util::truncate(trim((string)($post['page_title'] ?? '')), 160, ''),
         ];
         $errors = [];
 
@@ -94,6 +95,7 @@ final class Leads
             return ['ok' => false, 'errors' => $errors, 'lead' => $lead];
         }
 
+        $lead['page_url'] = $lead['page'] !== '' ? abs_url($lead['page']) : '';
         $lead['ip']   = Util::clientIp();
         $lead['when'] = date('c');
         $stored = self::store($lead);
@@ -106,11 +108,11 @@ final class Leads
         return ['ok' => true, 'errors' => [], 'lead' => $lead];
     }
 
-    private static function rateOk(): bool
+    private static function rateOk(string $bucket = 'lead'): bool
     {
         $dir  = VJ_SITE . '/cache/ratelimit';
         Util::mkdirp($dir);
-        $file = $dir . '/lead-' . Util::ipKey(Util::clientIp()) . '.json';
+        $file = $dir . '/' . $bucket . '-' . Util::ipKey(Util::clientIp()) . '.json';
         $hits = array_values(array_filter(
             array_map('intval', Util::readJsonFile($file)),
             static fn(int $t): bool => $t > time() - self::RATE_WIN
@@ -156,6 +158,7 @@ final class Leads
             $lead['message'],
             '',
             '-- ' . (string)Config::v('domain') . ' ' . ($lead['page'] ?: ''),
+            ...($lead['page_title'] !== '' ? ['-- ' . $lead['page_title'] . ' — ' . $lead['page_url']] : []),
         ]);
         $headers = [
             'From: ' . (string)Config::v('site_name') . ' <no-reply@' . (string)Config::v('domain') . '>',
@@ -187,9 +190,10 @@ final class Leads
             'phone'           => $lead['phone'],
             'name'            => $lead['name'],
             'email'           => $lead['email'],
-            'message'         => $lead['message'],
+            'message'         => $lead['message']
+                . ($lead['page_title'] !== '' ? "\n\n[" . $lead['page_title'] . ' — ' . $lead['page_url'] . ']' : ''),
             'source'          => (string)Config::v('leads.vendercrm.source', 'web-form'),
-            'page_url'        => $lead['page'] !== '' ? abs_url($lead['page']) : null,
+            'page_url'        => $lead['page_url'] !== '' ? $lead['page_url'] : null,
             'idempotency_key' => hash('sha256', $lead['phone'] . '|' . gmdate('Y-m-d-H')),
         ], static fn($v) => $v !== null && $v !== '');
 
@@ -219,5 +223,90 @@ final class Leads
         $number = preg_replace('/\D+/', '', (string)Config::v('contact.whatsapp_e164', '')) ?? '';
         $text ??= (string)Config::v('contact.whatsapp_default_text', '');
         return 'https://wa.me/' . $number . ($text !== '' ? '?text=' . rawurlencode($text) : '');
+    }
+
+    /**
+     * WhatsApp text that carries the page it was sent from: the site's default opener, the
+     * page title and its canonical URL, so whoever answers knows exactly what was being read.
+     * Home, hubs and pages without a title fall back to the plain default.
+     */
+    public static function pageText(array $page, ?string $opener = null): string
+    {
+        $opener = trim($opener ?? (string)Config::v('contact.whatsapp_default_text', ''));
+        $title  = trim((string)($page['title'] ?? ''));
+        $path   = (string)($page['path'] ?? '/');
+        // "quiero consultar por <título>" only reads right for things a visitor can ask about.
+        $askable = in_array((string)($page['type'] ?? ''), ['service', 'trip', 'activity', 'post', 'news'], true);
+        if (!$askable || $title === '' || $path === '/' || !empty($page['is_hub']) || !empty($page['status'])) {
+            return $opener;
+        }
+        return trim($opener . ' ' . $title) . ' (' . abs_url($path) . ')';
+    }
+
+    /** A site path that exists as content, or ''. Keeps the `page` field from becoming an open redirect. */
+    public static function cleanPage(string $path): string
+    {
+        $path = trim($path);
+        if ($path === '' || !Util::isSafePath($path) || Content::metaByPath($path) === null) {
+            return '';
+        }
+        return $path;
+    }
+
+    /* ---------------------------------------------------------- newsletter */
+
+    /**
+     * Newsletter signup: an email, stored to site/data/leads/newsletter.jsonl. No third-party
+     * service. Same anti-abuse set as the contact form (honeypot, signed timestamp, per-IP rate).
+     *
+     * @param array<string,mixed> $post
+     * @return array{ok:bool,errors:array<string,string>,page:string}
+     */
+    public static function subscribe(array $post): array
+    {
+        $page  = self::cleanPage((string)($post['page'] ?? ''));
+        $email = strtolower(trim((string)($post['email'] ?? '')));
+        if (trim((string)($post['website'] ?? '')) !== '') {
+            return ['ok' => false, 'errors' => ['_spam' => 'honeypot'], 'page' => $page];
+        }
+        $errors = [];
+        $age = self::stampAge((string)($post['ts'] ?? ''));
+        if ($age === null || $age > self::MAX_AGE) {
+            $errors['ts'] = I18n::t('err_expired');
+        } elseif ($age < self::MIN_AGE) {
+            $errors['ts'] = I18n::t('err_too_fast');
+        }
+        if ($email === '' || strlen($email) > 160 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = I18n::t('err_nl_email');
+        }
+        if (!$errors && !self::rateOk('newsletter')) {
+            $errors['rate'] = I18n::t('err_nl_rate');
+        }
+        if ($errors) {
+            return ['ok' => false, 'errors' => $errors, 'page' => $page];
+        }
+
+        $dir  = VJ_SITE . '/data/leads';
+        $file = $dir . '/newsletter.jsonl';
+        if (!Util::mkdirp($dir)) {
+            Util::log('Cannot create leads dir: ' . $dir);
+            return ['ok' => false, 'errors' => ['_store' => I18n::t('err_nl_store')], 'page' => $page];
+        }
+        // One row per address: a repeat signup is a success that writes nothing.
+        foreach (is_file($file) ? (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: []) : [] as $line) {
+            $row = json_decode($line, true);
+            if (is_array($row) && strtolower((string)($row['email'] ?? '')) === $email) {
+                return ['ok' => true, 'errors' => [], 'page' => $page];
+            }
+        }
+        $line = json_encode(
+            ['email' => $email, 'page' => $page, 'consent' => true, 'when' => date('c')],
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+        );
+        if (@file_put_contents($file, $line . "\n", FILE_APPEND | LOCK_EX) === false) {
+            Util::log('Cannot append newsletter signup to ' . $file);
+            return ['ok' => false, 'errors' => ['_store' => I18n::t('err_nl_store')], 'page' => $page];
+        }
+        return ['ok' => true, 'errors' => [], 'page' => $page];
     }
 }

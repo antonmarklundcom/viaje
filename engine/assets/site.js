@@ -29,12 +29,16 @@
     var fields = ['lf-name', 'lf-topic', 'lf-message'].map(function (id) { return document.getElementById(id); });
     var sync = function () {
       var name = (document.getElementById('lf-name') || {}).value || '';
-      var topic = (document.getElementById('lf-topic') || {}).value || '';
+      var topicEl = document.getElementById('lf-topic') || {};
+      var topic = topicEl.type === 'hidden' ? '' : (topicEl.value || '');
       var msg = (document.getElementById('lf-message') || {}).value || '';
       var parts = [];
       if (name) { parts.push('Hola, soy ' + name + '.'); }
       if (topic) { parts.push(topic + '.'); }
       if (msg) { parts.push(msg); }
+      /* The page being read travels with the message (title + canonical URL). */
+      var ctx = wa.getAttribute('data-context') || '';
+      if (ctx && parts.length) { parts.push('(' + ctx + ')'); }
       wa.setAttribute('href', parts.length ? base + '?text=' + encodeURIComponent(parts.join(' ')) : wa.getAttribute('href'));
     };
     fields.forEach(function (el) { if (el) { el.addEventListener('input', sync); el.addEventListener('change', sync); } });

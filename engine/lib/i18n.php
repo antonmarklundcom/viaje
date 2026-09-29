@@ -42,6 +42,19 @@ final class I18n
     {
         return isset(self::$strings[$key]);
     }
+
+    /** "2026-09-03" → "3 de septiembre de 2026" (per-language format string and month names). */
+    public static function date(string $ymd): string
+    {
+        if (!preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $ymd, $m)) {
+            return $ymd;
+        }
+        $months = array_values((array)(self::$strings['months'] ?? []));
+        $name   = $months[(int)$m[2] - 1] ?? $m[2];
+        return strtr((string)(self::$strings['date_format'] ?? ':d :month :y'), [
+            ':d' => (string)(int)$m[3], ':month' => (string)$name, ':y' => $m[1],
+        ]);
+    }
 }
 
 /** Template shorthand. Returns the raw string; escape at the point of output. */

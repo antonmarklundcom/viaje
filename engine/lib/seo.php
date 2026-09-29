@@ -81,7 +81,16 @@ final class Seo
         if (count($trail) > 1) {
             $nodes[] = self::breadcrumbNode($trail);
         }
-        $nodes[] = self::pageNode($page, $trail);
+        $node = self::pageNode($page, $trail);
+        $offer = $node['@offer'] ?? null;   // a Place cannot carry `offers`: it travels as its own graph node
+        unset($node['@offer']);
+        $nodes[] = $node;
+        if ($offer !== null) {
+            $nodes[] = $offer;
+        }
+        if (($faq = self::faqNode($page)) !== null) {
+            $nodes[] = $faq;
+        }
 
         return [
             'title'       => (string)($page['seo_title'] ?: $page['title']),
@@ -224,7 +233,21 @@ final class Seo
             $node['author']        = self::authorNode($page);
             $node['publisher']     = ['@id' => $base . '#org'];
             $node['mainEntityOfPage'] = ['@type' => 'WebPage', '@id' => $url];
+            $keywords = array_values(array_unique(array_filter(array_merge(
+                [(string)($page['keyword'] ?? '')],
+                array_map('strval', (array)($page['tags'] ?? []))
+            ))));
+            if ($keywords) {
+                $node['keywords'] = implode(', ', $keywords);
+            }
+            if (($words = str_word_count((string)($page['plain'] ?? ''), 0, 'áéíóúñüÁÉÍÓÚÑÜ')) > 0) {
+                $node['wordCount'] = $words;
+            }
             unset($node['name']);
+        }
+        if ($schema === 'WebPage') {
+            $node['datePublished'] = self::isoDate((string)$page['date'], (string)($page['datetime'] ?? ''));
+            $node['dateModified']  = self::isoDate((string)($page['updated'] ?: $page['date']), '');
         }
         if ($schema === 'Service') {
             $node['provider']    = ['@id' => $base . '#org'];
@@ -249,15 +272,53 @@ final class Seo
                 $node['mainEntity'] = $entities;
             }
         }
-        if (in_array($schema, ['TouristTrip', 'TouristAttraction'], true)) {
+        if ($schema === 'TouristAttraction') {
             $facts = (array)($page['facts'] ?? []);
-            if (!empty($facts['price_from'])) {
-                $node['offers'] = array_filter([
-                    '@type'         => 'Offer',
-                    'price'         => preg_replace('/[^0-9.]/', '', (string)$facts['price_from']) ?: null,
-                    'priceCurrency' => (string)($facts['currency'] ?? '') ?: null,
-                    'url'           => $url,
+            $where = trim((string)($facts['location'] ?? ''));
+            if ($where !== '') {
+                $node['address'] = array_filter([
+                    '@type'           => 'PostalAddress',
+                    'addressLocality' => $where,
+                    'addressCountry'  => (string)Config::v('contact.address.country', ''),
                 ]);
+            }
+            if (!empty($page['map_url'])) {
+                $node['hasMap'] = (string)$page['map_url'];
+            }
+            if (!empty($page['region'])) {
+                $node['containedInPlace'] = ['@type' => 'AdministrativeArea', 'name' => (string)$page['region']];
+            }
+        }
+        if ($schema === 'TouristTrip') {
+            $node['provider'] = ['@id' => $base . '#org'];
+            $steps = array_values(array_filter((array)($page['itinerary'] ?? []), 'is_array'));
+            if ($steps) {
+                $items = [];
+                foreach ($steps as $i => $step) {
+                    $label = trim((string)($step['day'] ?? '') . ' ' . (string)($step['title'] ?? ''));
+                    $items[] = array_filter([
+                        '@type'       => 'ListItem',
+                        'position'    => $i + 1,
+                        'name'        => $label !== '' ? $label : I18n::t('day') . ' ' . ($i + 1),
+                        'description' => (string)($step['text'] ?? ''),
+                    ], static fn($v) => $v !== '');
+                }
+                $node['itinerary'] = ['@type' => 'ItemList', 'numberOfItems' => count($items), 'itemListElement' => $items];
+            }
+        }
+        if (in_array($schema, ['TouristTrip', 'TouristAttraction'], true) && ($price = self::priceOf((array)($page['facts'] ?? []))) !== null) {
+            $offer = [
+                '@type'         => 'Offer',
+                'price'         => $price['price'],
+                'priceCurrency' => $price['currency'],
+                'url'           => $url,
+                'seller'        => ['@id' => $base . '#org'],
+            ];
+            if ($schema === 'TouristTrip') {
+                $node['offers'] = $offer;   // Trip.offers
+            } else {
+                // Place has no `offers`: the Offer names the attraction as what it sells.
+                $node['@offer'] = $offer + ['itemOffered' => ['@id' => $url . '#touristattraction']];
             }
         }
         if (count($trail) > 1) {
@@ -266,18 +327,116 @@ final class Seo
         return $node;
     }
 
-    private static function authorNode(array $page): array
+    /**
+     * The byline for a page: name, kind, role, bio and profile URL. Bios come from config['authors']
+     * (keyed by the exact author name, which is why this does not go through Config::v's dot paths).
+     *
+     * @return array{name:string,type:string,role:string,bio:string,url:string}
+     */
+    public static function author(array $page): array
     {
         $default = (string)Config::v('author_default.name', (string)Config::v('site_name'));
         $name    = (string)($page['author'] ?? '');
-        // The configured default author may be the organisation itself.
-        $type = ($name === '' || $name === $default)
-            ? (string)Config::v('author_default.type', 'Organization')
-            : 'Person';
         if ($name === '') {
             $name = $default;
         }
-        return ['@type' => $type, 'name' => $name];
+        $cfg  = (array)(((array)Config::v('authors', []))[$name] ?? []);
+        // The configured default author may be the organisation itself.
+        $type = (string)($cfg['type'] ?? (($name === $default)
+            ? (string)Config::v('author_default.type', 'Organization')
+            : 'Person'));
+        return [
+            'name' => $name,
+            'type' => $type,
+            'role' => (string)($cfg['role'] ?? ''),
+            'bio'  => (string)($cfg['bio'] ?? ''),
+            'url'  => (string)($cfg['url'] ?? ''),
+        ];
+    }
+
+    private static function authorNode(array $page): array
+    {
+        $a    = self::author($page);
+        $base = (string)Config::v('base_url');
+        $node = ['@type' => $a['type'], 'name' => $a['name']];
+        if ($a['url'] !== '') {
+            $node['url'] = Util::absoluteUrl($a['url'], $base);
+        }
+        if ($a['bio'] !== '') {
+            $node['description'] = $a['bio'];
+        }
+        if ($a['role'] !== '' && $a['type'] === 'Person') {
+            $node['jobTitle'] = $a['role'];
+            $node['worksFor'] = ['@id' => $base . '#org'];
+        }
+        return $node;
+    }
+
+    /** FAQPage node for a page's own `faq:` list (never the site-wide /faq/, which pageNode() handles). */
+    private static function faqNode(array $page): ?array
+    {
+        $rows = array_values(array_filter((array)($page['faq'] ?? []), 'is_array'));
+        if ($rows === [] || (($page['layout'] ?? '') === 'faq')) {
+            return null;
+        }
+        $entities = [];
+        foreach ($rows as $row) {
+            if (trim((string)($row['q'] ?? '')) === '' || trim((string)($row['a'] ?? '')) === '') {
+                continue;
+            }
+            $entities[] = [
+                '@type'          => 'Question',
+                'name'           => (string)$row['q'],
+                'acceptedAnswer' => ['@type' => 'Answer', 'text' => Util::stripMarkdown((string)$row['a'])],
+            ];
+        }
+        if ($entities === []) {
+            return null;
+        }
+        $url = (string)Config::v('base_url') . (string)$page['path'];
+        return [
+            '@type'      => 'FAQPage',
+            '@id'        => $url . '#faq',
+            'url'        => $url,
+            'inLanguage' => (string)Config::v('html_lang'),
+            'isPartOf'   => ['@id' => (string)Config::v('base_url') . '#website'],
+            'mainEntity' => $entities,
+        ];
+    }
+
+    /**
+     * Price out of a free-text fact ("Desde 150.000 Gs", "USD 45,50"). Null unless both an amount
+     * and a currency can be read — "Consultar" and "A medida" must not become an Offer.
+     *
+     * @return array{price:string,currency:string}|null
+     */
+    public static function priceOf(array $facts): ?array
+    {
+        $raw = trim((string)($facts['price_from'] ?? ''));
+        if ($raw === '' || !preg_match('/\d[\d.,]*/', $raw, $m)) {
+            return null;
+        }
+        $num = rtrim($m[0], '.,');
+        if (preg_match('/^\d{1,3}([.,]\d{3})+$/', $num)) {
+            $num = str_replace(['.', ','], '', $num);            // 150.000 → thousands separators
+        } else {
+            $num = str_replace(',', '.', $num);                  // 45,50 → decimal
+        }
+        if (!is_numeric($num) || (float)$num <= 0) {
+            return null;
+        }
+        $cur = strtoupper(trim((string)($facts['currency'] ?? '')));
+        if ($cur === '') {
+            $cur = match (true) {
+                (bool)preg_match('/(Gs\.?|₲|guaran|PYG)/iu', $raw) => 'PYG',
+                (bool)preg_match('/(US\$|USD|U\$S|\$)/iu', $raw)   => 'USD',
+                default                                             => '',
+            };
+        }
+        if (!preg_match('/^[A-Z]{3}$/', $cur)) {
+            return null;
+        }
+        return ['price' => $num, 'currency' => $cur];
     }
 
     public static function isoDate(string $date, string $datetime = ''): string
@@ -292,20 +451,32 @@ final class Seo
 
     /* ------------------------------------------------- sitemap / feed / robots */
 
+    /** W3C date (YYYY-MM-DD) for sitemap <lastmod>: `updated:` when set, else the publish date. */
+    private static function lastmod(array $meta): string
+    {
+        $d = (string)(($meta['updated'] ?? '') !== '' ? $meta['updated'] : ($meta['date'] ?? ''));
+        return preg_match('/^\d{4}-\d{2}-\d{2}/', $d) ? substr($d, 0, 10) : date('Y-m-d');
+    }
+
     public static function sitemap(): string
     {
         $base = (string)Config::v('base_url');
         $urls = [];
         foreach (Content::published() as $meta) {
-            $urls[$base . $meta['path']] = self::isoDate((string)($meta['updated'] ?: $meta['date']));
+            $urls[$base . $meta['path']] = self::lastmod($meta);
         }
         foreach ((array)Config::v('hubs', []) as $path => $hub) {
             $type = (string)($hub['type'] ?? '');
             // An empty hub is not worth a sitemap row.
-            if (!Types::enabled($type) || Content::listType($type, ['limit' => 1]) === []) {
+            if (!Types::enabled($type)) {
                 continue;
             }
-            $urls[$base . $path] ??= self::isoDate(date('Y-m-d'));
+            $items = Content::listType($type);
+            if ($items === []) {
+                continue;
+            }
+            // A hub changes when its newest child does.
+            $urls[$base . $path] ??= max(array_map(static fn(array $m): string => self::lastmod($m), $items));
         }
         ksort($urls);
 
@@ -360,6 +531,7 @@ final class Seo
             . "Disallow: /admin/\n"
             . "Disallow: /preview/\n"
             . "Disallow: /enviar/\n"
+            . "Disallow: /suscribir/\n"
             . "Allow: /\n\n"
             . 'Sitemap: ' . $base . "/sitemap.xml\n";
     }

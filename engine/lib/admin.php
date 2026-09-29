@@ -403,7 +403,7 @@ final class Admin
     /** Keep a stable, readable key order in written files. */
     private static function orderKeys(array $fm): array
     {
-        $order = ['title', 'seo_title', 'description', 'path', 'layout', 'date', 'datetime', 'updated',
+        $order = ['title', 'seo_title', 'keyword', 'description', 'quick_answer', 'path', 'layout', 'date', 'datetime', 'updated',
                   'author', 'hero', 'hero_alt', 'excerpt', 'tags', 'region', 'order', 'featured',
                   'draft', 'noindex', 'canonical'];
         $out = [];
@@ -429,6 +429,7 @@ final class Admin
             ), static fn(string $s): bool => $s !== '')),
             'facts'  => self::mapValue($raw, (array)($field['keys'] ?? [])),
             'itinerary' => self::itineraryValue($raw),
+            'faq'    => self::faqValue($raw),
             default  => trim((string)($raw ?? '')),
         };
     }
@@ -443,6 +444,20 @@ final class Admin
             $v = trim((string)($raw[$k] ?? ''));
             if ($v !== '') {
                 $out[$k] = $v;
+            }
+        }
+        return $out;
+    }
+
+    /** Rows of question/answer; a row needs both halves. @return list<array{q:string,a:string}> */
+    private static function faqValue(mixed $raw): array
+    {
+        $out = [];
+        foreach (is_array($raw) ? $raw : [] as $row) {
+            $q = is_array($row) ? trim((string)($row['q'] ?? '')) : '';
+            $a = is_array($row) ? trim((string)($row['a'] ?? '')) : '';
+            if ($q !== '' && $a !== '') {
+                $out[] = ['q' => $q, 'a' => $a];
             }
         }
         return $out;

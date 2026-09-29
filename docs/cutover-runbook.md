@@ -14,14 +14,83 @@ steps 9–13 happens until staging (step 7) passes clean.
 
 The repo root is a working document root: `index.php` + `.htaccess` at the top serve
 `sites/viaje.com.py/` and block `tools/`, `docs/`, `sites/**` internals and `*.md`.
-In hPanel (viaje.com.py website) → Advanced → GIT: repository
+hPanel (viaje.com.py website) → Advanced → GIT: repository
 `https://github.com/antonmarklundcom/viaje.git`, branch `main`, install path empty →
-Create → Deploy. Then create `sites/viaje.com.py/config.local.php` on the server (copy
-`config.local.example.php`; admin password hash, and `force_host` null while on a staging
-hostname). Content lives in git (`sites/viaje.com.py/content/`): edit it via commits, since
-a Git deploy overwrites tracked files. `config.local.php`, `data/` (leads), `cache/` and
-`media/` uploads are untracked and survive deploys. Weekly backup cron path:
+Create → Deploy.
+
+### Who owns what (content ownership — decided 2026-09-29)
+
+**After the first deploy the server owns the content.** `/admin/` writes markdown to
+`sites/viaje.com.py/content/` and uploads to `sites/viaje.com.py/media/`, and a Git deploy
+overwrites (and deletes) tracked files, so neither folder is tracked any more:
+
+| Path on the server | Owner | In git? |
+|---|---|---|
+| `engine/`, `tools/`, `docs/`, `sites/viaje.com.py/{config.php,theme.css,assets/,urls.txt}` | git — every deploy replaces them | yes |
+| `sites/viaje.com.py/content-seed/` | git — the initial copy of the site's pages, never served (`.htaccess` returns 403) | yes |
+| `sites/viaje.com.py/content/` | the server (admin edits) | **no** (git-ignored) |
+| `sites/viaje.com.py/media/`, `data/` (leads, newsletter), `cache/`, `config.local.php` | the server | no |
+
+So editing a page means using `/admin/`, not committing to the repo. Changes to
+`content-seed/` never reach a running site; they only matter for a brand-new install
+(and for `verify.php`/CI, which read the seed when `content/` is absent).
+
+### First deploy of this layout (once) — do them in this order
+
+1. **Back up first.** This deploy removes the old tracked `content/` files from the server.
+   `/admin/` → *Exportar copia* (zip of content + media + leads), or zip
+   `sites/viaje.com.py/content`, `media` and `data/leads` in File Manager.
+2. hPanel → Advanced → GIT → **Deploy** (pull `main`).
+3. **Seed the content** — the site is empty until you do (SSH: hPanel → Advanced → SSH Access):
+   ```bash
+   cd ~/domains/viaje.com.py/public_html      # the folder that holds index.php and engine/
+                                              # (~/public_html if it is the account's main domain; hPanel → Files shows the path)
+   php tools/seed-content.php                 # copies content-seed/ → content/, only if content/ is empty
+   ```
+   No SSH? File Manager → open `sites/viaje.com.py/` → copy the `content-seed` folder → rename the
+   copy to `content`. (Same result. Then delete `sites/viaje.com.py/cache/` if it exists.)
+   The command is safe to run twice: if `content/` already has files it says so and touches nothing.
+4. Load `https://viaje.com.py/`, `/blog/`, `/contacto/`, `/8778ae5792160fc55cb5287df6c13406.txt` (the
+   IndexNow key file). Optional but recommended, from any machine with PHP:
+   `php tools/verify.php viaje.com.py --base=https://viaje.com.py`
+5. If you exported content in step 1 and it had admin edits you want back, restore those files over
+   the seeded ones (they are the newer versions).
+
+### Every later deploy
+
+Deploy button only. The page cache retires itself when engine code, templates, config, theme or
+content change (it is fingerprinted), so there is nothing to clear. **Never run the seed again**
+after real edits exist — it refuses anyway when `content/` is not empty. `config.local.php`
+(password hash, `force_host` on staging), `data/` (leads and `newsletter.jsonl`), `cache/` and
+`media/` are untracked and survive deploys. Weekly backup cron path:
 `php ~/domains/viaje.com.py/public_html/engine/bin/backup.php`.
+
+Create `sites/viaje.com.py/config.local.php` on the server once (copy
+`config.local.example.php`; admin password hash, and `force_host` null while on a staging hostname).
+
+### After publishing: tell Bing (IndexNow)
+
+The site answers `https://viaje.com.py/<indexnow.key>.txt` with its key (`indexnow.key` in
+`config.php`). After you publish or edit pages, from the server:
+
+```bash
+php tools/indexnow.php --since=1d          # every content file changed in the last day
+php tools/indexnow.php --all               # everything (right after the first deploy)
+php tools/indexnow.php /blog/ /nosotros/   # just these
+php tools/indexnow.php --since=1d --dry-run   # show what would be sent
+```
+
+It checks that the key file is live before submitting (deploy first), pings
+`api.indexnow.org` (Bing, Yandex, Naver and others receive the same ping) and exits non-zero on
+failure. Also add the site in **Bing Webmaster Tools** (bing.com/webmasters) and submit
+`https://viaje.com.py/sitemap.xml` there; `<lastmod>` in the sitemap follows each page's `updated:`.
+
+### Newsletter signups
+
+`/suscribir/` writes one line per address to `sites/viaje.com.py/data/leads/newsletter.jsonl`
+(deduplicated, no third-party service). Read or download it in File Manager; the weekly backup
+already includes `data/leads`. Contact-form leads with the page they came from are in
+`data/leads/YYYY-MM.jsonl`.
 
 ## 0. Before you start
 
@@ -128,7 +197,7 @@ the exclude list). Create it directly on the server, in the `site/` folder next 
    the new build looks broken/invisible even though it deployed correctly. `staging
    => true` also adds the `X-Robots-Tag: noindex, nofollow` header site-wide, so
    Google can crawl if asked but won't index the staging copy.
-3. Leave `preview_secret`, `leads.vendercrm.*` and `analytics.ga4` as-is (null) unless
+3. Leave `preview_secret` and `leads.vendercrm.*` as-is (null) unless
    you have real values now (plan §7 items 9, matches KNOWN-ISSUES #9); the site
    works without them.
 
@@ -212,7 +281,11 @@ suite can't assert automatically (KNOWN-ISSUES #2): `curl -I http://viaje.com.py
 and, if the site used `www` before, `curl -I https://www.viaje.com.py/` — both must
 301 to `https://viaje.com.py/` in one hop.
 
-## 12. Search Console
+## 12. Bing Webmaster Tools / IndexNow (and, optionally, Search Console)
+
+The project rule is no Google products *on the site*; for search-engine tooling use Bing Webmaster
+Tools and IndexNow (see "After publishing" above). The Google Search Console steps below are only
+for reading your own ranking data — skip them if you would rather not use Google at all.
 
 1. Add/confirm the `viaje.com.py` property (domain or URL-prefix, whichever you
    already used) in Google Search Console.

@@ -51,8 +51,9 @@ final class Content
                     $errors[] = "Invalid filename slug: content/" . Types::folder($type) . "/$slug.md";
                     continue;
                 }
-                [$fm] = Frontmatter::parseFile((string)@file_get_contents($file));
+                [$fm, $body] = Frontmatter::parseFile((string)@file_get_contents($file));
                 $meta = self::meta($type, $slug, $file, $fm);
+                $meta['links'] = self::internalLinks($body, (array)($fm['related'] ?? []));
                 $path = $meta['path'];
                 if (isset($paths[$path])) {
                     $errors[] = "Duplicate path $path: " . $paths[$path]['slug'] . '.md and ' . $slug . '.md';
@@ -133,9 +134,9 @@ final class Content
     }
 
     /** Cheap change signature over every content file and data collection. */
-    private static function signature(): string
+    public static function signature(): string
     {
-        $parts = [];
+        $parts = ['index-v2'];   // bump when the shape of an index row changes
         foreach (Types::enabledList() as $type) {
             foreach (self::files($type) as $f) {
                 $parts[] = $f . ':' . (string)@filemtime($f);
@@ -177,7 +178,29 @@ final class Content
             'draft'       => (bool)($fm['draft'] ?? false),
             'noindex'     => (bool)($fm['noindex'] ?? false),
             'canonical'   => (string)($fm['canonical'] ?? ''),
+            'keyword'     => (string)($fm['keyword'] ?? ''),
         ];
+    }
+
+    /**
+     * Site-internal paths a body links to (markdown links), plus any `related:` paths the
+     * author pinned by hand. Anchors and query strings are dropped. @return list<string>
+     */
+    private static function internalLinks(string $body, array $pinned): array
+    {
+        $out = [];
+        if (preg_match_all('/\]\((\/[^)\s#?]*)/', $body, $m)) {
+            $out = $m[1];
+        }
+        foreach ($pinned as $p) {
+            $out[] = (string)$p;
+        }
+        $norm = [];
+        foreach ($out as $p) {
+            $p = '/' . trim($p, '/');
+            $norm[] = $p === '/' ? '/' : $p . '/';
+        }
+        return array_values(array_unique($norm));
     }
 
     private static function normaliseOverride(string $p): string
@@ -307,6 +330,69 @@ final class Content
             }
         }
         return $out;
+    }
+
+    /**
+     * "Te puede interesar": links from $page to other published pages, driven by shared tags,
+     * region, type and by who already links to whom. Always offers one item of each guide type
+     * (activity, trip, service, post) when the site has them, so a post can never end up
+     * without a path to something bookable; the remaining slots go to the best-scoring rest.
+     *
+     * @return list<array<string,mixed>>
+     */
+    public static function related(array $page, int $max = 5): array
+    {
+        $self   = (string)$page['path'];
+        $type   = (string)$page['type'];
+        $tags   = (array)($page['tags'] ?? []);
+        $region = (string)($page['region'] ?? '');
+        $mine   = self::index()[$self]['links'] ?? [];
+        $order  = match ($type) {
+            'activity' => ['trip', 'service', 'activity', 'post'],
+            'trip'     => ['activity', 'service', 'trip', 'post'],
+            'service'  => ['activity', 'trip', 'post', 'service'],
+            default    => ['activity', 'trip', 'service', 'post'],
+        };
+
+        $scored = [];
+        foreach (self::index() as $path => $meta) {
+            if ($path === $self || $meta['draft'] || $meta['noindex'] || !in_array($meta['type'], $order, true)) {
+                continue;
+            }
+            $score = 3 * count(array_intersect($tags, $meta['tags']));
+            if ($region !== '' && strcasecmp($region, $meta['region']) === 0) {
+                $score += 2;
+            }
+            if (in_array($path, $mine, true)) {
+                $score += 6;   // this page (or its author's `related:`) points there
+            }
+            if (in_array($self, (array)($meta['links'] ?? []), true)) {
+                $score += 4;   // that page points here
+            }
+            if ($meta['type'] === $type) {
+                $score += 0.5;
+            }
+            $scored[] = ['score' => $score, 'meta' => $meta];
+        }
+        usort($scored, static fn(array $a, array $b): int =>
+            [$b['score'], (string)$b['meta']['date'], $a['meta']['slug']] <=> [$a['score'], (string)$a['meta']['date'], $b['meta']['slug']]);
+
+        $picked = [];
+        foreach ($order as $want) {
+            foreach ($scored as $row) {
+                if ($row['meta']['type'] === $want && !isset($picked[$row['meta']['path']])) {
+                    $picked[$row['meta']['path']] = $row['meta'];
+                    break;
+                }
+            }
+        }
+        foreach ($scored as $row) {
+            if (count($picked) >= $max) {
+                break;
+            }
+            $picked[$row['meta']['path']] ??= $row['meta'];
+        }
+        return array_values(array_slice($picked, 0, $max));
     }
 
     /**

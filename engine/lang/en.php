@@ -73,6 +73,7 @@ return [
 
     // Contact / WhatsApp
     'whatsapp_cta'      => 'Ask us on WhatsApp',
+    'whatsapp_short'    => 'WhatsApp',
     'whatsapp_about'    => 'Ask on WhatsApp about :title',
     'call_us'           => 'Call',
     'write_us'          => 'Write to us',
@@ -182,4 +183,40 @@ return [
     'err_upload_size'   => 'The image is larger than 12 MB.',
     'err_upload_type'   => 'Unsupported format. Use JPG, PNG or WebP.',
     'err_upload_alt'    => 'Alt text is required.',
+
+    // On-page SEO pass: answer boxes, related links, author box, conversion
+    'quick_answer'      => 'Quick answer',
+    'related_interest'  => 'You may also like',
+    'updated_label'     => 'Updated',
+    'faq_all'          => 'See all frequently asked questions',
+    'faq_about'         => 'Frequently asked questions about :title',
+    'about_author'      => 'About the author',
+    'author_more'       => 'Meet the team',
+    'contact_details'   => 'Contact details',
+    'view_osm'          => 'View on OpenStreetMap',
+    'call_now'          => 'Call',
+    'lead_guide_title'  => 'Want us to plan this trip for you?',
+    'lead_guide_text'   => 'Leave your name and WhatsApp and we will reply with a tailored proposal.',
+    'lead_guide_message'=> 'Hi, I would like more information about this guide.',
+    'lead_topic_page'   => 'Enquiry from: :title',
+    'months'            => ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    'date_format'       => ':month :d, :y',
+
+    // Newsletter
+    'nl_title'          => 'Get new Paraguay guides',
+    'nl_text'           => 'Once a month: routes, dates and practical tips for travelling around the country. No spam.',
+    'nl_email'          => 'Your email',
+    'nl_submit'         => 'Subscribe',
+    'nl_privacy'        => 'We only use your email to send you Viaje.com.py news. Write to us any time to unsubscribe.',
+    'nl_ok_title'       => 'Done, you are on the list!',
+    'nl_ok_text'        => 'You will get our next guides by email.',
+    'nl_error_title'    => 'We could not sign you up',
+    'err_nl_email'      => 'Enter a valid email address.',
+    'err_nl_rate'       => 'Please try again in a while.',
+    'err_nl_store'      => 'We could not save your email. Write to hola@viaje.com.py.',
+    'keyword'           => 'Focus keyword (SEO)',
+    'quick_answer_field'=> 'Quick answer',
+    'faq_field'         => 'FAQ for this page',
+    'faq_q'             => 'Question',
+    'faq_a'             => 'Answer',
 ];

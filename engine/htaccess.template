@@ -14,7 +14,9 @@ DirectorySlash Off
 
     # Never serve engine sources or site internals.
     RewriteRule ^engine/(?!assets/) - [F,L]
-    RewriteRule ^site/(content|data|cache)/ - [F,L]
+    RewriteRule ^site/(content|content-seed|data|cache)/ - [F,L]
+    # IndexNow key file: /<key>.txt is answered by the engine (Router), not a static file.
+    RewriteRule ^[A-Za-z0-9-]{16,128}\.txt$ index.php [L]
     RewriteRule ^site/.*\.(php|md|json|jsonl|txt)$ - [F,L]
     RewriteRule (^|/)\.(?!well-known) - [F,L]
 
@@ -33,6 +35,11 @@ DirectorySlash Off
     RewriteCond %{REQUEST_FILENAME}/index.php !-f
     RewriteCond %{REQUEST_FILENAME}/index.html !-f
     RewriteRule ^ index.php [L,QSA]
+</IfModule>
+
+<IfModule mod_deflate.c>
+    # Text over the wire is ~70% smaller compressed; images are already compressed.
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml application/xml application/rss+xml application/javascript application/json image/svg+xml
 </IfModule>
 
 <IfModule mod_expires.c>

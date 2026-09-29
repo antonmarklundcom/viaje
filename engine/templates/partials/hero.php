@@ -18,7 +18,7 @@ $cta2   = (string)($page['hero_secondary_label'] ?? '');
     <?php if ($text !== ''): ?><p class="hero__text"><?= e($text) ?></p><?php endif; ?>
     <?php if ($cta1 !== '' || $cta2 !== ''): ?>
       <p class="hero__ctas">
-        <?php if ($cta1 !== ''): ?><a class="btn btn--primary" href="<?= e(url((string)($page['hero_cta_href'] ?? '/'))) ?>"><?= e($cta1) ?></a><?php endif; ?>
+        <?php if ($cta1 !== ''): ?><?php $h1 = (string)($page['hero_cta_href'] ?? '/'); ?><a class="btn <?= $h1 === 'whatsapp' ? 'btn--wa' : 'btn--primary' ?>" href="<?= e($h1 === 'whatsapp' ? Leads::whatsappUrl() : url($h1)) ?>"<?= $h1 === 'whatsapp' ? ' rel="noopener" target="_blank"' : '' ?>><?= $h1 === 'whatsapp' ? partial('icons', ['name' => 'whatsapp']) : '' ?><?= e($cta1) ?></a><?php endif; ?>
         <?php if ($cta2 !== ''): ?><a class="btn btn--ghost" href="<?= e(url((string)($page['hero_secondary_href'] ?? '/'))) ?>"><?= e($cta2) ?></a><?php endif; ?>
       </p>
     <?php endif; ?>

@@ -1,12 +1,14 @@
 ---
 title: Asistencia Personalizada
-seo_title: Asistencia para Viajeros en Paraguay, 24/7 | Viaje.com.py
-description: Acompañamiento antes y durante el viaje por Paraguay: soporte 24/7 por WhatsApp, estado de rutas y contacto directo con proveedores locales.
+seo_title: Asistencia Personalizada 24/7 en Paraguay | Viaje.com.py
+keyword: asistencia personalizada
+description: "Asistencia personalizada para viajeros en Paraguay: soporte por WhatsApp 24/7, estado de rutas y contactos locales antes y durante tu viaje. Escribinos."
 date: 2026-09-03
+updated: 2026-09-29
 order: 2
 hero: /assets/img/asistencia-personalizada-aeropuerto.jpg
 hero_alt: Un viajero espera junto a una ventana del aeropuerto al amanecer, con un avión visible en la pista.
-intro: No creemos en itinerarios de catálogo. Nos especializamos en diseñar rutas que conectan con el Paraguay auténtico, desde los saltos más escondidos del Guairá hasta la inmensidad del Chaco. Analizamos tus intereses para armar una logística que optimice tu tiempo y te permita descubrir lugares que no aparecen en los buscadores convencionales.
+intro: "Con nuestra asistencia personalizada no viajás con itinerarios de catálogo: diseñamos rutas que conectan con el Paraguay auténtico, desde los saltos más escondidos del Guairá hasta la inmensidad del Chaco, y te acompañamos en el camino. Analizamos tus intereses para armar una logística que optimice tu tiempo y te permita descubrir lugares que no aparecen en los buscadores convencionales."
 included:
   - Soporte vía WhatsApp 24/7
   - Actualización de estado de rutas

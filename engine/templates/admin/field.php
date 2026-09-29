@@ -52,6 +52,17 @@ case 'itinerary': ?>
     <?php endforeach; ?>
   </div>
 <?php break;
+case 'faq': ?>
+  <div class="adm-rows" data-rows="faq">
+    <?php $rows = array_values(array_filter((array)$val, 'is_array')); $rows[] = ['q' => '', 'a' => '']; ?>
+    <?php foreach ($rows as $i => $row): ?>
+      <fieldset class="adm-row">
+        <input name="<?= e($name) ?>[<?= $i ?>][q]" type="text" placeholder="<?= e(t('faq_q')) ?>" value="<?= e((string)($row['q'] ?? '')) ?>">
+        <textarea name="<?= e($name) ?>[<?= $i ?>][a]" rows="3" placeholder="<?= e(t('faq_a')) ?>"><?= e((string)($row['a'] ?? '')) ?></textarea>
+      </fieldset>
+    <?php endforeach; ?>
+  </div>
+<?php break;
 default: ?>
   <input id="<?= e($id) ?>" name="<?= e($name) ?>" type="text" value="<?= e((string)$val) ?>"
     <?= !empty($f['required']) ? 'required' : '' ?>

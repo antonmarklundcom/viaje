@@ -114,6 +114,20 @@ final class Images
         return '<picture><source type="image/webp" srcset="' . e($srcset) . '" sizes="' . e($sizes) . '">' . $img . '</picture>';
     }
 
+    /** <link rel="preload"> for an above-the-fold image, matching what picture() will request. */
+    public static function preload(string $src, string $sizes = '100vw'): string
+    {
+        if ($src === '' || preg_match('#^https?://#i', $src) && self::localFile($src) === null) {
+            return '';
+        }
+        $srcset = self::webpSrcset($src);
+        if ($srcset === null) {
+            return '<link rel="preload" as="image" href="' . e($src) . '" fetchpriority="high">' . "\n";
+        }
+        return '<link rel="preload" as="image" type="image/webp" imagesrcset="' . e($srcset)
+            . '" imagesizes="' . e($sizes) . '" fetchpriority="high">' . "\n";
+    }
+
     /* ------------------------------------------------------------- upload */
 
     /**

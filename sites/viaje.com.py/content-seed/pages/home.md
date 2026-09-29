@@ -1,17 +1,19 @@
 ---
 title: Descubrí el Paraguay que pocos conocen
-seo_title: Agencia de Viajes en Paraguay — Tours, Traslados y Visas
-description: Agencia de viajes en Paraguay. Rutas a medida, traslados, asistencia personalizada y gestión de visas, con gente que conoce el país de cerca.
+seo_title: "Turismo en Paraguay: Viajes a Medida | Viaje.com.py"
+keyword: turismo en Paraguay
+description: "Turismo en Paraguay con gente que conoce el país: rutas a medida, traslados, asistencia 24/7 y visas. Contanos tu plan y te armamos el viaje."
 path: /
 layout: home
 date: 2026-09-03
+updated: 2026-09-29
 hero: /assets/img/camino-de-tierra-roja-4x4-paraguay.jpg
 hero_alt: Una camioneta 4x4 avanza por un camino de tierra roja entre colinas verdes al amanecer, con niebla en los valles y lapachos alrededor.
-hero_kicker: Tu guía definitiva de turismo en Paraguay
-hero_title: Descubrí el Paraguay que pocos conocen
-hero_text: Encontrá los mejores destinos, rutas gastronómicas y rincones ocultos de nuestra tierra.
+hero_kicker: Tu guía definitiva para viajar por Paraguay
+hero_title: "Turismo en Paraguay: descubrí el Paraguay que pocos conocen"
+hero_text: "Turismo en Paraguay con gente que conoce el terreno: los mejores destinos, rutas gastronómicas y rincones ocultos de nuestra tierra."
 hero_cta_label: Consultar por WhatsApp
-hero_cta_href: /contacto/
+hero_cta_href: whatsapp
 hero_secondary_label: Ver servicios
 hero_secondary_href: /servicios/
 features:

@@ -150,3 +150,28 @@ pick it up. Nothing here blocks the phase it was written in.
     commit `fbc8899` deleted those 3 sets' files but left the manifest tracked
     (despite the `.gitignore` rule for `assets/img/manifest.json`), still
     referencing 18 files that no longer exist. Needs regenerating or removing.
+
+## On-page SEO pass — 2026-09-29
+
+22. **[FIXED] Google resources were still on the site** despite the no-Google rule: Google Fonts
+    (`head_extra` in `config.php`), a Google Maps iframe on `/contacto/`, and a GA4 hook in
+    `base.php`. All removed; `verify.php` now fails any page that references
+    `googleapis`/`gstatic`/`googletagmanager`/`google.com/maps`/YouTube/reCAPTCHA. Headings use a
+    system serif (`Georgia`) instead of Fraunces; self-hosting a font file is a possible later step.
+23. **[FIXED] `/robots.txt` would have been 403 on Apache/LiteSpeed.** The repo-root `.htaccess` blocks
+    root `*.txt` files, which also matched `robots.txt`. Found by reading the rules (the built-in
+    dev server does not run `.htaccess`), so confirm `curl -I https://viaje.com.py/robots.txt` after
+    the deploy.
+24. **The page cache could outlive a deploy.** Cache files lived in an untracked folder, so old HTML
+    survived template changes. The cache is now fingerprinted (engine code, templates, config, theme,
+    content) and pages older than 6 h are re-rendered, which also keeps the lead-form time stamp valid.
+25. **The guide pages carry the lead form**, so their cached HTML holds a signed stamp. Handled by
+    the 6 h page TTL above; a visitor who leaves a tab open for more than 24 h still gets the
+    "formulario expiró" message on submit (same as on the contact page).
+26. **Only one `hero`-style image per `<picture>` is preloaded**, and only when it has local WebP
+    variants or a local file; remote (CDN) heroes are not preloaded.
+27. **`keyword` map vs. slugs.** Slugs are part of the URL contract, so `/nosotros/`, `/faq/`,
+    `/destinos-imperdibles-2026/` cannot carry their phrase in the slug; see `docs/keyword-map.md`.
+28. **Team portraits and author avatars are still missing** (`content/data/team.json` has `photo: null`);
+    listed in `docs/higgsfield-todo.md`. The author box works without a photo.
+

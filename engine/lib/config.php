@@ -87,7 +87,6 @@ final class Config
             'hubs'             => [],
             'redirects'        => [],
             'gone'             => [],
-            'analytics'        => ['ga4' => null],
             'home'             => [],
             'author_default'   => ['name' => '', 'type' => 'Organization'],
             'admin_password_hash' => null,

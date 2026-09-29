@@ -14,4 +14,7 @@ if ($rows === []) { return; }
       </details>
     <?php endforeach; ?>
   </div>
+  <?php if ($heading !== false && ($faqPath = Router::faqPath()) !== null): ?>
+    <p class="faq__more"><a class="link-more" href="<?= e($faqPath) ?>"><?= e(t('faq_all')) ?><?= partial('icons', ['name' => 'arrow']) ?></a></p>
+  <?php endif; ?>
 </section>

@@ -25,7 +25,7 @@ jobs:
             | xargs -0 -n1 -P4 php -l > /dev/null
 
       - name: Verify viaje.com.py
-        run: php tools/verify.php viaje.com.py
+        run: php tools/verify.php viaje.com.py --strict
 
       - name: Verify thingstodoinparaguay.com
         run: php tools/verify.php thingstodoinparaguay.com
