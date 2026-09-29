@@ -145,6 +145,9 @@ vite.config.ts.timestamp-*
 # engine build output and per-site runtime dirs
 dist/
 sites/*/cache/
+# viaje.com.py: the server owns content/ after the first deploy (admin writes there);
+# the repo keeps the seed copy in content-seed/. See docs/cutover-runbook.md.
+sites/viaje.com.py/content/
 sites/*/media/*
 !sites/*/media/.gitkeep
 sites/*/data/*

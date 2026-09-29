@@ -55,9 +55,13 @@ rrmdir($siteOut . '/assets');
 if (is_dir($siteDir . '/assets')) {
     copyTree($siteDir . '/assets', $siteOut . '/assets');
 }
-if (is_dir($siteDir . '/content') && (!is_dir($siteOut . '/content') || $fresh)) {
+// Content: sites/<domain>/content when it exists (fixtures, local admin work), otherwise
+// the tracked content-seed/ (viaje.com.py — the server owns content/ after the first deploy).
+$contentSrc = is_dir($siteDir . '/content') ? $siteDir . '/content'
+    : (is_dir($siteDir . '/content-seed') ? $siteDir . '/content-seed' : null);
+if ($contentSrc !== null && (!is_dir($siteOut . '/content') || $fresh)) {
     rrmdir($siteOut . '/content');
-    copyTree($siteDir . '/content', $siteOut . '/content');
+    copyTree($contentSrc, $siteOut . '/content');
 }
 foreach (['media', 'data', 'cache'] as $dir) {
     mkdirp($siteOut . '/' . $dir);

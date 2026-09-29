@@ -319,6 +319,16 @@ function checkHtml(array &$failures, string $path, string $html, string $baseUrl
     }
 }
 
+/**
+ * Where the site's markdown lives: content/ when it exists (fixtures, a local admin
+ * session), otherwise the tracked content-seed/ — the server owns content/ after the
+ * first deploy, so a fresh checkout and CI only ever have the seed. Mirrors build.php.
+ */
+function contentDir(string $siteDir): string
+{
+    return is_dir($siteDir . '/content') ? $siteDir . '/content' : $siteDir . '/content-seed';
+}
+
 /** True when the content file behind $path is marked noindex or draft. */
 function isNoindex(string $siteDir, string $path, array $cfg = []): bool
 {
@@ -328,7 +338,7 @@ function isNoindex(string $siteDir, string $path, array $cfg = []): bool
         $folders = ['page' => 'pages', 'service' => 'services', 'post' => 'posts',
                     'news' => 'news', 'trip' => 'trips', 'activity' => 'activities'];
         foreach ($folders as $type => $folder) {
-            foreach (glob($siteDir . '/content/' . $folder . '/*.md') ?: [] as $file) {
+            foreach (glob(contentDir($siteDir) . '/' . $folder . '/*.md') ?: [] as $file) {
                 $raw = (string)file_get_contents($file);
                 if (!preg_match('/^---\R(.*?)\R---/s', $raw, $m)) {
                     continue;
@@ -369,7 +379,7 @@ function contentIssues(string $siteDir, array $cfg): array
             $known[] = $folders[$type];
         }
     }
-    foreach (glob($siteDir . '/content/*', GLOB_ONLYDIR) ?: [] as $dir) {
+    foreach (glob(contentDir($siteDir) . '/*', GLOB_ONLYDIR) ?: [] as $dir) {
         if (!in_array(basename($dir), $known, true)) {
             $issues[] = ['content/' . basename($dir), 'unknown content folder for the enabled types'];
         }
@@ -379,7 +389,7 @@ function contentIssues(string $siteDir, array $cfg): array
             continue;
         }
         $typePath = array_search($folder, $folders, true);
-        foreach (glob($siteDir . '/content/' . $folder . '/*.md') ?: [] as $file) {
+        foreach (glob(contentDir($siteDir) . '/' . $folder . '/*.md') ?: [] as $file) {
             $rel  = 'content/' . $folder . '/' . basename($file);
             $raw  = (string)file_get_contents($file);
             if (!preg_match('/^---\R(.*?)\R---/s', $raw, $m)) {

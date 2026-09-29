@@ -14,7 +14,9 @@ DirectorySlash Off
 
     # Never serve engine sources or site internals.
     RewriteRule ^engine/(?!assets/) - [F,L]
-    RewriteRule ^site/(content|data|cache)/ - [F,L]
+    RewriteRule ^site/(content|content-seed|data|cache)/ - [F,L]
+    # IndexNow key file: /<key>.txt is answered by the engine (Router), not a static file.
+    RewriteRule ^[A-Za-z0-9-]{16,128}\.txt$ index.php [L]
     RewriteRule ^site/.*\.(php|md|json|jsonl|txt)$ - [F,L]
     RewriteRule (^|/)\.(?!well-known) - [F,L]
 

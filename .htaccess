@@ -13,7 +13,13 @@ DirectorySlash Off
     RewriteCond %{THE_REQUEST} \s/(sites|tools|docs|prompts|dist|out|\.github|\.claude)(/|\s|\?)
     RewriteRule ^ - [F,L]
     RewriteRule ^engine/(?!assets/) - [F,L]
-    RewriteRule ^[^/]+\.(md|json|jsonl|sh|txt|yml|yaml|lock)$ - [F,L]
+    # content-seed/ is the tracked seed copy of the site's content; never served (the
+    # `sites` rule above already covers it, this one documents the intent and survives a reshuffle).
+    RewriteRule ^sites/[^/]+/content-seed - [F,L]
+    # IndexNow key file: /<key>.txt is answered by the engine (Router), not a static file.
+    RewriteRule ^[A-Za-z0-9-]{16,128}\.txt$ index.php [L]
+    # robots.txt is answered by the engine, so it is the one root .txt that must not be blocked.
+    RewriteRule ^(?!robots\.txt$)[^/]+\.(md|json|jsonl|sh|txt|yml|yaml|lock)$ - [F,L]
     RewriteRule (^|/)\.(?!well-known) - [F,L]
 
     # Site assets and uploads live under sites/viaje.com.py but are addressed from the root.
