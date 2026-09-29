@@ -10,6 +10,19 @@ steps 9–13 happens until staging (step 7) passes clean.
 
 ---
 
+## Deploy with hPanel → Advanced → GIT (repo root is deployable)
+
+The repo root is a working document root: `index.php` + `.htaccess` at the top serve
+`sites/viaje.com.py/` and block `tools/`, `docs/`, `sites/**` internals and `*.md`.
+In hPanel (viaje.com.py website) → Advanced → GIT: repository
+`https://github.com/antonmarklundcom/viaje.git`, branch `main`, install path empty →
+Create → Deploy. Then create `sites/viaje.com.py/config.local.php` on the server (copy
+`config.local.example.php`; admin password hash, and `force_host` null while on a staging
+hostname). Content lives in git (`sites/viaje.com.py/content/`): edit it via commits, since
+a Git deploy overwrites tracked files. `config.local.php`, `data/` (leads), `cache/` and
+`media/` uploads are untracked and survive deploys. Weekly backup cron path:
+`php ~/domains/viaje.com.py/public_html/engine/bin/backup.php`.
+
 ## 0. Before you start
 
 - Pick an upload path for step 4 and stay with it for every later deploy:
