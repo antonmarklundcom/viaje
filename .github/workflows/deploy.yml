@@ -20,6 +20,14 @@ on:
         default: ftps
         type: choice
         options: [ftps, ftp]
+      seed_content:
+        description: >
+          FIRST DEPLOY ONLY: also upload site/content and site/media so an empty
+          server gets its pages. Overwrites anything edited in /admin/ since —
+          leave off for every later deploy.
+        required: true
+        default: false
+        type: boolean
       dry_run:
         description: Dry run — log what would change, upload nothing
         required: true
@@ -59,7 +67,27 @@ jobs:
       - name: Verify before deploying
         run: php tools/verify.php viaje.com.py
 
+      - name: FTP deploy (first deploy, seeds content)
+        if: ${{ inputs.seed_content }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST_VIAJE }}
+          username: ${{ secrets.FTP_USER_VIAJE }}
+          password: ${{ secrets.FTP_PASS_VIAJE }}
+          protocol: ${{ inputs.protocol }}
+          local-dir: ./dist/viaje.com.py/
+          server-dir: ${{ inputs.server_dir }}
+          dry-run: ${{ inputs.dry_run }}
+          log-level: verbose
+          # The server is the source of truth for these after cutover (plan §2.4) —
+          # never let a deploy clobber admin-published content, uploads, leads or the cache.
+          exclude: |
+            **/site/data/**
+            **/site/cache/**
+            **/site/config.local.php
+
       - name: FTP deploy
+        if: ${{ !inputs.seed_content }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST_VIAJE }}

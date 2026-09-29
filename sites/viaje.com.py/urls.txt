@@ -39,6 +39,8 @@
 /paquete-individual/                     301 /servicios/
 /servicio-unico/                         301 /servicios/
 /category/uncategorized/                 301 /blog/
+/author/yanina/                          301 /nosotros/
+/author/marklundmailgmail-com/           301 /nosotros/
 /elementor-9/                            410
 /hello-world/                            410
 

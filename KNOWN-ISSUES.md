@@ -16,7 +16,7 @@ pick it up. Nothing here blocks the phase it was written in.
    cannot assert them. They are verified against staging in the phase-4 runbook, along
    with which host the live site canonicalises to today (plan §7 item 4).
 
-3. **`/wp-content/uploads/**` rows are not in `urls.txt` yet.** The folder is empty
+3. **[WON'T DO: legacy uploads skipped by decision, 2026-09-29.]** **`/wp-content/uploads/**` rows are not in `urls.txt` yet.** The folder is empty
    until Anton copies it off hPanel (plan §7 item 5). The slot
    (`sites/viaje.com.py/static/wp-content/uploads/`) exists and `build.php` copies it
    to the document root verbatim. *(Phase 2.)*
@@ -126,7 +126,7 @@ pick it up. Nothing here blocks the phase it was written in.
 
 ## Post-launch audit — 2026-09-17
 
-19. **Production has no page content deployed at all.** `deploy.yml`'s exclude list
+19. **[FIXED: `deploy.yml` now has a `seed_content` input for the first deploy; runbook step 4.]** **Production has no page content deployed at all.** `deploy.yml`'s exclude list
     (`site/content/**`, `site/media/**`) is unconditional, correct for protecting
     admin-authored edits after cutover but never satisfied for a first deploy to an
     empty server — there was no content to protect yet, so none ever uploaded.
@@ -139,13 +139,13 @@ pick it up. Nothing here blocks the phase it was written in.
     manual FTP/File-Manager upload) plus a post-deploy smoke check against the
     real URL contract so a future silent partial deploy is caught automatically.
 
-20. **`Leads::handle()` (`engine/lib/leads.php`) reports success to the visitor even
+20. **[FIXED: returns an error when neither storage nor mail took the lead.]** **`Leads::handle()` (`engine/lib/leads.php`) reports success to the visitor even
     when both JSONL storage and `mail()` fail** (with VenderCRM disabled, the only
     two delivery paths currently active). A submission can silently vanish while
     the contact page shows a success state. Found during the 2026-09-17 audit, not
     previously documented.
 
-21. **Orphaned `sites/viaje.com.py/assets/img/manifest.json`.** Commit `7290348`
+21. **[FIXED: file removed.]** **Orphaned `sites/viaje.com.py/assets/img/manifest.json`.** Commit `7290348`
     added it alongside 3 image sets unrelated to the 18 real localized images;
     commit `fbc8899` deleted those 3 sets' files but left the manifest tracked
     (despite the `.gitignore` rule for `assets/img/manifest.json`), still
