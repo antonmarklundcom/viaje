@@ -1,6 +1,6 @@
 ---
 title: Asistencia Personalizada
-seo_title: Asistencia Personalizada para Viajeros en Paraguay | Viaje.com.py
+seo_title: Asistencia para Viajeros en Paraguay, 24/7 | Viaje.com.py
 description: Acompañamiento antes y durante el viaje por Paraguay: soporte 24/7 por WhatsApp, estado de rutas y contacto directo con proveedores locales.
 date: 2026-09-03
 order: 2

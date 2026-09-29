@@ -1,6 +1,6 @@
 ---
 title: Gestión de Visas
-seo_title: Gestión de Visas desde Paraguay — Asesoría y trámites | Viaje.com.py
+seo_title: Gestión de Visas en Paraguay — Trámites | Viaje.com.py
 description: Gestión experta de visas y trámites migratorios desde Paraguay para turistas, inversores y extranjeros que buscan establecerse en el país.
 date: 2026-09-03
 order: 5

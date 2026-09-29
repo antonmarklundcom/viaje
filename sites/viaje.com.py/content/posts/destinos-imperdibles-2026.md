@@ -1,6 +1,6 @@
 ---
 title: "Cuándo Ir y Cómo Armar tu Escapada de Fin de Semana en Paraguay"
-seo_title: "Cuándo Ir y Cómo Armar tu Escapada de Fin de Semana en Paraguay | Viaje.com.py"
+seo_title: Escapadas de Fin de Semana en Paraguay: Cuándo Ir | Viaje.com.py
 description: Cuándo conviene salir según la temporada y cómo armar una escapada de fin de semana desde Asunción: horas de ruta, combinaciones y qué reservar antes.
 path: /destinos-imperdibles-2026/
 date: 2026-04-10

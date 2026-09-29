@@ -42,6 +42,15 @@ $stats    = array_filter((array)($page['stats'] ?? []), 'is_array');
 </section>
 <?php endif; ?>
 
+<?php if (!empty($page['show_activities']) && Types::enabled('activity')): ?>
+<section class="section container">
+  <?= partial('cards', ['items' => Content::listType('activity', ['limit' => 6]), 'heading' => (string)($page['activities_heading'] ?? '')]) ?>
+  <?php $hub = Types::hubFor('activity'); if ($hub !== null): ?>
+    <p class="section__more"><a class="link-more" href="<?= e($hub) ?>"><?= e(t('read_more')) ?><?= partial('icons', ['name' => 'arrow']) ?></a></p>
+  <?php endif; ?>
+</section>
+<?php endif; ?>
+
 <?php if (!empty($page['gallery'])): ?>
 <section class="section container"><?= partial('gallery', ['rows' => Content::data('gallery')]) ?></section>
 <?php endif; ?>

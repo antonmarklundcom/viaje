@@ -1,6 +1,6 @@
 ---
 title: Traslados Privados
-seo_title: Traslados Privados en Paraguay — Aeropuerto, ciudades e interior | Viaje.com.py
+seo_title: Traslados Privados en Paraguay — Aeropuerto y Ciudades
 description: Traslados privados en Paraguay con flota moderna y choferes profesionales, del aeropuerto al interior, con monitoreo en tiempo real.
 date: 2026-09-03
 order: 3

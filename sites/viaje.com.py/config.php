@@ -94,6 +94,8 @@ return [
         '/servicios/' => [
             'type'        => 'service',
             'nav_label'   => 'Servicios',
+            'hero'        => '/assets/img/camino-rural-rio-atardecer-paraguay.jpg',
+            'hero_alt'    => 'Vista aérea al atardecer de un camino de tierra roja entre campos verdes, un pueblo con iglesia y un río que refleja el sol en Paraguay.',
             'title'       => 'Servicios de Viaje en Paraguay',
             'description' => 'Traslados, asistencia personalizada, gestión de visas y vacaciones a medida por todo Paraguay.',
             'show_faq'    => true,
@@ -101,6 +103,8 @@ return [
         '/blog/' => [
             'type'        => 'post',
             'nav_label'   => 'Blog',
+            'hero'        => '/assets/img/diario-de-viaje-mapa-terere-paraguay.jpg',
+            'hero_alt'    => 'Un diario de viaje abierto, un mapa plegado y una guampa de tereré sobre una mesa de madera junto a una ventana con vista a un lapacho florecido.',
             'title'       => 'Blog de Viajes por Paraguay',
             'description' => 'Destinos, rutas y consejos prácticos para recorrer Paraguay durante todo el año.',
             'per_page'    => 12,
@@ -114,12 +118,16 @@ return [
         '/viajes/' => [
             'type'        => 'trip',
             'nav_label'   => 'Viajes',
+            'hero'        => '/assets/img/posada-galeria-hamaca-atardecer-paraguay.jpg',
+            'hero_alt'    => 'La galería de una posada rural con una hamaca y un tereré sobre una mesa, frente a colinas verdes y un atardecer anaranjado.',
             'title'       => 'Viajes por Paraguay',
             'description' => 'Rutas de varios días armadas a medida, con itinerario, traslados y acompañamiento local.',
         ],
         '/actividades/' => [
             'type'        => 'activity',
             'nav_label'   => 'Actividades',
+            'hero'        => '/assets/img/mirador-ybytyruzu-amanecer-senderistas.jpg',
+            'hero_alt'    => 'Dos senderistas de espaldas en un mirador rocoso del Ybytyruzú al amanecer, con niebla en los valles y una cascada a lo lejos.',
             'title'       => 'Actividades y destinos en Paraguay',
             'description' => 'Qué hacer en Paraguay: saltos, misiones jesuíticas, Chaco, lagos y costaneras.',
         ],
@@ -139,6 +147,8 @@ return [
         '/wp-sitemap-taxonomies-category-1.xml' => '/sitemap.xml',
         '/wp-sitemap-users-1.xml'           => '/sitemap.xml',
     ],
+    // Any other wp-sitemap-*.xml variant WordPress may have emitted (KNOWN-ISSUES #1).
+    'redirect_patterns' => ['#^/wp-sitemap[^/]*\.xml$#' => '/sitemap.xml'],
     'gone' => ['/elementor-9/', '/hello-world/'],
 
     'analytics' => ['ga4' => null],

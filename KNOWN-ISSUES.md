@@ -5,7 +5,7 @@ pick it up. Nothing here blocks the phase it was written in.
 
 ## Phase 1 — engine
 
-1. **`wp-sitemap-*.xml` redirects are exact paths, not a wildcard.** The router's
+1. **[FIXED: `redirect_patterns` config key covers every `wp-sitemap*.xml`.]** **`wp-sitemap-*.xml` redirects are exact paths, not a wildcard.** The router's
    `redirects` map matches exact paths (spec §5 step 4). The five sitemap files the
    live WordPress actually emits are listed in `sites/viaje.com.py/config.php`; any
    other `wp-sitemap-*.xml` variant 404s instead of 301-ing. Add rows if Search
@@ -69,13 +69,13 @@ pick it up. Nothing here blocks the phase it was written in.
     machine per `docs/cutover-runbook.md` step 2; content still points at the CDN until
     then.)*
 
-12. **Hub hero images (manifest ids 11, 26) are unused.** `docs/site-spec-viaje.md`'s page
+12. **[FIXED 2026-09-29: hubs take `hero`/`hero_alt` in config; 4 hero images generated.]** **Hub hero images (manifest ids 11, 26) are unused.** `docs/site-spec-viaje.md`'s page
     map assigns hero id 11 to `/blog/` and 26 to `/servicios/`, but `hub.php` has no
     hero-image slot and the `hubs` config schema has no `hero` key (both frozen this
     phase). The site-wide `default_og_image` (id 01) still covers their `og:image`.
     *(Backlog — would need an engine change to add a hub hero slot.)*
 
-13. **Homepage "Destinos Locales" city cards were not ported.** The scan (§3.1, §8 item 5)
+13. **[FIXED 2026-09-29 differently: home shows an activities card grid (`show_activities`), no fake discount badges.]** **Homepage "Destinos Locales" city cards were not ported.** The scan (§3.1, §8 item 5)
     flags these — and their "% Off" discount badges — as decorative theme-card leftovers
     with no real discount mechanic anywhere else on the live site, and `home.php` has no
     card-grid slot for them. Confirm with Anton whether a real discount ever existed
