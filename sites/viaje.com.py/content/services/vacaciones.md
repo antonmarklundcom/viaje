@@ -1,6 +1,6 @@
 ---
 title: Vacaciones
-seo_title: Vacaciones en Paraguay a tu medida — Escapadas y rutas | Viaje.com.py
+seo_title: Vacaciones en Paraguay a Medida | Viaje.com.py
 description: Vacaciones en Paraguay diseñadas a tu medida, con estancias de primer nivel y logística resuelta desde tu salida hasta tu retorno.
 date: 2026-09-03
 order: 4

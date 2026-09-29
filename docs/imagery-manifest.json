@@ -17,7 +17,8 @@
       "source_id": "01",
       "note": "Registered from image 01 (camino de tierra roja) via show_reference_elements action=create, then embedded as <<<af68c77f-b642-4833-a4ea-0237a0a34aac>>> in every subsequent prompt (ids 03 onward) for cross-image consistency. Both nano_banana_2 and nano_banana_2_lite support Elements."
     },
-    "download_status": "Not downloaded — this sandbox cannot reach the Higgsfield CDN. All url values below are remote result URLs; tools/localize-media.php (phase 4) will download them into sites/<domain>/assets/img/ and rewrite filenames per the file field."
+    "download_status": "Not downloaded — this sandbox cannot reach the Higgsfield CDN. All url values below are remote result URLs; tools/localize-media.php (phase 4) will download them into sites/<domain>/assets/img/ and rewrite filenames per the file field.",
+    "hub_heroes_2026_09_29": "4 hub hero images H1-H4 on gpt_image_2_5 sunburst medium 2k, 1 credit each (get_cost preflight = 1)."
   },
   "images": [
     {
@@ -271,6 +272,74 @@
       "width": 1376,
       "height": 768,
       "job_id": "204c7b07-c20a-43bb-9919-5fba23c68f3b"
+    },
+    {
+      "id": "H1",
+      "file": "diario-de-viaje-mapa-terere-paraguay.jpg",
+      "alt_es": "Un diario de viaje abierto, un mapa plegado y una guampa de tereré sobre una mesa de madera junto a una ventana con vista a un lapacho florecido.",
+      "alt_en": "A travel journal, a folded map and a tereré guampa on a wooden table by a window overlooking a flowering lapacho.",
+      "ratio": "21:9",
+      "px": 2688,
+      "model": "gpt_image_2_5",
+      "variant": "sunburst",
+      "quality": "medium",
+      "resolution": "2k",
+      "prompt": "Editorial travel photo of a travel journal, folded map, terere guampa and lapacho petals on a wooden table by a window (blog hub hero).",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260929_165352_c02bc5de-1286-4e31-85c4-484ccbb02d4f.png",
+      "width": 2688,
+      "height": 1152,
+      "job_id": "c02bc5de-1286-4e31-85c4-484ccbb02d4f"
+    },
+    {
+      "id": "H2",
+      "file": "camino-rural-rio-atardecer-paraguay.jpg",
+      "alt_es": "Vista aérea al atardecer de un camino de tierra roja entre campos verdes, un pueblo con iglesia y un río que refleja el sol en Paraguay.",
+      "alt_en": "Aerial sunset view of a red dirt road between green fields, a church town and a sunlit river in Paraguay.",
+      "ratio": "21:9",
+      "px": 2688,
+      "model": "gpt_image_2_5",
+      "variant": "sunburst",
+      "quality": "medium",
+      "resolution": "2k",
+      "prompt": "Aerial golden hour view of Paraguayan countryside with red dirt road, river and small town (services hub hero).",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260929_165353_5657d8ee-6cab-4c3e-94da-617bb5c55a0f.png",
+      "width": 2688,
+      "height": 1152,
+      "job_id": "5657d8ee-6cab-4c3e-94da-617bb5c55a0f"
+    },
+    {
+      "id": "H3",
+      "file": "mirador-ybytyruzu-amanecer-senderistas.jpg",
+      "alt_es": "Dos senderistas de espaldas en un mirador rocoso del Ybytyruzú al amanecer, con niebla en los valles y una cascada a lo lejos.",
+      "alt_en": "Two hikers seen from behind on a rocky lookout in the Ybytyruzú hills at sunrise, with valley mist and a distant waterfall.",
+      "ratio": "21:9",
+      "px": 2688,
+      "model": "gpt_image_2_5",
+      "variant": "sunburst",
+      "quality": "medium",
+      "resolution": "2k",
+      "prompt": "Two distant hikers on a rocky mirador at sunrise over misty forested valleys with a waterfall (activities hub hero).",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260929_165352_6ad9b6a1-1b2c-427d-9c41-da5d0f529227.png",
+      "width": 2688,
+      "height": 1152,
+      "job_id": "6ad9b6a1-1b2c-427d-9c41-da5d0f529227"
+    },
+    {
+      "id": "H4",
+      "file": "posada-galeria-hamaca-atardecer-paraguay.jpg",
+      "alt_es": "La galería de una posada rural con una hamaca y un tereré sobre una mesa, frente a colinas verdes y un atardecer anaranjado.",
+      "alt_en": "The veranda of a rural posada with a hammock and a tereré set on a table, facing green hills and an orange sunset.",
+      "ratio": "21:9",
+      "px": 2688,
+      "model": "gpt_image_2_5",
+      "variant": "sunburst",
+      "quality": "medium",
+      "resolution": "2k",
+      "prompt": "Rustic Paraguayan posada veranda with hammock, terere set and lapacho at sunset (trips hub hero).",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260929_165354_aaedb310-5ea7-4158-8d60-60adbaf46568.png",
+      "width": 2688,
+      "height": 1152,
+      "job_id": "aaedb310-5ea7-4158-8d60-60adbaf46568"
     }
   ]
 }

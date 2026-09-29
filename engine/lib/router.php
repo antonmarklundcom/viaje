@@ -80,6 +80,11 @@ final class Router
         if (isset($redirects[$path])) {
             return Response::redirect(self::withQuery((string)$redirects[$path], $query), 301);
         }
+        foreach ((array)Config::v('redirect_patterns', []) as $pattern => $target) {
+            if (preg_match((string)$pattern, $path) === 1) {
+                return Response::redirect(self::withQuery((string)$target, $query), 301);
+            }
+        }
         if (in_array($path, (array)Config::v('gone', []), true)) {
             return self::error(410);
         }

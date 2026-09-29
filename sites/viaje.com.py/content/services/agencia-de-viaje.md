@@ -1,6 +1,6 @@
 ---
 title: Agencia de Viaje
-seo_title: Agencia de Viaje en Paraguay — Viajes a medida sin paquetes rígidos | Viaje.com.py
+seo_title: Agencia de Viajes en Paraguay — Viajes a Medida | Viaje.com.py
 description: Agencia de viajes en Paraguay que diseña itinerarios a medida, con acceso a lugares que no están en las apps de reserva ni en los catálogos.
 date: 2026-09-03
 order: 1

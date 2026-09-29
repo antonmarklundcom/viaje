@@ -1,6 +1,6 @@
 ---
 title: Descubrí el Paraguay que pocos conocen
-seo_title: Viaje.com.py — Agencia de viajes en Paraguay a medida
+seo_title: Agencia de Viajes en Paraguay — Tours, Traslados y Visas
 description: Agencia de viajes en Paraguay. Rutas a medida, traslados, asistencia personalizada y gestión de visas, con gente que conoce el país de cerca.
 path: /
 layout: home
@@ -29,6 +29,8 @@ features:
     icon: shield
 show_services: true
 show_posts: true
+show_activities: true
+activities_heading: Destinos para descubrir en Paraguay
 gallery: true
 testimonials: true
 faq_tags:

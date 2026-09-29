@@ -1,6 +1,6 @@
 ---
 title: "Paraguay Profundo: 10 Destinos Imprescindibles que Redefinen el Turismo Interno este 2026"
-seo_title: "Paraguay Profundo: 10 Destinos Imprescindibles que Redefinen el Turismo Interno este 2026"
+seo_title: 10 Destinos Imprescindibles de Paraguay en 2026 | Viaje.com.py
 description: Diez destinos imprescindibles de Paraguay para recorrer en 2026 — saltos, misiones jesuíticas, el Chaco y más — con cuándo ir y qué esperar en cada uno.
 path: /paraguay-destinos-imprescindibles-2026/
 date: 2026-02-03

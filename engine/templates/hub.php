@@ -5,11 +5,20 @@ $hub = (array)($page['hub'] ?? []);
     ['name' => t('home'), 'path' => '/'],
     ['name' => (string)$page['title'], 'path' => (string)($page['hub_path'] ?? '/')],
 ]]) ?>
+<?php $hubText = ($page['intro'] ?? '') !== '' ? (string)$page['intro'] : (string)($page['description'] ?? ''); ?>
+<?php if (!empty($hub['hero']) && (int)($pager['page'] ?? 1) === 1): ?>
+  <?= partial('hero', ['site' => $site, 'page' => [
+      'hero'       => (string)$hub['hero'],
+      'hero_alt'   => (string)($hub['hero_alt'] ?? ''),
+      'hero_title' => (string)$page['title'],
+      'hero_text'  => $hubText,
+  ]]) ?>
+<?php else: ?>
 <div class="container container--narrow hub__intro">
   <h1 class="page__title"><?= e($page['title']) ?><?= (int)($pager['page'] ?? 1) > 1 ? e(t('page_suffix', ['n' => (int)$pager['page']])) : '' ?></h1>
-  <?php if (($page['intro'] ?? '') !== ''): ?><p class="lede"><?= e($page['intro']) ?></p>
-  <?php elseif (($page['description'] ?? '') !== ''): ?><p class="lede"><?= e($page['description']) ?></p><?php endif; ?>
+  <?php if ($hubText !== ''): ?><p class="lede"><?= e($hubText) ?></p><?php endif; ?>
 </div>
+<?php endif; ?>
 <section class="section container">
   <?php if ($items): ?>
     <?= partial('cards', ['items' => $items]) ?>
