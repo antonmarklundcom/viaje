@@ -1,8 +1,14 @@
 ---
 title: Ruta del Chaco en 3 Días
-seo_title: Ruta del Chaco Paraguayo en 3 Días | Viaje.com.py
-description: Ruta de 3 días por el Chaco Central paraguayo, con la Ruta Transchaco, colonias menonitas, avistaje de aves y las Lagunas Saladas.
+seo_title: "Ruta del Chaco en 3 Días: Transchaco y Lagunas"
+keyword: ruta del Chaco en 3 días
+description: "Ruta del Chaco en 3 días: Transchaco, colonias menonitas de Filadelfia y Loma Plata y las Lagunas Saladas, con itinerario día por día y vehículo coordinado."
+quick_answer: >
+  Son 3 días: el primero de Asunción a Filadelfia por la Ruta Transchaco (unas cinco a seis
+  horas), el segundo en las Lagunas Saladas y el tercero de historia local y regreso. La mejor
+  ventana es de julio a septiembre. El precio y el tamaño del grupo se arman a medida.
 date: 2026-09-03
+updated: 2026-09-29
 region: Chaco Central
 hero: /assets/img/ruta-transchaco-filadelfia.jpg
 hero_alt: La Ruta Transchaco se extiende recta hacia el horizonte cerca de Filadelfia, bajo un cielo inmenso.
@@ -23,9 +29,30 @@ itinerary:
 tags:
   - chaco
   - aventura
+  - naturaleza
+faq:
+  - q: ¿Por qué la ruta lleva tres días?
+    a: >
+      Las distancias en el Chaco son largas y los servicios están más espaciados que en el resto
+      de Paraguay. Dividir el viaje en tres jornadas evita días de manejo agotadores.
+  - q: ¿Cuándo es la mejor época para hacerla?
+    a: >
+      De julio a septiembre: las lagunas todavía tienen agua, las lluvias no complican los caminos
+      de tierra y hay más aves.
+  - q: ¿Qué se ve el segundo día?
+    a: >
+      Un día completo en el sistema de Lagunas Saladas de Loma Plata y Filadelfia, con avistaje de
+      flamencos rosados y otras aves migratorias.
+  - q: ¿Qué coordina Viaje.com.py?
+    a: >
+      El vehículo adecuado para la Transchaco y los caminos secundarios, además del alojamiento en
+      la zona. Escribinos para ajustar fechas y paradas.
+related:
+  - /actividades/chaco-paraguayo/
+  - /asistencia-personalizada/
 ---
 
-El Chaco paraguayo no se recorre de pasada: pide al menos tres días para que el viaje valga la distancia. Esta ruta combina la Ruta Transchaco, las colonias menonitas de Filadelfia y Loma Plata, y el sistema de Lagunas Saladas, uno de los paisajes más singulares del país.
+El Chaco paraguayo no se recorre de pasada: pide al menos tres días para que el viaje valga la distancia. La ruta del Chaco en 3 días combina la Ruta Transchaco, las colonias menonitas de Filadelfia y Loma Plata, y el sistema de Lagunas Saladas, uno de los paisajes más singulares del país.
 
 ## Por Qué Tres Días
 

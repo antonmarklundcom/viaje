@@ -81,6 +81,46 @@ final class Render
         return self::dir() . '/' . sha1($path) . '.html';
     }
 
+    /** Cached pages older than this are re-rendered: the lead forms inside carry a signed, expiring stamp. */
+    private const TTL = 6 * 3600;
+
+    /**
+     * Fingerprint of everything that shapes the HTML: engine code and templates, language files,
+     * the site's config and theme, and the content itself. A deploy or a file-manager edit changes
+     * it, which retires every cached page — so stale HTML can never outlive the code that made it.
+     */
+    private static function buildSig(): string
+    {
+        static $sig = null;
+        if ($sig !== null) {
+            return $sig;
+        }
+        $files = array_merge(
+            glob(VJ_ENGINE . '/lib/*.php') ?: [],
+            glob(VJ_ENGINE . '/templates/*.php') ?: [],
+            glob(VJ_ENGINE . '/templates/partials/*.php') ?: [],
+            glob(VJ_ENGINE . '/lang/*.php') ?: [],
+            [VJ_ENGINE . '/assets/base.css', VJ_ENGINE . '/assets/site.js',
+             VJ_SITE . '/config.php', VJ_SITE . '/config.local.php', VJ_SITE . '/theme.css']
+        );
+        $parts = [];
+        foreach ($files as $f) {
+            $parts[] = $f . ':' . (string)@filemtime($f);
+        }
+        return $sig = hash('sha256', implode('|', $parts) . '|' . Content::signature());
+    }
+
+    private static function sigFile(): string
+    {
+        return self::dir() . '/.sig';
+    }
+
+    private static function sigOk(): bool
+    {
+        $f = self::sigFile();
+        return is_file($f) && trim((string)@file_get_contents($f)) === self::buildSig();
+    }
+
     public static function cacheable(): bool
     {
         return !self::$cacheDisabled
@@ -100,7 +140,7 @@ final class Render
             return null;
         }
         $file = self::key($path);
-        if (!is_file($file)) {
+        if (!is_file($file) || !self::sigOk() || (int)@filemtime($file) < time() - self::TTL) {
             return null;
         }
         $html = @file_get_contents($file);
@@ -112,7 +152,11 @@ final class Render
         if (!self::cacheable()) {
             return;
         }
-        Util::mkdirp(self::dir());
+        if (!self::sigOk()) {
+            Util::rrmdir(self::dir());   // first write since a deploy or edit: drop the old generation
+            Util::mkdirp(self::dir());
+            Util::atomicWrite(self::sigFile(), self::buildSig());
+        }
         Util::atomicWrite(self::key($path), $html);
     }
 

@@ -1,8 +1,15 @@
 ---
 title: Fin de Semana en Encarnación
-seo_title: Fin de Semana en Encarnación — Ruta de 2 días | Viaje.com.py
-description: Escapada de fin de semana a Encarnación con costanera, Playa San José y las Misiones Jesuíticas de Trinidad y Jesús a medida.
+seo_title: "Fin de Semana en Encarnación: Ruta de 2 Días | Viaje.com.py"
+keyword: fin de semana en Encarnación
+description: "Ruta de fin de semana en Encarnación: costanera y Playa San José el primer día, Misiones Jesuíticas el segundo. Te armamos traslados y fechas a tu medida."
+quick_answer: >
+  Es una ruta de 2 días: el primero en la costanera y la Playa San José de Encarnación, el segundo
+  en las Misiones Jesuíticas de Trinidad y Jesús. A Encarnación se llega en unas cuatro a cinco
+  horas por ruta asfaltada desde Asunción. El precio y el grupo se arman a medida: escribinos con
+  tus fechas.
 date: 2026-09-03
+updated: 2026-09-29
 region: Itapúa
 hero: /assets/img/encarnacion-playa-san-jose.jpg
 hero_alt: La Playa San José de Encarnación muestra su arena suave junto a la costanera y las palmeras bajo el sol del verano.
@@ -20,9 +27,33 @@ itinerary:
 tags:
   - fin-de-semana
   - itapua
+  - costanera
+  - historia
+faq:
+  - q: ¿Qué incluye el itinerario de dos días?
+    a: >
+      El primer día es de llegada, costanera y atardecer en la Playa San José. El segundo, la
+      Santísima Trinidad del Paraná por la mañana y Jesús de Tavarangüé al mediodía, con traslado
+      de regreso a Encarnación o conexión hacia Asunción.
+  - q: ¿Cuánto cuesta el fin de semana en Encarnación?
+    a: >
+      No tenemos un paquete fijo: el precio se arma a medida según tus fechas y servicios.
+      Contanos qué necesitás y te preparamos una propuesta sin costo.
+  - q: ¿Cuándo conviene ir?
+    a: >
+      En verano se suma el ambiente de playa y carnaval. El resto del año Encarnación es más
+      tranquila y la escapada es igual de linda, con menos gente.
+  - q: ¿Quién coordina el traslado?
+    a: >
+      Nosotros. Coordinamos el traslado entre Encarnación y las Misiones, y ajustamos el
+      itinerario si preferís más tiempo en la costanera o llegar directo a Trinidad.
+related:
+  - /actividades/encarnacion-costanera/
+  - /actividades/misiones-jesuiticas-trinidad-jesus/
+  - /traslados/
 ---
 
-Encarnación es la escapada de fin de semana más directa desde Asunción cuando lo que buscás es río, costanera y un poco de historia sin pasar todo el sábado en el auto. Esta ruta combina un día de ciudad y playa con un día de Patrimonio de la Humanidad, sin apuro y sin volver agotado.
+Un fin de semana en Encarnación es la escapada más directa desde Asunción cuando lo que buscás es río, costanera y un poco de historia sin pasar todo el sábado en el auto. Esta ruta combina un día de ciudad y playa con un día de Patrimonio de la Humanidad, sin apuro y sin volver agotado.
 
 ## Cómo Se Arma
 

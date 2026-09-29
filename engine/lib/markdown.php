@@ -4,7 +4,7 @@ declare(strict_types=1);
 require_once VJ_ENGINE . '/vendor/Parsedown.php';
 
 /**
- * Parsedown wrapper: `:::tip` callouts, heading ids, external-link rel,
+ * Parsedown wrapper: `:::tip` / `:::answer` callouts, heading ids, external-link rel,
  * figure/picture image rendering. Safe mode is OFF by design — only the
  * authenticated admin writes content (spec §3).
  */
@@ -28,7 +28,7 @@ final class Markdown
     {
         $p = self::parser();
         $p->resetHeadingIds();
-        return self::upgradeImages($p->text($md));
+        return self::upgradeImages(self::wrapTables($p->text($md)));
     }
 
     /** Inline render (no wrapping <p>), for short strings such as FAQ answers. */
@@ -41,6 +41,12 @@ final class Markdown
     public static function small(string $md): string
     {
         return self::upgradeImages(self::parser()->text($md));
+    }
+
+    /** Scroll wrapper so price and distance tables never break the mobile layout. */
+    private static function wrapTables(string $html): string
+    {
+        return preg_replace('#<table>.*?</table>#s', '<div class="table-wrap">$0</div>', $html) ?? $html;
     }
 
     /** @return list<array{level:int,id:string,text:string}> */
@@ -189,7 +195,7 @@ final class EngineParsedown extends Parsedown
 
     protected function blockCallout($Line)
     {
-        if (!preg_match('/^:::[ ]*(tip|note|warning)[ ]*(.*)$/i', $Line['text'], $m)) {
+        if (!preg_match('/^:::[ ]*(tip|note|warning|answer)[ ]*(.*)$/i', $Line['text'], $m)) {
             return null;
         }
         return [
@@ -220,8 +226,9 @@ final class EngineParsedown extends Parsedown
     {
         $inner = $this->text(implode("\n", $Block['lines']));
         $html  = '';
-        if ($Block['label'] !== '') {
-            $html .= '<p class="tip__label">' . self::escape($Block['label']) . '</p>';
+        $label = $Block['label'] !== '' ? $Block['label'] : ($Block['kind'] === 'answer' ? I18n::t('quick_answer') : '');
+        if ($label !== '') {
+            $html .= '<p class="tip__label">' . self::escape($label) . '</p>';
         }
         $Block['element'] = [
             'name'       => 'aside',

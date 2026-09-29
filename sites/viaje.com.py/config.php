@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 /**
  * viaje.com.py — site configuration.
- * Secrets (admin password hash, preview secret, CRM key, GA4) live in config.local.php.
+ * Secrets (admin password hash, preview secret, CRM key) live in config.local.php.
  */
 
 return [
@@ -22,9 +22,8 @@ return [
     'staging'      => false,
     'debug'        => false,
     'default_og_image' => '/assets/img/camino-de-tierra-roja-4x4-paraguay.jpg',
-    'head_extra' => '<link rel="preconnect" href="https://fonts.googleapis.com">'
-        . '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-        . '<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">',
+    // No third-party <head> extras: no Google Fonts, analytics or embeds (system fonts + own CSS only).
+    'head_extra' => '',
     'footer_blurb' => 'Viajes a medida por Paraguay, diseñados con quienes conocen el país de cerca. Sin paquetes rígidos.',
 
     'contact' => [
@@ -40,6 +39,8 @@ return [
             'country_name' => 'Paraguay',
         ],
         'hours'                 => 'Lun–Sáb 08:00–19:00',
+        // OpenStreetMap search link (no embedded map, no third-party requests on page load).
+        'map_url'               => 'https://www.openstreetmap.org/search?query=Edificio%20Skytower%2C%20Asunci%C3%B3n%2C%20Paraguay',
         'whatsapp_default_text' => 'Hola Viaje.com.py, quiero consultar por',
     ],
 
@@ -54,6 +55,33 @@ return [
         'price_range' => '$$',
     ],
     'author_default' => ['name' => 'Equipo Viaje.com.py', 'type' => 'Organization'],
+    // Bylines: shown in the author box under each article and emitted as the schema author.
+    // Bios only say what nosotros.md already says; add more here rather than in templates.
+    'authors' => [
+        'Equipo Viaje.com.py' => [
+            'type' => 'Organization',
+            'role' => 'Equipo editorial',
+            'bio'  => 'Viajeros, fotógrafos y especialistas en logística que recorren Paraguay y conocen de primera mano los caminos, las distancias y los secretos de cada destino.',
+            'url'  => '/nosotros/',
+        ],
+        // The pillar post's WordPress byline; the bio only repeats what the team page says.
+        'Yanina — Equipo Viaje.com.py' => [
+            'type' => 'Person',
+            'role' => 'Equipo Viaje.com.py',
+            'bio'  => 'Parte del equipo que recorre Paraguay y escribe las guías de Viaje.com.py, con los caminos, las distancias y los secretos de cada destino de primera mano.',
+            'url'  => '/nosotros/',
+        ],
+        'Anton Marklund' => [
+            'type' => 'Person',
+            'role' => 'Fundador de Viaje.com.py',
+            'bio'  => 'Dejó Suecia para vivir en Paraguay y fundó Viaje.com.py para mostrar el país con la mirada curiosa de quien lo eligió como hogar.',
+            'url'  => '/nosotros/',
+        ],
+    ],
+
+    // IndexNow (Bing and other engines): the key is public by design; the engine answers /<key>.txt
+    // with it and tools/indexnow.php submits changed URLs. See docs/cutover-runbook.md.
+    'indexnow' => ['key' => '8778ae5792160fc55cb5287df6c13406'],
 
     // "Paquetes" leaves the nav (plan §1 item 5). Empty hubs stay out until they have content.
     'nav' => [
@@ -121,6 +149,10 @@ return [
         ['label' => 'Contacto',                'href' => '/contacto/'],
     ],
 
+    // tools/verify.php opt-ins: guide-page checks (answer box, FAQ, related links, lead form) and
+    // one unique focus keyword per URL. Read by the tool only; the engine ignores it.
+    'verify' => ['guides' => true, 'keywords' => true],
+
     'types'      => ['page', 'service', 'post', 'news', 'trip', 'activity'],
     'type_paths' => [
         'page'     => '/',
@@ -137,8 +169,9 @@ return [
             'nav_label'   => 'Servicios',
             'hero'        => '/assets/img/camino-rural-rio-atardecer-paraguay.jpg',
             'hero_alt'    => 'Vista aérea al atardecer de un camino de tierra roja entre campos verdes, un pueblo con iglesia y un río que refleja el sol en Paraguay.',
+            'keyword'     => 'servicios de viaje en Paraguay',
             'title'       => 'Servicios de Viaje en Paraguay',
-            'description' => 'Traslados, asistencia personalizada, gestión de visas y vacaciones a medida por todo Paraguay.',
+            'description' => 'Servicios de viaje en Paraguay: agencia a medida, traslados privados, asistencia 24/7, vacaciones y gestión de visas. Elegí el que necesitás y consultanos.',
             'show_faq'    => true,
         ],
         '/blog/' => [
@@ -146,8 +179,9 @@ return [
             'nav_label'   => 'Blog',
             'hero'        => '/assets/img/diario-de-viaje-mapa-terere-paraguay.jpg',
             'hero_alt'    => 'Un diario de viaje abierto, un mapa plegado y una guampa de tereré sobre una mesa de madera junto a una ventana con vista a un lapacho florecido.',
+            'keyword'     => 'blog de viajes por Paraguay',
             'title'       => 'Blog de Viajes por Paraguay',
-            'description' => 'Destinos, rutas y consejos prácticos para recorrer Paraguay durante todo el año.',
+            'description' => 'Blog de viajes por Paraguay: destinos, rutas, cuándo ir y consejos prácticos para armar tu escapada, en guías escritas por quienes recorren el país.',
             'per_page'    => 12,
         ],
         '/novedades/' => [
@@ -161,16 +195,18 @@ return [
             'nav_label'   => 'Viajes',
             'hero'        => '/assets/img/posada-galeria-hamaca-atardecer-paraguay.jpg',
             'hero_alt'    => 'La galería de una posada rural con una hamaca y un tereré sobre una mesa, frente a colinas verdes y un atardecer anaranjado.',
+            'keyword'     => 'viajes por Paraguay',
             'title'       => 'Viajes por Paraguay',
-            'description' => 'Rutas de varios días armadas a medida, con itinerario, traslados y acompañamiento local.',
+            'description' => 'Viajes por Paraguay de varios días, armados a medida con itinerario, traslados y acompañamiento local. Elegí una ruta y ajustamos fechas y paradas con vos.',
         ],
         '/actividades/' => [
             'type'        => 'activity',
             'nav_label'   => 'Actividades',
             'hero'        => '/assets/img/mirador-ybytyruzu-amanecer-senderistas.jpg',
             'hero_alt'    => 'Dos senderistas de espaldas en un mirador rocoso del Ybytyruzú al amanecer, con niebla en los valles y una cascada a lo lejos.',
-            'title'       => 'Actividades y destinos en Paraguay',
-            'description' => 'Qué hacer en Paraguay: saltos, misiones jesuíticas, Chaco, lagos y costaneras.',
+            'keyword'     => 'qué hacer en Paraguay',
+            'title'       => 'Qué hacer en Paraguay: actividades y destinos',
+            'description' => 'Qué hacer en Paraguay: saltos, misiones jesuíticas, el Chaco, lagos y costaneras, con cuándo ir y cómo llegar. Elegí tu destino y pedinos la ruta armada.',
         ],
     ],
 
@@ -191,8 +227,6 @@ return [
     // Any other wp-sitemap-*.xml variant WordPress may have emitted (KNOWN-ISSUES #1).
     'redirect_patterns' => ['#^/wp-sitemap[^/]*\.xml$#' => '/sitemap.xml'],
     'gone' => ['/elementor-9/', '/hello-world/'],
-
-    'analytics' => ['ga4' => null],
 
     'leads' => [
         'to'             => 'hola@viaje.com.py',

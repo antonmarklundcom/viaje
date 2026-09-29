@@ -464,6 +464,18 @@ unverifiable from this repo alone.)*
   server, plus a post-deploy smoke check against the real URL contract) is
   designed but **not yet built or re-deployed** as of this entry.
 
+### 2026-09-29 — On-page SEO pass (Sonnet session `01Hq7ChEChkHf3Ye2Niv8Dnn`, branch `claude/quirky-lamport-moz3q5`)
+- **Content ownership (Option A):** `sites/viaje.com.py/content/` is no longer tracked; the seed lives in
+  `content-seed/` (403 in `.htaccess`), `tools/seed-content.php` copies it only into an empty `content/`,
+  `build.php`/`verify.php`/CI read the seed when `content/` is absent. Runbook rewritten around it.
+- **Ten on-page items + newsletter + IndexNow + lastmod** shipped in engine/templates/tools; new front matter
+  (`keyword`, `quick_answer`, `faq`, `related`, `show_contact`), `docs/keyword-map.md`, author bios in config.
+- **No-Google clean-up:** Google Fonts, a Maps embed and a GA4 hook removed; `verify.php` now bans them.
+- **`verify.php`** gained warnings + `--strict`, JSON-LD validation, image alt/size/lazy checks, guide-page checks,
+  orphan detection, keyword uniqueness/map check, IndexNow key check and end-to-end form tests. CI runs viaje with `--strict`.
+- Deviations from plan §1: H1s of five ranking URLs gained their keyword (`/agencia-de-viaje/`, `/vacaciones/`,
+  `/nosotros/`, `/contacto/`, home); the URL contract (paths, 200s, canonicals) is unchanged.
+
 ## 10. Backlog
 - Cinematic scroll homepage hero as an opt-in section (needs SEO-safe text fallback).
 - Newsletter capture.

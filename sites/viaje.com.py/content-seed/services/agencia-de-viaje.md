@@ -1,12 +1,14 @@
 ---
-title: Agencia de Viaje
-seo_title: Agencia de Viajes en Paraguay — Viajes a Medida | Viaje.com.py
-description: Agencia de viajes en Paraguay que diseña itinerarios a medida, con acceso a lugares que no están en las apps de reserva ni en los catálogos.
+title: Agencia de Viajes en Paraguay
+seo_title: Agencia de Viajes en Paraguay a Medida | Viaje.com.py
+keyword: agencia de viajes en Paraguay
+description: Agencia de viajes en Paraguay que diseña itinerarios a medida, sin paquetes de catálogo y con acceso a lugares que no están en las apps. Pedí tu propuesta.
 date: 2026-09-03
+updated: 2026-09-29
 order: 1
 hero: /assets/img/agencia-de-viaje-planificacion-mapa.jpg
 hero_alt: Un escritorio visto desde arriba con un mapa de Paraguay, cuaderno, café y teléfono, listo para planificar un viaje.
-intro: Dejá atrás los paquetes rígidos de catálogo. Nos especializamos en diseñar itinerarios a medida que conectan con la esencia del país, desde los saltos más escondidos hasta expediciones privadas en el Chaco. Combinamos logística inteligente con acceso exclusivo para transformar coordenadas en el mapa en experiencias memorables y fluidas.
+intro: Somos una agencia de viajes en Paraguay que deja atrás los paquetes rígidos de catálogo. Nos especializamos en diseñar itinerarios a medida que conectan con la esencia del país, desde los saltos más escondidos hasta expediciones privadas en el Chaco. Combinamos logística inteligente con acceso exclusivo para transformar coordenadas en el mapa en experiencias memorables y fluidas.
 included:
   - Diseño de Hoja de Ruta
   - Selección de Alojamiento

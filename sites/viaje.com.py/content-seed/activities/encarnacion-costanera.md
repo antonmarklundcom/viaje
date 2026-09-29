@@ -1,8 +1,15 @@
 ---
 title: Costanera de Encarnación
 seo_title: Costanera de Encarnación y Playa San José | Viaje.com.py
-description: Qué hacer en la costanera de Encarnación y la Playa San José, la "Perla del Sur" de Paraguay, en cualquier época del año.
+keyword: Costanera de Encarnación
+description: "Qué hacer en la costanera de Encarnación y la Playa San José, la Perla del Sur de Paraguay: cuándo ir y cómo combinarla con las Misiones Jesuíticas."
+quick_answer: >
+  La costanera de Encarnación, junto al río Paraná, es un paseo de kilómetros con la Playa San
+  José como su punto más popular. El verano es ideal para la playa y el carnaval; el resto del año
+  la ciudad es más tranquila y con buenos precios. Encarnación es la base para visitar las
+  Misiones Jesuíticas de Trinidad y Jesús.
 date: 2026-09-03
+updated: 2026-09-29
 region: Itapúa
 hero: /assets/img/encarnacion-playa-san-jose.jpg
 hero_alt: La Playa San José de Encarnación muestra su arena suave junto a la costanera y las palmeras bajo el sol del verano.
@@ -15,6 +22,28 @@ facts:
 tags:
   - costanera
   - rio
+  - itapua
+  - destinos
+faq:
+  - q: ¿Cuándo conviene ir a Encarnación?
+    a: >
+      En verano, si buscás el ambiente de playa y carnaval. El resto del año es una escapada más
+      relajada, con menos gente y buenos precios.
+  - q: ¿Cuánto tiempo hace falta para conocer la costanera?
+    a: >
+      Un día o un fin de semana. Si querés sumar las Misiones Jesuíticas, dos días alcanzan con
+      nuestra ruta de fin de semana en Encarnación.
+  - q: ¿Qué se puede hacer en la costanera?
+    a: >
+      Caminar, andar en bici o sentarse a mirar el río. En la Playa San José, un atardecer con
+      tereré es para muchos paraguayos irreemplazable.
+  - q: ¿Cuánto se tarda en llegar desde Asunción?
+    a: >
+      Son unas cuatro a cinco horas de ruta asfaltada, así que conviene salir temprano el viernes
+      o bien de mañana el sábado.
+related:
+  - /viajes/fin-de-semana-en-encarnacion/
+  - /traslados/
 ---
 
 La "Perla del Sur" sigue siendo la reina del verano paraguayo, pero se consolidó como un destino de todo el año. La costanera de Encarnación es uno de los espacios públicos mejor pensados del país: kilómetros de paseo junto al río Paraná, con la Playa San José como su punto más popular.

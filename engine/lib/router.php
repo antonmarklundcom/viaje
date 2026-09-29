@@ -36,8 +36,16 @@ final class Router
         if ($path === '/enviar/' || $path === '/enviar') {
             return self::enviar($method, $post);
         }
+        if ($path === '/suscribir/' || $path === '/suscribir') {
+            return self::suscribir($method, $post);
+        }
         if ($method === 'POST') {
             return self::error(405);
+        }
+        // IndexNow key file: /<key>.txt must answer with the key itself (tools/indexnow.php).
+        $key = (string)Config::v('indexnow.key', '');
+        if ($key !== '' && $path === '/' . $key . '.txt') {
+            return Response::text($key);
         }
         if (str_starts_with($path, '/preview/')) {
             return self::preview($path, $query);
@@ -92,9 +100,7 @@ final class Router
         // Cached HTML short-circuit.
         $cached = Render::cacheGet($path);
         if ($cached !== null) {
-            return Response::html($cached)
-                ->withHeader('X-Cache', 'HIT')
-                ->withHeader('Cache-Control', 'public, max-age=300');
+            return self::pageResponse($cached)->withHeader('X-Cache', 'HIT');
         }
 
         // 5. Content.
@@ -313,10 +319,20 @@ final class Router
     {
         $res = Response::html($html, $status)
             ->withHeader('Cache-Control', $status === 200 ? 'public, max-age=300' : 'no-store')
+            ->withHeader('Vary', 'Accept-Encoding')
+            ->withHeader('Link', '<' . Render::asset('/engine/assets/base.css') . '>; rel=preload; as=style')
             ->withHeader('X-Content-Type-Options', 'nosniff')
             ->withHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
         if (Config::v('staging')) {
             $res = $res->withHeader('X-Robots-Tag', 'noindex, nofollow');
+        }
+        // Revalidation: a repeat visit costs a 304 instead of the whole document.
+        if ($status === 200 && !Config::v('debug') && Render::cacheable()) {
+            $etag = '"' . substr(sha1($html), 0, 20) . '"';
+            $res  = $res->withHeader('ETag', $etag);
+            if (trim((string)($_SERVER['HTTP_IF_NONE_MATCH'] ?? '')) === $etag) {
+                $res = new Response(304, '', $res->headers);
+            }
         }
         return $res;
     }
@@ -354,9 +370,11 @@ final class Router
 
     private static function enviar(string $method, array $post): Response
     {
-        $contact = self::contactPath();
+        // A form on a guide sends the visitor back to that guide; anywhere else it is the contact page.
+        $back = Leads::cleanPage((string)($post['page'] ?? ''));
+        $contact = $back !== '' ? $back : self::contactPath();
         if ($method !== 'POST') {
-            return Response::redirect($contact, 302);
+            return Response::redirect(self::contactPath(), 302);
         }
         $result = Leads::handle($post);
         $wantsJson = str_contains((string)($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json')
@@ -366,18 +384,59 @@ final class Router
             // Accept silently so the bot believes it succeeded.
             return $wantsJson
                 ? Response::json(['ok' => true])
-                : Response::redirect($contact . '?enviado=1', 303);
+                : Response::redirect($contact . '?enviado=1#formulario', 303);
         }
         if (!$result['ok']) {
             if ($wantsJson) {
                 return Response::json(['ok' => false, 'errors' => $result['errors']], 422);
             }
             $qs = ['error' => '1', 'msg' => implode(' ', $result['errors'])];
-            return Response::redirect($contact . '?' . http_build_query($qs), 303);
+            return Response::redirect($contact . '?' . http_build_query($qs) . '#formulario', 303);
         }
         return $wantsJson
             ? Response::json(['ok' => true])
-            : Response::redirect($contact . '?enviado=1', 303);
+            : Response::redirect($contact . '?enviado=1#formulario', 303);
+    }
+
+    /* ---------------------------------------------------------- /suscribir/ */
+
+    private static function suscribir(string $method, array $post): Response
+    {
+        $back = Leads::cleanPage((string)($post['page'] ?? ''));
+        $to   = $back !== '' ? $back : '/';
+        if ($method !== 'POST') {
+            return Response::redirect($to, 302);
+        }
+        $result = Leads::subscribe($post);
+        $wantsJson = str_contains((string)($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json')
+            || ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') !== '';
+
+        if (!$result['ok'] && isset($result['errors']['_spam'])) {
+            return $wantsJson
+                ? Response::json(['ok' => true])
+                : Response::redirect($to . '?suscrito=1#suscribirse', 303);
+        }
+        if (!$result['ok']) {
+            if ($wantsJson) {
+                return Response::json(['ok' => false, 'errors' => $result['errors']], 422);
+            }
+            $qs = ['suscripcion' => 'error', 'msg' => implode(' ', $result['errors'])];
+            return Response::redirect($to . '?' . http_build_query($qs) . '#suscribirse', 303);
+        }
+        return $wantsJson
+            ? Response::json(['ok' => true])
+            : Response::redirect($to . '?suscrito=1#suscribirse', 303);
+    }
+
+    /** The path of the site-wide FAQ page (layout `faq`), or null. */
+    public static function faqPath(): ?string
+    {
+        foreach (Content::index() as $path => $meta) {
+            if ($meta['type'] === 'page' && ($meta['layout'] ?? '') === 'faq' && !$meta['draft']) {
+                return (string)$path;
+            }
+        }
+        return null;
     }
 
     /** The path of the page using the contact layout, or /contacto/ style default. */

@@ -24,8 +24,6 @@ return [
         ],
     ],
 
-    'analytics' => ['ga4' => null],  // e.g. 'G-XXXXXXXXXX'
-
     // Staging installs: noindex header + meta on every response, no analytics.
     'staging' => false,
     'debug'   => false,

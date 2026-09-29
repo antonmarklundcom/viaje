@@ -73,6 +73,7 @@ return [
 
     // Contact / WhatsApp
     'whatsapp_cta'      => 'Consultar por WhatsApp',
+    'whatsapp_short'    => 'WhatsApp',
     'whatsapp_about'    => 'Consultar por WhatsApp sobre :title',
     'call_us'           => 'Llamar',
     'write_us'          => 'Escribinos',
@@ -182,4 +183,40 @@ return [
     'err_upload_size'   => 'La imagen supera los 12 MB.',
     'err_upload_type'   => 'Formato no admitido. Usá JPG, PNG o WebP.',
     'err_upload_alt'    => 'El texto alternativo es obligatorio.',
+
+    // On-page SEO pass: answer boxes, related links, author box, conversion
+    'quick_answer'      => 'Respuesta rápida',
+    'related_interest'  => 'Te puede interesar',
+    'updated_label'     => 'Actualizado',
+    'faq_all'          => 'Ver todas las preguntas frecuentes',
+    'faq_about'         => 'Preguntas frecuentes sobre :title',
+    'about_author'      => 'Sobre el autor',
+    'author_more'       => 'Conocé al equipo',
+    'contact_details'   => 'Datos de contacto',
+    'view_osm'          => 'Ver en OpenStreetMap',
+    'call_now'          => 'Llamar',
+    'lead_guide_title'  => '¿Querés que armemos este viaje por vos?',
+    'lead_guide_text'   => 'Dejanos tu nombre y tu WhatsApp y te respondemos con una propuesta a medida.',
+    'lead_guide_message'=> 'Hola, quiero más información sobre esta guía.',
+    'lead_topic_page'   => 'Consulta desde: :title',
+    'months'            => ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
+    'date_format'       => ':d de :month de :y',
+
+    // Newsletter
+    'nl_title'          => 'Recibí nuevas guías de Paraguay',
+    'nl_text'           => 'Una vez por mes, rutas, fechas y consejos prácticos para viajar por el país. Sin spam.',
+    'nl_email'          => 'Tu email',
+    'nl_submit'         => 'Suscribirme',
+    'nl_privacy'        => 'Usamos tu email solo para enviarte novedades de Viaje.com.py. Te das de baja escribiéndonos cuando quieras.',
+    'nl_ok_title'       => '¡Listo, te anotamos!',
+    'nl_ok_text'        => 'Vas a recibir nuestras próximas guías en tu email.',
+    'nl_error_title'    => 'No pudimos anotarte',
+    'err_nl_email'      => 'Escribí un email válido.',
+    'err_nl_rate'       => 'Probá de nuevo en un rato.',
+    'err_nl_store'      => 'No pudimos guardar tu email. Escribinos a hola@viaje.com.py.',
+    'keyword'           => 'Frase clave (SEO)',
+    'quick_answer_field'=> 'Respuesta rápida',
+    'faq_field'         => 'Preguntas frecuentes de esta página',
+    'faq_q'             => 'Pregunta',
+    'faq_a'             => 'Respuesta',
 ];

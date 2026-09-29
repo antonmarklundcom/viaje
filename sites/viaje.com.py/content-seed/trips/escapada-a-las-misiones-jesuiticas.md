@@ -1,8 +1,14 @@
 ---
 title: Escapada a las Misiones Jesuíticas
-seo_title: Escapada a las Misiones Jesuíticas de Paraguay | Viaje.com.py
-description: Escapada corta a las Misiones Jesuíticas de Trinidad y Jesús, Patrimonio de la Humanidad, con recorrido diurno y nocturno.
+seo_title: "Escapada a las Misiones Jesuíticas: 1 a 2 Días"
+keyword: escapada a las Misiones Jesuíticas
+description: "Escapada a las Misiones Jesuíticas de Trinidad y Jesús, Patrimonio de la Humanidad: recorrido de día y, si querés, el show nocturno de luces. Consultá fechas."
+quick_answer: >
+  Se puede hacer en 1 o 2 días: el primero en la Santísima Trinidad del Paraná y, si querés, un
+  segundo día para ver Jesús de Tavarangüé de noche con el Recorrido de Luces y Sonidos. Armamos
+  el traslado entre ambos sitios y la combinamos con Encarnación o Colonia Independencia.
 date: 2026-09-03
+updated: 2026-09-29
 region: Itapúa
 hero: /assets/img/ruinas-jesuiticas-trinidad-atardecer.jpg
 hero_alt: Los arcos de piedra de las ruinas jesuíticas de la Santísima Trinidad del Paraná se iluminan con la luz dorada del atardecer.
@@ -20,9 +26,30 @@ itinerary:
 tags:
   - historia
   - patrimonio
+  - itapua
+faq:
+  - q: ¿Alcanza con un solo día?
+    a: >
+      Sí, Trinidad y Jesús se pueden visitar en un solo día. Pero la experiencia cambia por
+      completo si sumás una segunda jornada para ver Jesús de Tavarangüé de noche.
+  - q: ¿Qué se ve de noche en Jesús de Tavarangüé?
+    a: >
+      El Recorrido de Luces y Sonidos: las ruinas se transforman en un escenario místico, con
+      música barroca misional sonando entre columnas de 300 años.
+  - q: ¿Se puede combinar con Encarnación?
+    a: >
+      Sí. Podés armar un fin de semana más largo con la costanera y la Playa San José, o sumar
+      Colonia Independencia. Mirá nuestra ruta de fin de semana en Encarnación.
+  - q: ¿Cuánto cuesta la escapada?
+    a: >
+      El precio se arma a medida según fechas y grupo. Escribinos por WhatsApp y coordinamos el
+      traslado entre ambos sitios.
+related:
+  - /actividades/misiones-jesuiticas-trinidad-jesus/
+  - /viajes/fin-de-semana-en-encarnacion/
 ---
 
-Las Misiones Jesuíticas de Trinidad y Jesús se pueden visitar en un solo día, pero la experiencia cambia por completo si sumás una segunda jornada para ver Jesús de Tavarangüé de noche. Esta escapada está pensada para quienes quieren algo más que una foto rápida frente a las ruinas.
+Esta escapada a las Misiones Jesuíticas de Trinidad y Jesús se puede hacer en un solo día, pero la experiencia cambia por completo si sumás una segunda jornada para ver Jesús de Tavarangüé de noche. Está pensada para quienes quieren algo más que una foto rápida frente a las ruinas.
 
 ## Dos Formas De Ver Lo Mismo
 

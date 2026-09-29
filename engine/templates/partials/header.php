@@ -10,6 +10,7 @@ $current = (string)($page['path'] ?? '');
         <span class="brand__text"><?= e($site['site_name']) ?></span>
       <?php endif; ?>
     </a>
+    <a class="header__wa" href="<?= e(Leads::whatsappUrl()) ?>" rel="noopener" target="_blank" aria-label="<?= e(t('whatsapp_cta')) ?>"><?= partial('icons', ['name' => 'whatsapp']) ?></a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-principal" aria-label="<?= e(t('open_menu')) ?>">
       <span class="nav-toggle__bar"></span><span class="nav-toggle__bar"></span><span class="nav-toggle__bar"></span>
     </button>

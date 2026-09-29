@@ -51,13 +51,35 @@ everything passed; this is the CI merge gate.
 
 ## Publishing content
 
+**Content ownership (viaje.com.py).** After the first deploy the *server* owns
+`sites/viaje.com.py/content/` and `media/` (the admin writes there; a Git deploy would
+overwrite them), so they are not tracked. The repo keeps the initial pages in
+`sites/viaje.com.py/content-seed/`; `php tools/seed-content.php` copies the seed to `content/`
+only when `content/` is empty. `build.php`, `verify.php` and CI read the seed when `content/`
+is absent. See `docs/cutover-runbook.md`.
+
 Content lives in `sites/<domain>/content/<type>/<slug>.md`: a small YAML front matter
 block plus markdown. Types are `page`, `service`, `post`, `news`, `trip`, `activity`.
 `path:` overrides the URL, which is how legacy WordPress URLs are kept byte-for-byte.
 
-Markdown gets three extensions: `:::tip Título` … `:::` callouts (also `:::note`
-and `:::warning`), automatic ids on every `h2`/`h3` for deep links, and `<picture>`
-with WebP sources for images that have generated variants.
+Markdown gets these extensions: `:::tip Título` … `:::` callouts (also `:::note`,
+`:::warning` and `:::answer`, the "Respuesta rápida" box), automatic ids on every
+`h2`/`h3` for deep links, tables wrapped in a scroll container (prices, distances), and
+`<picture>` with WebP sources for images that have generated variants.
+
+On-page SEO front matter (all optional, all editable in `/admin/`):
+
+| Key | Effect |
+|---|---|
+| `keyword` | The page's one primary search phrase. `tools/verify.php` warns when it is missing from the title, H1 or first paragraph and fails when two pages share it. Listed in `docs/keyword-map.md`. |
+| `quick_answer` | A short markdown answer rendered as the "Respuesta rápida" box near the top of posts, activities, trips and services. |
+| `faq` | List of `q`/`a` pairs (3–5). Rendered with the accordion at the end of the page and emitted as `FAQPage` JSON-LD on that page only (the site-wide `/faq/` keeps its own). |
+| `related` | Paths to pin into the "Te puede interesar" block; the rest is chosen from tags, region, type and existing links. |
+| `updated` | Shown as "Actualizado: …", sets `dateModified` and the sitemap `<lastmod>` (falls back to `date`). |
+| `show_contact` | On a `page`: appends the contact details from `config['contact']` (used by `/nosotros/`). |
+
+Authors and their short bios live in `config['authors']`; the author box and the schema
+`author` read them. `config['contact']['map_url']` is an OpenStreetMap link — no embedded maps.
 
 Day to day you do not touch files: **`/admin/`** is the publishing UI. It lists and
 edits every type from one form, generates the slug, counts title and description
