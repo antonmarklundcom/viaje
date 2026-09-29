@@ -11,6 +11,12 @@
       toggle.setAttribute('aria-label', toggle.getAttribute(open ? 'data-close' : 'data-open') || toggle.getAttribute('aria-label'));
     });
     nav.addEventListener('click', function (ev) {
+      var sub = ev.target.closest && ev.target.closest('.nav__sub-toggle');
+      if (sub) {
+        var li = sub.parentNode, o = li.classList.toggle('is-open');
+        sub.setAttribute('aria-expanded', o ? 'true' : 'false');
+        return;
+      }
       if (ev.target.tagName === 'A') { nav.classList.remove('is-open'); toggle.setAttribute('aria-expanded', 'false'); }
     });
   }

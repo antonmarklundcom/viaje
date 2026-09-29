@@ -58,9 +58,50 @@ return [
     // "Paquetes" leaves the nav (plan §1 item 5). Empty hubs stay out until they have content.
     'nav' => [
         ['label' => 'Inicio',       'href' => '/'],
-        ['label' => 'Servicios',    'href' => '/servicios/'],
-        ['label' => 'Actividades',  'href' => '/actividades/'],
-        ['label' => 'Viajes',       'href' => '/viajes/'],
+        ['label' => 'Servicios',    'href' => '/servicios/',
+            'columns' => [
+                ['heading' => 'Servicios', 'links' => [
+                    ['label' => 'Agencia de Viaje',         'href' => '/agencia-de-viaje/',         'desc' => 'Viajes a medida'],
+                    ['label' => 'Vacaciones',               'href' => '/vacaciones/',               'desc' => 'Paquetes sin catálogo'],
+                    ['label' => 'Traslados Privados',       'href' => '/traslados/',                'desc' => 'Aeropuerto y ciudades'],
+                    ['label' => 'Asistencia Personalizada', 'href' => '/asistencia-personalizada/', 'desc' => 'Acompañamiento 24/7'],
+                    ['label' => 'Gestión de Visas',         'href' => '/gestion-de-visas/',         'desc' => 'Trámites'],
+                ]],
+                ['heading' => 'Qué hacer', 'links' => [
+                    ['label' => 'Saltos del Monday',           'href' => '/actividades/saltos-del-monday/'],
+                    ['label' => 'Salto Suizo y Ybytyruzú',     'href' => '/actividades/salto-suizo-ybytyruzu/'],
+                    ['label' => 'Lago Ypacaraí',               'href' => '/actividades/lago-ypacarai-san-bernardino/'],
+                    ['label' => 'Costanera de Encarnación',    'href' => '/actividades/encarnacion-costanera/'],
+                    ['label' => 'Ver todas las actividades →', 'href' => '/actividades/'],
+                ]],
+                ['heading' => 'Rutas', 'links' => [
+                    ['label' => 'Ruta del Chaco en 3 días',     'href' => '/viajes/ruta-del-chaco-3-dias/'],
+                    ['label' => 'Fin de semana en Encarnación', 'href' => '/viajes/fin-de-semana-en-encarnacion/'],
+                    ['label' => 'Misiones Jesuíticas',          'href' => '/viajes/escapada-a-las-misiones-jesuiticas/'],
+                    ['label' => 'Ver todos los viajes →',       'href' => '/viajes/'],
+                ]],
+                ['heading' => 'Guías', 'links' => [
+                    ['label' => 'Destinos imprescindibles',     'href' => '/paraguay-destinos-imprescindibles-2026/'],
+                    ['label' => 'Destinos imperdibles 2026',    'href' => '/destinos-imperdibles-2026/'],
+                    ['label' => 'Preguntas frecuentes',         'href' => '/faq/'],
+                    ['label' => 'Blog de viajes →',             'href' => '/blog/'],
+                ]],
+            ],
+            'cta' => ['heading' => 'Armamos tu viaje', 'text' => 'Contanos fechas y presupuesto y te respondemos por WhatsApp.'],
+        ],
+        ['label' => 'Actividades',  'href' => '/actividades/', 'children' => [
+            ['label' => 'Saltos del Monday',        'href' => '/actividades/saltos-del-monday/'],
+            ['label' => 'Salto Suizo y Ybytyruzú',  'href' => '/actividades/salto-suizo-ybytyruzu/'],
+            ['label' => 'Lago Ypacaraí',            'href' => '/actividades/lago-ypacarai-san-bernardino/'],
+            ['label' => 'Misiones Jesuíticas',      'href' => '/actividades/misiones-jesuiticas-trinidad-jesus/'],
+            ['label' => 'Costanera de Encarnación', 'href' => '/actividades/encarnacion-costanera/'],
+            ['label' => 'Chaco Paraguayo',          'href' => '/actividades/chaco-paraguayo/'],
+        ]],
+        ['label' => 'Viajes',       'href' => '/viajes/', 'children' => [
+            ['label' => 'Ruta del Chaco en 3 días',     'href' => '/viajes/ruta-del-chaco-3-dias/'],
+            ['label' => 'Fin de semana en Encarnación', 'href' => '/viajes/fin-de-semana-en-encarnacion/'],
+            ['label' => 'Misiones Jesuíticas',          'href' => '/viajes/escapada-a-las-misiones-jesuiticas/'],
+        ]],
         ['label' => 'Blog',         'href' => '/blog/'],
         ['label' => 'FAQ',          'href' => '/faq/'],
         ['label' => 'Nosotros',     'href' => '/nosotros/'],
