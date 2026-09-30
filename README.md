@@ -38,7 +38,18 @@ description, one self-referencing canonical, one `<h1>`, an `alt` on every image
 JSON-LD graph containing the Organization node, and none of the old theme's leftover
 strings. It also validates `sitemap.xml` and `/feed/` and scans `content/` for
 duplicate paths, missing descriptions and heroes without alt text. Exit code 0 means
-everything passed; this is the CI merge gate.
+everything passed. It also checks that no config string loads Google/YouTube/reCAPTCHA, and runs
+the lead form and the newsletter's double opt-in end to end (mail is captured to
+`dist/<domain>/site/data/outbox.log`).
+
+```bash
+bash tools/ci-local.sh                      # the CI merge gate: php -l, both verify runs, tools/tests/*.php
+```
+
+`.github/workflows/ci.yml` only calls `tools/ci-local.sh`, so a local run and CI cannot drift.
+`tools/tests/` holds behaviour tests verify.php cannot see: trusted-proxy client IP, newsletter
+mail failure and link expiry, the page cache under parallel requests, content history through the
+real admin, and the config third-party guard.
 
 ## Adding a site
 
@@ -87,7 +98,9 @@ length against a live Google-snippet preview, uploads images (refusing to save o
 without alt text, then generating 480/960/1600 WebP variants), previews markdown,
 saves drafts, publishes, and edits `content/data/*.json` (FAQ, testimonials, team,
 gallery) as rows. Publishing writes the file atomically, clears the page cache and
-regenerates the sitemap and feed on the next request.
+regenerates the sitemap and feed on the next request. Every save, delete and restore first
+copies the previous version to `data/history/` (newest 20 per page); each page's **Historial**
+screen restores any of them, or the original from `content-seed/`.
 
 ### Setting the admin password
 

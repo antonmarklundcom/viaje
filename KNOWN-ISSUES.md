@@ -38,7 +38,7 @@ pick it up. Nothing here blocks the phase it was written in.
 7. **The admin has no rich-text editor.** It is a markdown textarea with a toolbar and
    a server-rendered preview, by design (spec §8). *(Backlog.)*
 
-8. **`mail()` delivery is unverified.** `leads.php` writes every lead to
+8. **`mail()` delivery is unverified.** *(2026-09-30: the newsletter's double opt-in now depends on it — see #31.)* `leads.php` writes every lead to
    `site/data/leads/YYYY-MM.jsonl` first and treats mail failure as non-fatal, so no
    lead can be lost to a mail misconfiguration. Whether Hostinger's `mail()` actually
    delivers to `hola@viaje.com.py` is a phase-4 check on the real host.
@@ -117,7 +117,7 @@ pick it up. Nothing here blocks the phase it was written in.
     history without unbounded growth on shared-hosting disk quotas. Adjust the `KEEP`
     constant if that's wrong for Anton's plan. Zips the same three directories as the
     admin's "Export backup" button (`content`, `media`, `data/leads`) so both stay in
-    sync by construction.
+    sync by construction. *(2026-09-30: both also include `data/history`.)*
 
 18. **`.github/workflows/deploy.yml` pins `SamKirkland/FTP-Deploy-Action@v4.3.5`.** The
     job is inert (a step fails fast with a clear message) until repo secrets
@@ -162,10 +162,10 @@ pick it up. Nothing here blocks the phase it was written in.
     root `*.txt` files, which also matched `robots.txt`. Found by reading the rules (the built-in
     dev server does not run `.htaccess`), so confirm `curl -I https://viaje.com.py/robots.txt` after
     the deploy.
-24. **The page cache could outlive a deploy.** Cache files lived in an untracked folder, so old HTML
+24. **[IMPROVED 2026-09-30: fingerprint checked at most once a minute via `cache/.sigcheck`; atomic per-generation cache directories; forms no longer depend on the TTL — see #29.]** **The page cache could outlive a deploy.** Cache files lived in an untracked folder, so old HTML
     survived template changes. The cache is now fingerprinted (engine code, templates, config, theme,
     content) and pages older than 6 h are re-rendered, which also keeps the lead-form time stamp valid.
-25. **The guide pages carry the lead form**, so their cached HTML holds a signed stamp. Handled by
+25. **[IMPROVED 2026-09-30: cached pages carry no stamp any more; forms fetch a fresh one from `/enviar/sello/` on first use. Only the uncached contact page renders one.]** **The guide pages carry the lead form**, so their cached HTML holds a signed stamp. Handled by
     the 6 h page TTL above; a visitor who leaves a tab open for more than 24 h still gets the
     "formulario expiró" message on submit (same as on the contact page).
 26. **Only one `hero`-style image per `<picture>` is preloaded**, and only when it has local WebP
@@ -175,3 +175,24 @@ pick it up. Nothing here blocks the phase it was written in.
 28. **Team portraits and author avatars are still missing** (`content/data/team.json` has `photo: null`);
     listed in `docs/higgsfield-todo.md`. The author box works without a photo.
 
+## Engine hardening — 2026-09-30
+
+29. **A deploy or File Manager edit shows up within 60 seconds, not instantly.** The build fingerprint
+    (a stat of ~60 files) is recomputed at most once a minute (`cache/.sigcheck`); a cached page now
+    costs 12 stat calls instead of 96. Edits made through `/admin/` purge the cache and show at once.
+    Deleting `sites/viaje.com.py/cache/` forces an immediate refresh.
+30. **The newsletter confirmation link is a plain GET.** Some corporate mail filters open links to
+    scan them, which would confirm the address without the person clicking. Accepted: it still proves
+    the inbox received the email; a click-through "Confirmar" button would fix it at the cost of one
+    extra step. There is no unsubscribe link yet (the privacy text says to write to us).
+31. **Newsletter double opt-in depends on `mail()`** (#8). If `mail()` fails the visitor is told so and
+    the pending row is kept with `"mail":"failed"`, but nobody is subscribed. Sender is
+    `no-reply@viaje.com.py`; deliverability (SPF/DKIM/DMARC) is a server-side check in the runbook.
+    Rows in `newsletter.jsonl` without a `status` (written before 2026-09-30) were never confirmed.
+32. **`X-Forwarded-Proto` is still read without a trusted-proxy check** (pre-existing, in
+    `Router::canonicalRedirect()` and the admin cookie's `secure` flag). Forging it only affects the
+    forger's own request (no https redirect / a cookie their http connection won't send back), so it
+    was left alone; `trusted_proxies` covers the client IP only.
+33. **Forms on cached pages need JavaScript** to get their stamp. Without it the guide lead form and the
+    newsletter show a `<noscript>` hint and fail with "El formulario expiró. Recargá la página…"; the
+    WhatsApp button is a plain link and always works, and the contact page works without JS.

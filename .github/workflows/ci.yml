@@ -18,14 +18,7 @@ jobs:
           extensions: gd, mbstring, fileinfo, zip
           coverage: none
 
-      - name: Lint every PHP file
-        run: |
-          set -e
-          find . -path ./dist -prune -o -name '*.php' -print0 \
-            | xargs -0 -n1 -P4 php -l > /dev/null
-
-      - name: Verify viaje.com.py
-        run: php tools/verify.php viaje.com.py --strict
-
-      - name: Verify thingstodoinparaguay.com
-        run: php tools/verify.php thingstodoinparaguay.com
+      # Everything else lives in one script so CI and local runs cannot drift:
+      # php -l, verify.php for both sites, and tools/tests/*.php.
+      - name: Merge gate (tools/ci-local.sh)
+        run: bash tools/ci-local.sh
