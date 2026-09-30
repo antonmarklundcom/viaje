@@ -71,14 +71,29 @@ final class Render
 
     /* -------------------------------------------------------------- cache */
 
+    /**
+     * Root of the page cache. Pages live one level down, in a directory per generation (named
+     * after the build signature), so a new generation never shares files with the old one.
+     */
     public static function dir(): string
     {
         return VJ_SITE . '/cache/pages';
     }
 
+    /** Holds the last computed build signature; its mtime says when it was computed. */
+    private static function markerFile(): string
+    {
+        return VJ_SITE . '/cache/.sigcheck';
+    }
+
+    private static function genDir(): string
+    {
+        return self::dir() . '/' . substr(self::buildSig(), 0, 20);
+    }
+
     private static function key(string $path): string
     {
-        return self::dir() . '/' . sha1($path) . '.html';
+        return self::genDir() . '/' . sha1($path) . '.html';
     }
 
     /**
@@ -87,10 +102,18 @@ final class Render
      */
     private const TTL = 6 * 3600;
 
+    /** The full fingerprint (a stat of every file below) is recomputed at most this often. */
+    private const SIG_EVERY = 60;
+
     /**
      * Fingerprint of everything that shapes the HTML: engine code and templates, language files,
      * the site's config and theme, and the content itself. A deploy or a file-manager edit changes
      * it, which retires every cached page — so stale HTML can never outlive the code that made it.
+     *
+     * Stat-ing ~60 files is not free, so the value is kept in cache/.sigcheck and reused while that
+     * file is younger than SIG_EVERY seconds; once it is older, one request (the one that gets the
+     * lock) recomputes it and the others keep the previous value meanwhile. A deploy therefore
+     * shows within a minute; admin writes call purge(), which drops the marker, so they show at once.
      */
     private static function buildSig(): string
     {
@@ -98,6 +121,34 @@ final class Render
         if ($sig !== null) {
             return $sig;
         }
+        $marker = self::markerFile();
+        $stored = self::storedSig();
+        $mtime  = @filemtime($marker);
+        if ($stored !== null && $mtime !== false && $mtime > time() - self::SIG_EVERY) {
+            return $sig = $stored;
+        }
+        Util::mkdirp(dirname($marker));
+        $lock = @fopen($marker . '.lock', 'c');
+        $mine = $lock !== false && flock($lock, LOCK_EX | LOCK_NB);
+        if (!$mine && $stored !== null) {
+            if ($lock !== false) {
+                fclose($lock);
+            }
+            return $sig = $stored;           // someone else is recomputing right now
+        }
+        $sig = self::computeSig();
+        Util::atomicWrite($marker, $sig);
+        if ($lock !== false) {
+            if ($mine) {
+                flock($lock, LOCK_UN);
+            }
+            fclose($lock);
+        }
+        return $sig;
+    }
+
+    private static function computeSig(): string
+    {
         $files = array_merge(
             glob(VJ_ENGINE . '/lib/*.php') ?: [],
             glob(VJ_ENGINE . '/templates/*.php') ?: [],
@@ -110,18 +161,14 @@ final class Render
         foreach ($files as $f) {
             $parts[] = $f . ':' . (string)@filemtime($f);
         }
-        return $sig = hash('sha256', implode('|', $parts) . '|' . Content::signature());
+        return hash('sha256', implode('|', $parts) . '|' . Content::signature());
     }
 
-    private static function sigFile(): string
+    /** The signature in the marker file, or null. */
+    private static function storedSig(): ?string
     {
-        return self::dir() . '/.sig';
-    }
-
-    private static function sigOk(): bool
-    {
-        $f = self::sigFile();
-        return is_file($f) && trim((string)@file_get_contents($f)) === self::buildSig();
+        $v = trim((string)@file_get_contents(self::markerFile()));
+        return preg_match('/^[a-f0-9]{64}$/', $v) ? $v : null;
     }
 
     public static function cacheable(): bool
@@ -142,31 +189,71 @@ final class Render
         if (!self::cacheable()) {
             return null;
         }
-        $file = self::key($path);
-        if (!is_file($file) || !self::sigOk() || (int)@filemtime($file) < time() - self::TTL) {
+        $file  = self::key($path);
+        $mtime = @filemtime($file);
+        if ($mtime === false || $mtime < time() - self::TTL) {
             return null;
         }
         $html = @file_get_contents($file);
-        return $html === false ? null : $html;
+        return $html === false || $html === '' ? null : $html;
     }
 
+    /**
+     * Store a page in the current generation. Safe under concurrency: a generation directory is
+     * only started for the signature the marker holds right now, whoever starts it retires the
+     * others (rename, then delete), and each page is written to a temp file and renamed in — a
+     * reader sees the old file, the new file or nothing, never half a page. A writer that lost a
+     * race (its generation was retired under it) simply fails to cache; it never recreates the
+     * directory.
+     */
     public static function cachePut(string $path, string $html): void
     {
-        if (!self::cacheable()) {
+        if (!self::cacheable() || $html === '') {
             return;
         }
-        if (!self::sigOk()) {
-            Util::rrmdir(self::dir());   // first write since a deploy or edit: drop the old generation
-            Util::mkdirp(self::dir());
-            Util::atomicWrite(self::sigFile(), self::buildSig());
+        $gen = self::genDir();
+        if (!is_dir($gen)) {
+            if (self::storedSig() !== self::buildSig()) {
+                return;                      // our signature is already outdated: don't start a stale generation
+            }
+            if (!@mkdir($gen, 0775, true) && !is_dir($gen)) {
+                return;
+            }
+            self::retire(basename($gen));
         }
-        Util::atomicWrite(self::key($path), $html);
+        $tmp = $gen . '/.tmp-' . bin2hex(random_bytes(6));
+        if (@file_put_contents($tmp, $html) === false) {
+            @unlink($tmp);
+            return;
+        }
+        @chmod($tmp, 0664);
+        if (!@rename($tmp, self::key($path))) {
+            @unlink($tmp);
+        }
     }
 
-    /** Drop the whole page cache and the content index. Called on every write. */
+    /** Remove every generation but $keep. Renamed away first, so no writer can land in a half-deleted one. */
+    private static function retire(?string $keep): void
+    {
+        foreach (glob(self::dir() . '/*', GLOB_ONLYDIR | GLOB_NOSORT) ?: [] as $dir) {
+            if (basename($dir) === $keep) {
+                continue;
+            }
+            $trash = self::dir() . '/.old-' . bin2hex(random_bytes(6));
+            if (@rename($dir, $trash)) {
+                Util::rrmdir($trash);
+            }
+        }
+        foreach (glob(self::dir() . '/.old-*', GLOB_ONLYDIR | GLOB_NOSORT) ?: [] as $dir) {
+            Util::rrmdir($dir);              // leftovers of an interrupted prune
+        }
+    }
+
+    /** Drop the whole page cache, the signature marker and the content index. Called on every write. */
     public static function purge(): void
     {
-        Util::rrmdir(self::dir());
+        @unlink(self::markerFile());
+        self::retire(null);
         Content::purge();
     }
 }

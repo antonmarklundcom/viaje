@@ -59,7 +59,10 @@ So editing a page means using `/admin/`, not committing to the repo. Changes to
 ### Every later deploy
 
 Deploy button only. The page cache retires itself when engine code, templates, config, theme or
-content change (it is fingerprinted), so there is nothing to clear. **Never run the seed again**
+content change (it is fingerprinted), so there is nothing to clear. The fingerprint is re-checked at
+most once a minute (`cache/.sigcheck`), so a deploy or a File Manager edit shows up within
+60 seconds; edits made in `/admin/` show immediately. Cached pages live in
+`sites/viaje.com.py/cache/pages/<generation>/`; deleting the whole `cache/` folder is always safe. **Never run the seed again**
 after real edits exist — it refuses anyway when `content/` is not empty. `config.local.php`
 (password hash, `force_host` on staging), `data/` (leads and `newsletter.jsonl`), `cache/` and
 `media/` are untracked and survive deploys. Weekly backup cron path:

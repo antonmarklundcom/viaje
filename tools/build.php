@@ -78,6 +78,7 @@ if (is_dir($siteDir . '/static')) {
 // 6. A stale page cache would mask the new build.
 rrmdir($siteOut . '/cache/pages');
 @unlink($siteOut . '/cache/index.php');
+@unlink($siteOut . '/cache/.sigcheck');
 
 echo "Built dist/$domain\n";
 exit(0);
