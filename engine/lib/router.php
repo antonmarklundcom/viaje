@@ -33,6 +33,9 @@ final class Router
         if (str_starts_with($path, '/admin')) {
             return Admin::dispatch($method, $path, $query, $post);
         }
+        if ($path === '/enviar/sello/' || $path === '/enviar/sello') {
+            return self::sello($method);
+        }
         if ($path === '/enviar/' || $path === '/enviar') {
             return self::enviar($method, $post);
         }
@@ -309,8 +312,9 @@ final class Router
             'seo'   => Seo::head(Seo::forPage($page)),
         ];
         $html = Render::page($template, $vars);
-        // The contact page carries a signed, time-limited form stamp; caching it
-        // would eventually serve an expired one.
+        // The contact page renders a signed stamp into its form (so it works without JS);
+        // caching it would eventually serve an expired one. Every other form fetches its
+        // stamp from /enviar/sello/ and is safe to cache.
         if (!$preview && $template !== 'contact') {
             Render::cachePut((string)$page['path'], $html);
         }
@@ -399,6 +403,20 @@ final class Router
         return $wantsJson
             ? Response::json(['ok' => true])
             : Response::redirect($contact . '?enviado=1#formulario', 303);
+    }
+
+    /**
+     * GET /enviar/sello/ — a fresh signed time stamp for a form's hidden `ts` field. Pages are
+     * cached for hours, so forms on them carry none; assets/site.js fetches one on first use.
+     */
+    private static function sello(string $method): Response
+    {
+        if ($method === 'POST') {
+            return self::error(405);
+        }
+        return Response::json(['ts' => Leads::stamp()])
+            ->withHeader('Cache-Control', 'no-store')
+            ->withHeader('X-Robots-Tag', 'noindex');
     }
 
     /* ---------------------------------------------------------- /suscribir/ */

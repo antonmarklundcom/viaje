@@ -274,6 +274,7 @@ p, ul, ol { margin: 0 0 1em; }
 .lead__hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .lead__actions { display: flex; flex-wrap: wrap; gap: .75rem; margin: 0; }
 .lead__privacy { font-size: .85rem; color: var(--color-muted); margin: 0; }
+.lead__noscript { font-size: .9rem; margin: 0 0 .75rem; }
 .req { color: var(--color-accent); }
 .notice { border-radius: var(--radius); padding: 1rem 1.15rem; margin-bottom: 1.25rem; }
 .notice__title { font-weight: 700; margin: 0 0 .3rem; }

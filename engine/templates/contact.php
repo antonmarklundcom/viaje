@@ -9,7 +9,7 @@ echo partial('breadcrumbs', ['trail' => $trail ?? []]);
       <?= partial('contact-details', ['site' => $site]) ?>
     </div>
     <div class="contact__form">
-      <?= partial('lead-form', ['page' => $page, 'site' => $site]) ?>
+      <?= partial('lead-form', ['page' => $page, 'site' => $site, 'server_stamp' => true]) ?>
     </div>
   </div>
 </article>

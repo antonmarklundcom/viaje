@@ -55,4 +55,44 @@
       if (missing) { ev.preventDefault(); missing.focus(); missing.setAttribute('aria-invalid', 'true'); }
     });
   }
+
+  /* Forms on cached pages carry no time stamp: fetch a fresh signed one from data-stamp on first
+     use, and hold a quick submit until it is old enough for the server (Leads::MIN_AGE = 3 s).
+     Without JS the WhatsApp button still works and the server answers "recargá la página". */
+  var MIN_AGE = 3300, MAX_AGE = 6 * 3600 * 1000;
+  Array.prototype.forEach.call(document.querySelectorAll('form[data-stamp]'), function (f) {
+    var input = f.querySelector('input[name="ts"]');
+    if (!input || !window.fetch) { return; }
+    var at = 0, busy = null;
+    var get = function () {
+      busy = busy || fetch(f.getAttribute('data-stamp'), { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { if (j && j.ts) { input.value = j.ts; at = Date.now(); } })
+        .catch(function () {})
+        .then(function () { busy = null; });
+      return busy;
+    };
+    var first = function () {
+      f.removeEventListener('focusin', first);
+      f.removeEventListener('pointerdown', first);
+      get();
+    };
+    f.addEventListener('focusin', first);
+    f.addEventListener('pointerdown', first);
+    window.addEventListener('pageshow', function () {   /* back button: the page may come back frozen mid-submit */
+      var b = f.querySelector('[type="submit"]');
+      if (b) { b.disabled = false; b.removeAttribute('aria-busy'); }
+    });
+    f.addEventListener('submit', function (ev) {
+      if (ev.defaultPrevented) { return; }
+      var age = Date.now() - at;
+      if (at ? (age >= MIN_AGE && age < MAX_AGE) : (!busy && input.value)) { return; }
+      ev.preventDefault();
+      var btn = f.querySelector('[type="submit"]');
+      if (btn) { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); }
+      var send = function () { HTMLFormElement.prototype.submit.call(f); };
+      var wait = function () { setTimeout(send, at ? Math.max(0, MIN_AGE - (Date.now() - at)) : 0); };
+      if (at && age < MAX_AGE) { wait(); } else { at = 0; (busy || get()).then(wait); }
+    });
+  });
 })();

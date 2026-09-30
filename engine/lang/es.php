@@ -224,7 +224,7 @@ return [
     'nl_mail_subject'   => 'Confirmá tu suscripción a :site',
     'nl_mail_body'      => "Hola:\n\nPidieron recibir las guías de :site en esta dirección. Para confirmar, abrí este enlace:\n\n:link\n\nEl enlace vale :days días. Si no fuiste vos, ignorá este email: no te vamos a escribir.\n\n— :site",
     'err_nl_mail'       => 'No pudimos enviarte el email de confirmación, así que todavía no quedaste anotado. Probá de nuevo en un rato o escribinos a :email.',
-    'form_noscript'     => 'Este formulario necesita JavaScript. Sin JavaScript, escribinos por WhatsApp con el botón verde.',
+    'form_noscript'     => 'Este formulario necesita JavaScript activado. También podés escribirnos por WhatsApp.',
     'err_nl_store'      => 'No pudimos guardar tu email. Escribinos a :email.',
     'keyword'           => 'Frase clave (SEO)',
     'quick_answer_field'=> 'Respuesta rápida',

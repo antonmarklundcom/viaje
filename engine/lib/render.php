@@ -81,7 +81,10 @@ final class Render
         return self::dir() . '/' . sha1($path) . '.html';
     }
 
-    /** Cached pages older than this are re-rendered: the lead forms inside carry a signed, expiring stamp. */
+    /**
+     * Cached pages older than this are re-rendered anyway. Not needed for form correctness any
+     * more (forms on cached pages fetch their stamp from /enviar/sello/), just a bound on staleness.
+     */
     private const TTL = 6 * 3600;
 
     /**

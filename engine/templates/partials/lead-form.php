@@ -1,5 +1,8 @@
-<?php /** @var array $page @var array $site @var string|null $variant 'short' = name, WhatsApp and a prefilled message (end of guides) */
+<?php /** @var array $page @var array $site @var string|null $variant 'short' = name, WhatsApp and a prefilled message (end of guides)
+ * @var bool|null $server_stamp true only on uncached pages (contact): the signed stamp is rendered in; elsewhere
+ * assets/site.js fetches a fresh one from /enviar/sello/ on first use (data-stamp). */
 $short   = ($variant ?? '') === 'short';
+$stamp   = !empty($server_stamp) ? Leads::stamp() : '';
 $topics  = Leads::topics();
 $sent    = ($_GET['enviado'] ?? '') === '1';
 $err     = ($_GET['error'] ?? '') === '1';
@@ -27,7 +30,7 @@ $waHref  = Leads::whatsappUrl(Leads::pageText($page));
 
   <h2 class="section__title"><?= e(!empty($heading) ? (string)$heading : t('form_title')) ?></h2>
   <?php if (!empty($intro)): ?><p class="lead__intro"><?= e((string)$intro) ?></p><?php endif; ?>
-  <form class="lead__form<?= $short ? ' lead__form--short' : '' ?>" method="post" action="/enviar/" novalidate>
+  <form class="lead__form<?= $short ? ' lead__form--short' : '' ?>" method="post" action="/enviar/" data-stamp="/enviar/sello/" novalidate>
     <p class="lead__field">
       <label for="lf-name"><?= e(t('form_name')) ?> <span class="req" aria-hidden="true">*</span></label>
       <input id="lf-name" name="name" type="text" required autocomplete="name" maxlength="120">
@@ -58,9 +61,10 @@ $waHref  = Leads::whatsappUrl(Leads::pageText($page));
       <label for="lf-website">Website</label>
       <input id="lf-website" name="website" type="text" tabindex="-1" autocomplete="off">
     </p>
-    <input type="hidden" name="ts" value="<?= e(Leads::stamp()) ?>">
+    <input type="hidden" name="ts" value="<?= e($stamp) ?>">
     <input type="hidden" name="page" value="<?= e($pPath) ?>">
     <input type="hidden" name="page_title" value="<?= e($pTitle) ?>">
+    <?php if ($stamp === ''): ?><noscript><p class="lead__noscript"><?= e(t('form_noscript')) ?></p></noscript><?php endif; ?>
     <p class="lead__actions">
       <button class="btn btn--primary" type="submit"><?= e(t('form_submit')) ?></button>
       <a class="btn btn--wa" id="lf-wa" href="<?= e($waHref) ?>" data-context="<?= e($context) ?>" rel="noopener" target="_blank"><?= partial('icons', ['name' => 'whatsapp']) ?><?= e(t('whatsapp_cta')) ?></a>

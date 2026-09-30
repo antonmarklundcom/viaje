@@ -828,8 +828,9 @@ function post(string $url, array $fields): array
 }
 
 /**
- * The forms as a visitor uses them: take the signed stamp out of a *served* guide page (the
- * page cache must not have let it expire), submit, and read the record from disk.
+ * The forms as a visitor uses them: the cached guide page carries no stamp, so fetch one from
+ * /enviar/sello/ the way assets/site.js does, wait Leads::MIN_AGE, submit, and read the record
+ * from disk. Also: without a stamp (JS off) the submit fails with the "recargá la página" message.
  */
 function formChecks(array &$failures, string $base, array $htmlByPath, string $distDir): int
 {
@@ -840,9 +841,30 @@ function formChecks(array &$failures, string $base, array $htmlByPath, string $d
         $guide = (string)array_key_first(array_filter($htmlByPath, static fn(string $h): bool => str_contains($h, 'lead__form--short')));
         $html  = $htmlByPath[$guide] ?? '';
     }
-    if ($html === '' || !preg_match_all('#<input type="hidden" name="ts" value="([^"]+)">#', $html, $ts) || count($ts[1]) < 1) {
-        fail($failures, $guide, 'cannot find the signed form stamp on the guide page');
-        return 1;
+    $checks += 4;
+    if ($html === '' || !preg_match_all('#<form [^>]*data-stamp="/enviar/sello/"[^>]*>.*?<input type="hidden" name="ts" value="([^"]*)">#s', $html, $forms)) {
+        fail($failures, $guide, 'the guide page has no form with data-stamp="/enviar/sello/"');
+        return $checks;
+    }
+    if (array_filter($forms[1], static fn(string $v): bool => $v !== '') !== []) {
+        fail($failures, $guide, 'a cached page must not carry a baked-in form stamp');
+    }
+    $contact = request($base . '/contacto/');
+    if (!preg_match('#<input type="hidden" name="ts" value="(\d+\.[a-f0-9]{64})">#', $contact['body'])) {
+        fail($failures, '/contacto/', 'the (uncached) contact page should render a signed stamp, so it works without JS');
+    }
+    $sello = request($base . '/enviar/sello/');
+    $stamp = (string)(json_decode($sello['body'], true)['ts'] ?? '');
+    if ($sello['status'] !== 200 || !preg_match('#^\d+\.[a-f0-9]{64}$#', $stamp)
+        || !str_contains((string)($sello['headers']['cache-control'] ?? ''), 'no-store')) {
+        fail($failures, '/enviar/sello/', 'should answer 200 JSON {ts} with Cache-Control: no-store, got ' . $sello['status'] . ' ' . $sello['body']);
+        return $checks;
+    }
+    // No JS → no stamp: the visitor must get the "reload" message back on the guide, not a silent failure.
+    $nojs = post($base . '/enviar/', ['name' => 'Verifier', 'phone' => '0981 000 000', 'message' => 'x', 'ts' => '', 'page' => $guide, 'website' => '']);
+    $loc  = urldecode((string)($nojs['headers']['location'] ?? ''));
+    if ($nojs['status'] !== 303 || !str_starts_with($loc, $guide . '?error=1') || !str_contains($loc, 'Recargá la página')) {
+        fail($failures, '/enviar/', 'a submit without a stamp should 303 back with the "recargá la página" error, got ' . $nojs['status'] . ' ' . $loc);
     }
     sleep(4);   // Leads::MIN_AGE is 3 s
     $leads = $distDir . '/site/data/leads';
@@ -852,7 +874,7 @@ function formChecks(array &$failures, string $base, array $htmlByPath, string $d
     $checks++;
     $r = post($base . '/enviar/', [
         'name' => 'Verifier', 'phone' => '0981 000 000', 'message' => 'Quiero más información sobre esta guía.',
-        'topic' => 'Consulta desde: guía', 'ts' => $ts[1][0], 'page' => $guide, 'page_title' => 'Saltos del Monday', 'website' => '',
+        'topic' => 'Consulta desde: guía', 'ts' => $stamp, 'page' => $guide, 'page_title' => 'Saltos del Monday', 'website' => '',
     ]);
     if ($r['status'] !== 303 || !str_starts_with((string)($r['headers']['location'] ?? ''), $guide . '?enviado=1')) {
         fail($failures, '/enviar/', 'a lead from a guide should 303 back to the guide, got ' . $r['status'] . ' ' . ($r['headers']['location'] ?? ''));
@@ -880,11 +902,11 @@ function formChecks(array &$failures, string $base, array $htmlByPath, string $d
             static fn($r): bool => is_array($r) && strtolower((string)($r['email'] ?? '')) === strtolower($email)));
     };
     $checks += 8;
-    $r = post($base . '/suscribir/', ['email' => $email, 'ts' => $ts[1][0], 'page' => $guide, 'website' => '']);
+    $r = post($base . '/suscribir/', ['email' => $email, 'ts' => $stamp, 'page' => $guide, 'website' => '']);
     if ($r['status'] !== 303 || !str_contains((string)($r['headers']['location'] ?? ''), 'suscrito=1')) {
         fail($failures, '/suscribir/', 'signup should 303 with ?suscrito=1, got ' . $r['status'] . ' ' . ($r['headers']['location'] ?? ''));
     }
-    post($base . '/suscribir/', ['email' => strtoupper($email), 'ts' => $ts[1][0], 'page' => $guide, 'website' => '']);
+    post($base . '/suscribir/', ['email' => strtoupper($email), 'ts' => $stamp, 'page' => $guide, 'website' => '']);
     $pending = $rowsFor($pendingFile);
     if (count($pending) !== 1 || ($pending[0]['status'] ?? '') !== 'pending' || ($pending[0]['mail'] ?? '') !== 'sent') {
         fail($failures, '/suscribir/', 'a signup should leave exactly one pending row (mail sent) in newsletter-pending.jsonl, found ' . json_encode($pending));
@@ -925,12 +947,12 @@ function formChecks(array &$failures, string $base, array $htmlByPath, string $d
         if ($again['status'] !== 200 || count($rowsFor($nlFile)) !== 1) {
             fail($failures, '/suscribir/confirmar/', 'replaying the link should be a harmless 200 that writes nothing');
         }
-        $r = post($base . '/suscribir/', ['email' => $email, 'ts' => $ts[1][0], 'page' => $guide, 'website' => '']);
+        $r = post($base . '/suscribir/', ['email' => $email, 'ts' => $stamp, 'page' => $guide, 'website' => '']);
         if (!str_contains((string)($r['headers']['location'] ?? ''), 'suscrito=ya') || count($rowsFor($nlFile)) !== 1 || $rowsFor($pendingFile) !== []) {
             fail($failures, '/suscribir/', 'signing up a confirmed address should 303 with ?suscrito=ya and write nothing');
         }
     }
-    $r = post($base . '/suscribir/', ['email' => 'not-an-email', 'ts' => $ts[1][0], 'page' => $guide, 'website' => '']);
+    $r = post($base . '/suscribir/', ['email' => 'not-an-email', 'ts' => $stamp, 'page' => $guide, 'website' => '']);
     if ($r['status'] !== 303 || !str_contains((string)($r['headers']['location'] ?? ''), 'suscripcion=error')) {
         fail($failures, '/suscribir/', 'an invalid email should 303 with ?suscripcion=error');
     }

@@ -224,7 +224,7 @@ return [
     'nl_mail_subject'   => 'Confirm your subscription to :site',
     'nl_mail_body'      => "Hello,\n\nSomeone asked to receive the :site guides at this address. To confirm, open this link:\n\n:link\n\nThe link is valid for :days days. If it was not you, ignore this email: we will not write to you.\n\n— :site",
     'err_nl_mail'       => 'We could not send you the confirmation email, so you are not on the list yet. Try again later or write to :email.',
-    'form_noscript'     => 'This form needs JavaScript. Without it, message us on WhatsApp with the green button.',
+    'form_noscript'     => 'This form needs JavaScript enabled. You can also message us on WhatsApp.',
     'err_nl_store'      => 'We could not save your email. Write to :email.',
     'keyword'           => 'Focus keyword (SEO)',
     'quick_answer_field'=> 'Quick answer',
