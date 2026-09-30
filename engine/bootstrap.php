@@ -20,7 +20,7 @@ ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 
 foreach (['util', 'config', 'i18n', 'frontmatter', 'types', 'markdown', 'images',
-          'content', 'seo', 'render', 'leads', 'admin', 'router'] as $lib) {
+          'content', 'seo', 'render', 'leads', 'history', 'admin', 'router'] as $lib) {
     require_once VJ_ENGINE . '/lib/' . $lib . '.php';
 }
 

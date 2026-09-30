@@ -1,4 +1,4 @@
-<?php /** @var string $type @var list<array> $items */ ?>
+<?php /** @var string $type @var list<array> $items @var list<array> $deleted */ ?>
 <div class="adm-card">
   <div class="adm-card__head">
     <h1><?= e(Types::label($type, true)) ?></h1>
@@ -28,3 +28,19 @@
     </tbody>
   </table>
 </div>
+<?php if (!empty($deleted)): ?>
+<div class="adm-card">
+  <h2><?= e(t('admin_history_deleted')) ?></h2>
+  <table class="adm-table">
+    <tbody>
+    <?php foreach ($deleted as $d): ?>
+      <tr>
+        <td><code><?= e($d['slug']) ?>.md</code></td>
+        <td><?= e($d['latest']) ?> · <?= (int)$d['versions'] ?></td>
+        <td class="adm-actions"><a href="/admin/content/<?= e($type) ?>/<?= e($d['slug']) ?>/history"><?= e(t('admin_history')) ?></a></td>
+      </tr>
+    <?php endforeach; ?>
+    </tbody>
+  </table>
+</div>
+<?php endif; ?>

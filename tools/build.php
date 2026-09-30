@@ -63,6 +63,12 @@ if ($contentSrc !== null && (!is_dir($siteOut . '/content') || $fresh)) {
     rrmdir($siteOut . '/content');
     copyTree($contentSrc, $siteOut . '/content');
 }
+// The seed copy travels too (git-owned, never served — .htaccess blocks site/content-seed/):
+// the admin's "Restore from seed" reads it.
+rrmdir($siteOut . '/content-seed');
+if (is_dir($siteDir . '/content-seed')) {
+    copyTree($siteDir . '/content-seed', $siteOut . '/content-seed');
+}
 foreach (['media', 'data', 'cache'] as $dir) {
     mkdirp($siteOut . '/' . $dir);
 }

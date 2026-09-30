@@ -71,6 +71,18 @@ after real edits exist — it refuses anyway when `content/` is not empty. `conf
 Create `sites/viaje.com.py/config.local.php` on the server once (copy
 `config.local.example.php`; admin password hash, and `force_host` null while on a staging hostname).
 
+### Content history and undo (`data/history/`)
+
+The server's `content/` has no git history, so the admin keeps one: before every save, delete or
+restore, the previous file is copied to `sites/viaje.com.py/data/history/<type>/<slug>/<YYYYmmdd-HHMMSS-micro>.md`
+(`data/history/data/<name>/…json` for FAQ/testimonials/team/gallery). The newest 20 per page are
+kept. In `/admin/`: the **Historial (N)** button on a page's editor (or on a data collection) lists
+the versions with **Ver** and **Restaurar**; restoring saves the current version first, so it can
+be undone too. **Restaurar desde la copia original (seed)** appears only when the page also exists in
+`content-seed/` (the version shipped in the repo). Deleted pages are listed under "Eliminadas, con
+historial" on their type's list and come back from there. `data/history` is in the weekly backup
+zip and in *Exportar copia*.
+
 ### After publishing: tell Bing (IndexNow)
 
 The site answers `https://viaje.com.py/<indexnow.key>.txt` with its key (`indexnow.key` in
@@ -365,7 +377,7 @@ Check Search Console daily for two weeks:
 
 ## 14. Weekly backup cron
 
-`engine/bin/backup.php` zips `site/content`, `site/media` and `site/data/leads` into
+`engine/bin/backup.php` zips `site/content`, `site/media`, `site/data/leads` and `site/data/history` into
 `site/data/backups/viaje.com.py-backup-<timestamp>.zip` (same contents as the admin's
 "Export backup" button) and keeps the newest 8. It's already on the server — deploying
 copies all of `engine/`. Wire it into hPanel:
