@@ -39,6 +39,7 @@ if (!is_dir($siteDir)) {
 }
 
 require_once $repo . '/engine/lib/frontmatter.php';
+require_once $repo . '/engine/lib/config.php';   // Config::thirdPartyHits(), shared with the runtime warning
 
 $failures = [];
 $warnings = [];
@@ -177,6 +178,14 @@ if ($feed['status'] !== 200) {
     fail($failures, '/feed/', "expected 200, got {$feed['status']}");
 } elseif (@simplexml_load_string($feed['body']) === false) {
     fail($failures, '/feed/', 'is not valid XML');
+}
+
+/* ------------------------ 4a. config: no Google/YouTube/reCAPTCHA in any string value */
+foreach (['config.php', 'config.local.example.php'] as $cfgName) {
+    $checks++;
+    foreach (configThirdParty($siteDir . '/' . $cfgName) as $hit) {
+        fail($failures, $cfgName, 'third-party host in a config value (no Google/YouTube/reCAPTCHA): ' . $hit);
+    }
 }
 
 /* -------------------------------------------------------- 4. content scan */
@@ -803,6 +812,20 @@ function siteChecks(array &$failures, array &$warnings, array $pages, array $htm
         }
     }
     return $checks;
+}
+
+/**
+ * Banned hosts in any string value of a site config file (head_extra, body_extra, links, …).
+ * The runtime only warns about head_extra/body_extra; this is the build-time gate.
+ * @return list<string>
+ */
+function configThirdParty(string $file): array
+{
+    if (!is_file($file)) {
+        return [];
+    }
+    $value = (static fn(string $__f) => require $__f)($file);
+    return is_array($value) ? Config::thirdPartyHits($value) : ['(file does not return an array)'];
 }
 
 /** A form POST without following redirects. @return array{status:int,headers:array<string,string>,body:string} */
