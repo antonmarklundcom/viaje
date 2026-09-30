@@ -16,6 +16,7 @@ $publicPath = (string)($values['path'] ?? '');
     <h1><?= e($title ?? '') ?></h1>
     <div class="adm-actions">
       <?php if ($preview_url !== null): ?><a class="adm-btn" href="<?= e($preview_url) ?>" target="_blank" rel="noopener"><?= e(t('admin_preview')) ?></a><?php endif; ?>
+      <?php if ($slug !== null): ?><a class="adm-btn" href="/admin/content/<?= e($type) ?>/<?= e($slug) ?>/history"><?= e(t('admin_history')) ?> (<?= (int)($versions ?? 0) ?>)</a><?php endif; ?>
       <button class="adm-btn" type="submit" name="action" value="draft"><?= e(t('admin_save_draft')) ?></button>
       <button class="adm-btn adm-btn--primary" type="submit" name="action" value="publish"><?= e(t('admin_publish')) ?></button>
     </div>

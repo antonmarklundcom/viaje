@@ -39,6 +39,7 @@ if (!is_dir($siteDir)) {
 }
 
 require_once $repo . '/engine/lib/frontmatter.php';
+require_once $repo . '/engine/lib/config.php';   // Config::thirdPartyHits(), shared with the runtime warning
 
 $failures = [];
 $warnings = [];
@@ -55,9 +56,11 @@ if ($base === null) {
     }
     $port = freePort();
     $base = 'http://127.0.0.1:' . $port;
+    // mail() goes to a file instead of a real MTA, so the form checks can read what was "sent".
     $cmd  = sprintf(
-        '%s -S 127.0.0.1:%d -t %s %s',
+        '%s -d %s -S 127.0.0.1:%d -t %s %s',
         escapeshellarg(PHP_BINARY),
+        escapeshellarg('sendmail_path=cat >> ' . escapeshellarg($distDir . '/site/data/outbox.log')),
         $port,
         escapeshellarg($distDir),
         escapeshellarg($distDir . '/engine/dev-router.php')
@@ -175,6 +178,14 @@ if ($feed['status'] !== 200) {
     fail($failures, '/feed/', "expected 200, got {$feed['status']}");
 } elseif (@simplexml_load_string($feed['body']) === false) {
     fail($failures, '/feed/', 'is not valid XML');
+}
+
+/* ------------------------ 4a. config: no Google/YouTube/reCAPTCHA in any string value */
+foreach (['config.php', 'config.local.example.php'] as $cfgName) {
+    $checks++;
+    foreach (configThirdParty($siteDir . '/' . $cfgName) as $hit) {
+        fail($failures, $cfgName, 'third-party host in a config value (no Google/YouTube/reCAPTCHA): ' . $hit);
+    }
 }
 
 /* -------------------------------------------------------- 4. content scan */
@@ -803,6 +814,20 @@ function siteChecks(array &$failures, array &$warnings, array $pages, array $htm
     return $checks;
 }
 
+/**
+ * Banned hosts in any string value of a site config file (head_extra, body_extra, links, …).
+ * The runtime only warns about head_extra/body_extra; this is the build-time gate.
+ * @return list<string>
+ */
+function configThirdParty(string $file): array
+{
+    if (!is_file($file)) {
+        return [];
+    }
+    $value = (static fn(string $__f) => require $__f)($file);
+    return is_array($value) ? Config::thirdPartyHits($value) : ['(file does not return an array)'];
+}
+
 /** A form POST without following redirects. @return array{status:int,headers:array<string,string>,body:string} */
 function post(string $url, array $fields): array
 {
@@ -826,8 +851,9 @@ function post(string $url, array $fields): array
 }
 
 /**
- * The forms as a visitor uses them: take the signed stamp out of a *served* guide page (the
- * page cache must not have let it expire), submit, and read the record from disk.
+ * The forms as a visitor uses them: the cached guide page carries no stamp, so fetch one from
+ * /enviar/sello/ the way assets/site.js does, wait Leads::MIN_AGE, submit, and read the record
+ * from disk. Also: without a stamp (JS off) the submit fails with the "recargá la página" message.
  */
 function formChecks(array &$failures, string $base, array $htmlByPath, string $distDir): int
 {
@@ -838,9 +864,30 @@ function formChecks(array &$failures, string $base, array $htmlByPath, string $d
         $guide = (string)array_key_first(array_filter($htmlByPath, static fn(string $h): bool => str_contains($h, 'lead__form--short')));
         $html  = $htmlByPath[$guide] ?? '';
     }
-    if ($html === '' || !preg_match_all('#<input type="hidden" name="ts" value="([^"]+)">#', $html, $ts) || count($ts[1]) < 1) {
-        fail($failures, $guide, 'cannot find the signed form stamp on the guide page');
-        return 1;
+    $checks += 4;
+    if ($html === '' || !preg_match_all('#<form [^>]*data-stamp="/enviar/sello/"[^>]*>.*?<input type="hidden" name="ts" value="([^"]*)">#s', $html, $forms)) {
+        fail($failures, $guide, 'the guide page has no form with data-stamp="/enviar/sello/"');
+        return $checks;
+    }
+    if (array_filter($forms[1], static fn(string $v): bool => $v !== '') !== []) {
+        fail($failures, $guide, 'a cached page must not carry a baked-in form stamp');
+    }
+    $contact = request($base . '/contacto/');
+    if (!preg_match('#<input type="hidden" name="ts" value="(\d+\.[a-f0-9]{64})">#', $contact['body'])) {
+        fail($failures, '/contacto/', 'the (uncached) contact page should render a signed stamp, so it works without JS');
+    }
+    $sello = request($base . '/enviar/sello/');
+    $stamp = (string)(json_decode($sello['body'], true)['ts'] ?? '');
+    if ($sello['status'] !== 200 || !preg_match('#^\d+\.[a-f0-9]{64}$#', $stamp)
+        || !str_contains((string)($sello['headers']['cache-control'] ?? ''), 'no-store')) {
+        fail($failures, '/enviar/sello/', 'should answer 200 JSON {ts} with Cache-Control: no-store, got ' . $sello['status'] . ' ' . $sello['body']);
+        return $checks;
+    }
+    // No JS → no stamp: the visitor must get the "reload" message back on the guide, not a silent failure.
+    $nojs = post($base . '/enviar/', ['name' => 'Verifier', 'phone' => '0981 000 000', 'message' => 'x', 'ts' => '', 'page' => $guide, 'website' => '']);
+    $loc  = urldecode((string)($nojs['headers']['location'] ?? ''));
+    if ($nojs['status'] !== 303 || !str_starts_with($loc, $guide . '?error=1') || !str_contains($loc, 'Recargá la página')) {
+        fail($failures, '/enviar/', 'a submit without a stamp should 303 back with the "recargá la página" error, got ' . $nojs['status'] . ' ' . $loc);
     }
     sleep(4);   // Leads::MIN_AGE is 3 s
     $leads = $distDir . '/site/data/leads';
@@ -850,7 +897,7 @@ function formChecks(array &$failures, string $base, array $htmlByPath, string $d
     $checks++;
     $r = post($base . '/enviar/', [
         'name' => 'Verifier', 'phone' => '0981 000 000', 'message' => 'Quiero más información sobre esta guía.',
-        'topic' => 'Consulta desde: guía', 'ts' => $ts[1][0], 'page' => $guide, 'page_title' => 'Saltos del Monday', 'website' => '',
+        'topic' => 'Consulta desde: guía', 'ts' => $stamp, 'page' => $guide, 'page_title' => 'Saltos del Monday', 'website' => '',
     ]);
     if ($r['status'] !== 303 || !str_starts_with((string)($r['headers']['location'] ?? ''), $guide . '?enviado=1')) {
         fail($failures, '/enviar/', 'a lead from a guide should 303 back to the guide, got ' . $r['status'] . ' ' . ($r['headers']['location'] ?? ''));
@@ -868,19 +915,67 @@ function formChecks(array &$failures, string $base, array $htmlByPath, string $d
         }
     }
 
-    // 2. newsletter: stored, deduplicated, validated
-    $checks += 3;
-    $r = post($base . '/suscribir/', ['email' => $email, 'ts' => $ts[1][0], 'page' => $guide, 'website' => '']);
+    // 2. newsletter, double opt-in: signup → pending + email, bad token → error, link → confirmed, replay → harmless
+    $pendingFile = $leads . '/newsletter-pending.jsonl';
+    $nlFile      = $leads . '/newsletter.jsonl';
+    $outbox      = $distDir . '/site/data/outbox.log';
+    $rowsFor = static function (string $file) use ($email): array {
+        $lines = is_file($file) ? (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: []) : [];
+        return array_values(array_filter(array_map(static fn(string $l) => json_decode($l, true), $lines),
+            static fn($r): bool => is_array($r) && strtolower((string)($r['email'] ?? '')) === strtolower($email)));
+    };
+    $checks += 8;
+    $r = post($base . '/suscribir/', ['email' => $email, 'ts' => $stamp, 'page' => $guide, 'website' => '']);
     if ($r['status'] !== 303 || !str_contains((string)($r['headers']['location'] ?? ''), 'suscrito=1')) {
         fail($failures, '/suscribir/', 'signup should 303 with ?suscrito=1, got ' . $r['status'] . ' ' . ($r['headers']['location'] ?? ''));
     }
-    post($base . '/suscribir/', ['email' => strtoupper($email), 'ts' => $ts[1][0], 'page' => $guide, 'website' => '']);
-    $stored = is_file($leads . '/newsletter.jsonl') ? (file($leads . '/newsletter.jsonl', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: []) : [];
-    $mine   = array_filter($stored, static fn(string $l): bool => str_contains(strtolower($l), strtolower($email)));
-    if (count($mine) !== 1) {
-        fail($failures, '/suscribir/', 'the address should be stored exactly once in data/leads/newsletter.jsonl, found ' . count($mine));
+    post($base . '/suscribir/', ['email' => strtoupper($email), 'ts' => $stamp, 'page' => $guide, 'website' => '']);
+    $pending = $rowsFor($pendingFile);
+    if (count($pending) !== 1 || ($pending[0]['status'] ?? '') !== 'pending' || ($pending[0]['mail'] ?? '') !== 'sent') {
+        fail($failures, '/suscribir/', 'a signup should leave exactly one pending row (mail sent) in newsletter-pending.jsonl, found ' . json_encode($pending));
     }
-    $r = post($base . '/suscribir/', ['email' => 'not-an-email', 'ts' => $ts[1][0], 'page' => $guide, 'website' => '']);
+    if ($rowsFor($nlFile) !== []) {
+        fail($failures, '/suscribir/', 'an unconfirmed address must not be in newsletter.jsonl');
+    }
+    $link = null;
+    $mail = is_file($outbox) ? (string)file_get_contents($outbox) : '';
+    if (preg_match_all('#https?://\S+?(/suscribir/confirmar/\?e=([^&\s]+)&t=([a-f0-9]{64}))#', $mail, $lm, PREG_SET_ORDER)) {
+        foreach ($lm as $m) {
+            if (urldecode($m[2]) === $email) {
+                $link = $m[1];
+            }
+        }
+    }
+    if ($link === null) {
+        fail($failures, '/suscribir/', 'no confirmation email with a /suscribir/confirmar/ link was sent to ' . $email);
+    } else {
+        if (substr_count($mail, $email) > 2) {
+            fail($failures, '/suscribir/', 'a repeat signup within the hour must not mail the address again');
+        }
+        $bad = request($base . '/suscribir/confirmar/?' . http_build_query(['e' => $email, 't' => str_repeat('0', 64)]));
+        if ($bad['status'] !== 400 || $rowsFor($nlFile) !== []) {
+            fail($failures, '/suscribir/confirmar/', 'a bad token should answer 400 and confirm nothing, got ' . $bad['status']);
+        }
+        $ok = request($base . $link);
+        $confirmed = $rowsFor($nlFile);
+        if ($ok['status'] !== 200 || count($confirmed) !== 1 || ($confirmed[0]['status'] ?? '') !== 'confirmed'
+            || !str_contains($ok['body'], 'noindex')) {
+            fail($failures, '/suscribir/confirmar/', 'the emailed link should answer 200 (noindex) and append one confirmed row, got '
+                . $ok['status'] . ' ' . json_encode($confirmed));
+        }
+        if ($rowsFor($pendingFile) !== []) {
+            fail($failures, '/suscribir/confirmar/', 'a confirmed address should leave newsletter-pending.jsonl');
+        }
+        $again = request($base . $link);
+        if ($again['status'] !== 200 || count($rowsFor($nlFile)) !== 1) {
+            fail($failures, '/suscribir/confirmar/', 'replaying the link should be a harmless 200 that writes nothing');
+        }
+        $r = post($base . '/suscribir/', ['email' => $email, 'ts' => $stamp, 'page' => $guide, 'website' => '']);
+        if (!str_contains((string)($r['headers']['location'] ?? ''), 'suscrito=ya') || count($rowsFor($nlFile)) !== 1 || $rowsFor($pendingFile) !== []) {
+            fail($failures, '/suscribir/', 'signing up a confirmed address should 303 with ?suscrito=ya and write nothing');
+        }
+    }
+    $r = post($base . '/suscribir/', ['email' => 'not-an-email', 'ts' => $stamp, 'page' => $guide, 'website' => '']);
     if ($r['status'] !== 303 || !str_contains((string)($r['headers']['location'] ?? ''), 'suscripcion=error')) {
         fail($failures, '/suscribir/', 'an invalid email should 303 with ?suscripcion=error');
     }

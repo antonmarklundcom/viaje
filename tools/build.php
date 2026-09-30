@@ -63,6 +63,12 @@ if ($contentSrc !== null && (!is_dir($siteOut . '/content') || $fresh)) {
     rrmdir($siteOut . '/content');
     copyTree($contentSrc, $siteOut . '/content');
 }
+// The seed copy travels too (git-owned, never served — .htaccess blocks site/content-seed/):
+// the admin's "Restore from seed" reads it.
+rrmdir($siteOut . '/content-seed');
+if (is_dir($siteDir . '/content-seed')) {
+    copyTree($siteDir . '/content-seed', $siteOut . '/content-seed');
+}
 foreach (['media', 'data', 'cache'] as $dir) {
     mkdirp($siteOut . '/' . $dir);
 }
@@ -78,6 +84,7 @@ if (is_dir($siteDir . '/static')) {
 // 6. A stale page cache would mask the new build.
 rrmdir($siteOut . '/cache/pages');
 @unlink($siteOut . '/cache/index.php');
+@unlink($siteOut . '/cache/.sigcheck');
 
 echo "Built dist/$domain\n";
 exit(0);

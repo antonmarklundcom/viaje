@@ -52,7 +52,7 @@ final class Admin
             ($seg[0] ?? '') === 'logout'          => self::doLogout(),
             ($seg[0] ?? '') === 'content'         => self::content($method, array_slice($seg, 1), $query, $post),
             ($seg[0] ?? '') === 'media'           => self::media($method, $post),
-            ($seg[0] ?? '') === 'data'            => self::data($method, $seg[1] ?? '', $post),
+            ($seg[0] ?? '') === 'data'            => self::data($method, $seg[1] ?? '', $seg[2] ?? '', $query, $post),
             ($seg[0] ?? '') === 'redirects'       => self::redirects($query),
             ($seg[0] ?? '') === 'export'          => self::export($method),
             ($seg[0] ?? '') === 'preview-md'      => Response::html(Markdown::render((string)($post['body'] ?? '')))
@@ -222,6 +222,12 @@ final class Admin
         if ($method === 'POST' && ($rest[1] ?? '') === 'delete') {
             return self::delete($type, (string)$rest[0]);
         }
+        if ($method === 'POST' && in_array($rest[1] ?? '', ['restore', 'restore-seed'], true)) {
+            return self::restore($type, (string)$rest[0], $rest[1] === 'restore-seed' ? null : (string)($post['version'] ?? ''));
+        }
+        if (($rest[1] ?? '') === 'history') {
+            return self::history($type, (string)$rest[0], $query);
+        }
         if ($rest === []) {
             $items = [];
             foreach (Content::index() as $meta) {
@@ -230,10 +236,11 @@ final class Admin
                 }
             }
             return self::view('list', [
-                'title' => Types::label($type, true),
-                'type'  => $type,
-                'items' => $items,
-                'saved' => (string)($query['saved'] ?? ''),
+                'title'   => Types::label($type, true),
+                'type'    => $type,
+                'items'   => $items,
+                'deleted' => History::deleted($type),
+                'saved'   => (string)($query['saved'] ?? ''),
             ]);
         }
         if (($rest[0] ?? '') === 'new') {
@@ -273,6 +280,7 @@ final class Admin
             'fields'  => Types::editorFields($type),
             'values'  => $values,
             'errors'  => $errors,
+            'versions' => $slug !== null ? count(History::versions($type, $slug)) : 0,
             'preview_url' => $slug !== null
                 ? '/preview/' . $type . '/' . $slug . '/?t=' . hash_hmac('sha256', $type . '/' . $slug, Config::secret())
                 : null,
@@ -333,7 +341,7 @@ final class Admin
         if (array_key_exists($path, (array)Config::v('redirects', []))) {
             $errors['path'] = I18n::t('err_path_redirect');
         }
-        foreach (['/admin/', '/preview/', '/enviar/', '/feed/'] as $reserved) {
+        foreach (['/admin/', '/preview/', '/enviar/', '/suscribir/', '/feed/'] as $reserved) {
             if (str_starts_with($path, $reserved)) {
                 $errors['path'] = I18n::t('err_path_reserved');
             }
@@ -385,6 +393,11 @@ final class Admin
         }
         $fm = self::orderKeys($fm);
 
+        // The previous version goes to data/history first; no snapshot, no write.
+        if (!History::snapshot($type, $slug, $file)
+            || ($orig !== '' && $orig !== $slug && !History::snapshot($type, $orig))) {
+            return self::view('message', ['title' => I18n::t('admin'), 'message' => I18n::t('admin_history_fail')], 500);
+        }
         Util::mkdirp(dirname($file));
         if (!Util::atomicWrite($file, Frontmatter::dumpFile($fm, $body))) {
             return self::view('message', ['title' => I18n::t('admin'), 'message' => 'Write failed: ' . $file], 500);
@@ -494,12 +507,69 @@ final class Admin
         }
         $file = Types::dir($type) . '/' . $slug . '.md';
         if (is_file($file)) {
+            if (!History::snapshot($type, $slug, $file)) {
+                return self::view('message', ['title' => I18n::t('admin'), 'message' => I18n::t('admin_history_fail')], 500);
+            }
             $trash = VJ_SITE . '/data/trash';
             Util::mkdirp($trash);
             @rename($file, $trash . '/' . date('Ymd-His') . '-' . $type . '-' . $slug . '.md');
             Render::purge();
         }
         return Response::redirect('/admin/content/' . $type . '/?saved=deleted', 303);
+    }
+
+    /* ------------------------------------------------------------ history */
+
+    /** Where the history screen of a page lives. */
+    private static function historyUrl(string $type, string $slug): string
+    {
+        return $type === 'data' ? '/admin/data/' . $slug . '/history' : '/admin/content/' . $type . '/' . $slug . '/history';
+    }
+
+    /** Versions of one page (or data collection), with Restore buttons; `?v=<id>` shows one version's text. */
+    private static function history(string $type, string $slug, array $query): Response
+    {
+        if (!History::valid($type, $slug)) {
+            return self::view('message', ['title' => '404', 'message' => I18n::t('404_title')], 404);
+        }
+        $show = null;
+        if (($query['v'] ?? '') !== '') {
+            $f = History::file($type, $slug, (string)$query['v']);
+            if ($f === null) {
+                return self::view('message', ['title' => '404', 'message' => I18n::t('404_title')], 404);
+            }
+            $show = ['id' => (string)$query['v'], 'text' => (string)file_get_contents($f)];
+        }
+        return self::view('history', [
+            'title'    => I18n::t('admin_history') . ' · ' . $type . '/' . $slug,
+            'type'     => $type,
+            'slug'     => $slug,
+            'versions' => History::versions($type, $slug),
+            'exists'   => is_file(History::target($type, $slug)),
+            'has_seed' => History::seed($type, $slug) !== null,
+            'show'     => $show,
+            'done'     => (string)($query['restored'] ?? ''),
+            'edit_url' => $type === 'data' ? '/admin/data/' . $slug : '/admin/content/' . $type . '/' . $slug . '/edit',
+            'base_url' => self::historyUrl($type, $slug),
+            'action'   => $type === 'data' ? '/admin/data/' . $slug : '/admin/content/' . $type . '/' . $slug,
+        ]);
+    }
+
+    /** Restore a stored version ($version) or the content-seed copy ($version = null). POST + CSRF (checked in dispatch). */
+    private static function restore(string $type, string $slug, ?string $version): Response
+    {
+        if (!History::valid($type, $slug)) {
+            return self::view('message', ['title' => '404', 'message' => I18n::t('404_title')], 404);
+        }
+        $source = $version === null ? History::seed($type, $slug) : History::file($type, $slug, $version);
+        if ($source === null) {
+            return self::view('message', ['title' => I18n::t('admin_history'), 'message' => I18n::t('404_title')], 404);
+        }
+        if (!History::restoreFrom($type, $slug, $source)) {
+            return self::view('message', ['title' => I18n::t('admin_history'), 'message' => I18n::t('admin_history_fail')], 500);
+        }
+        Render::purge();
+        return Response::redirect(self::historyUrl($type, $slug) . '?restored=' . ($version === null ? 'seed' : '1'), 303);
     }
 
     /* -------------------------------------------------------------- media */
@@ -522,13 +592,19 @@ final class Admin
 
     /* --------------------------------------------------------------- data */
 
-    private static function data(string $method, string $name, array $post): Response
+    private static function data(string $method, string $name, string $sub, array $query, array $post): Response
     {
         if (!isset(self::DATA_SCHEMAS[$name])) {
             return self::view('data-index', ['title' => I18n::t('admin_data'), 'names' => array_keys(self::DATA_SCHEMAS)]);
         }
         $schema = self::DATA_SCHEMAS[$name];
         $saved  = false;
+        if ($method === 'POST' && in_array($sub, ['restore', 'restore-seed'], true)) {
+            return self::restore('data', $name, $sub === 'restore-seed' ? null : (string)($post['version'] ?? ''));
+        }
+        if ($sub === 'history') {
+            return self::history('data', $name, $query);
+        }
         if ($method === 'POST') {
             $rows = [];
             foreach ((array)($post['rows'] ?? []) as $row) {
@@ -549,6 +625,9 @@ final class Admin
                 }
                 $rows[] = $clean;
             }
+            if (!History::snapshot('data', $name)) {
+                return self::view('message', ['title' => I18n::t('admin'), 'message' => I18n::t('admin_history_fail')], 500);
+            }
             Util::mkdirp(VJ_SITE . '/content/data');
             Util::atomicWrite(
                 VJ_SITE . '/content/data/' . $name . '.json',
@@ -563,6 +642,7 @@ final class Admin
             'schema' => $schema,
             'rows'   => Util::readJsonFile(VJ_SITE . '/content/data/' . $name . '.json'),
             'saved'  => $saved,
+            'versions' => count(History::versions('data', $name)),
         ]);
     }
 
@@ -626,7 +706,7 @@ final class Admin
         if ($zip->open($tmp, ZipArchive::OVERWRITE) !== true) {
             return self::view('message', ['title' => I18n::t('admin_export'), 'message' => 'Cannot create the archive.'], 500);
         }
-        foreach (['content', 'media', 'data/leads'] as $rel) {
+        foreach (['content', 'media', 'data/leads', 'data/history'] as $rel) {
             $dir = VJ_SITE . '/' . $rel;
             if (!is_dir($dir)) {
                 continue;

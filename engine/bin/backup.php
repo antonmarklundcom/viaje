@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 /**
  * Weekly backup cron (plan §2.4 / §8 — the runbook wires this into Hostinger's
- * Cron Jobs). Zips site/content, site/media and site/data/leads — the same
+ * Cron Jobs). Zips site/content, site/media, site/data/leads and site/data/history — the same
  * contents as the admin's "Export backup" button (engine/lib/admin.php
  * Admin::export()) — into site/data/backups/<domain>-backup-<timestamp>.zip,
  * then prunes older backups beyond KEEP.
@@ -51,7 +51,7 @@ if ($zip->open($target, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
     exit(1);
 }
 $added = 0;
-foreach (['content', 'media', 'data/leads'] as $rel) {
+foreach (['content', 'media', 'data/leads', 'data/history'] as $rel) {
     $dir = $site . '/' . $rel;
     if (!is_dir($dir)) {
         continue;

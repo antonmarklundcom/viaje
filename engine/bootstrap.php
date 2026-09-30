@@ -20,7 +20,7 @@ ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 
 foreach (['util', 'config', 'i18n', 'frontmatter', 'types', 'markdown', 'images',
-          'content', 'seo', 'render', 'leads', 'admin', 'router'] as $lib) {
+          'content', 'seo', 'render', 'leads', 'history', 'admin', 'router'] as $lib) {
     require_once VJ_ENGINE . '/lib/' . $lib . '.php';
 }
 
@@ -52,7 +52,7 @@ $path   = (string)(parse_url($uri, PHP_URL_PATH) ?: '/');
 $query  = $_GET;
 
 // Sessions exist only where they are needed (spec §1 item 2).
-if (str_starts_with($path, '/admin') || str_starts_with($path, '/preview/') || in_array(rtrim($path, '/'), ['/enviar', '/suscribir'], true)) {
+if (str_starts_with($path, '/admin') || str_starts_with($path, '/preview/') || in_array(rtrim($path, '/'), ['/enviar', '/enviar/sello', '/suscribir', '/suscribir/confirmar'], true)) {
     Render::disableCache();
 }
 

@@ -16,6 +16,33 @@ final class Config
 
     private static ?array $cfg = null;
 
+    /**
+     * Hosts this project never loads: no Google products (analytics, tag manager, fonts, maps,
+     * reCAPTCHA, ads) and no YouTube embeds. Matched against config strings, here at runtime for
+     * head_extra/body_extra and by tools/verify.php for every string in config.php and
+     * config.local.example.php.
+     */
+    public const THIRD_PARTY_RE = '#(?<![a-z0-9-])(?:[a-z0-9-]+\.)*(?:google(?:[a-z-]*)\.[a-z]{2,}(?:\.[a-z]{2})?|goo\.gl|gstatic\.com|ggpht\.com|doubleclick\.net|youtube(?:-nocookie)?\.com|youtu\.be|recaptcha\.net)|recaptcha#i';
+
+    /**
+     * Every string in $value (walked recursively) that names a banned host.
+     * @return list<string> "key.path: host" entries
+     */
+    public static function thirdPartyHits(mixed $value, string $path = ''): array
+    {
+        if (is_array($value)) {
+            $hits = [];
+            foreach ($value as $k => $v) {
+                array_push($hits, ...self::thirdPartyHits($v, $path === '' ? (string)$k : $path . '.' . $k));
+            }
+            return $hits;
+        }
+        if (is_string($value) && preg_match(self::THIRD_PARTY_RE, $value, $m)) {
+            return [($path === '' ? '(value)' : $path) . ': ' . $m[0]];
+        }
+        return [];
+    }
+
     public static function load(string $siteDir): array
     {
         $main = $siteDir . '/config.php';
@@ -40,6 +67,11 @@ final class Config
 
         $cfg['base_url'] = rtrim((string)$cfg['base_url'], '/');
         self::$cfg = $cfg;
+
+        // The no-Google rule, at runtime: warn (never block) when an injected snippet loads one.
+        foreach (self::thirdPartyHits(['head_extra' => $cfg['head_extra'], 'body_extra' => $cfg['body_extra']]) as $hit) {
+            Util::log('Config warning: ' . $hit . ' — third-party (Google/YouTube/reCAPTCHA) host in config.php or config.local.php; remove it.');
+        }
         return $cfg;
     }
 
@@ -94,6 +126,8 @@ final class Config
             'leads'            => [],
             'per_page'         => 12,
             'footer_blurb'     => '',
+            'trusted_proxies'  => [],          // see Util::clientIp()
+            'trusted_proxy_header' => 'X-Forwarded-For',
         ];
         $c = array_replace_recursive($d, $c);
 

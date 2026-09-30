@@ -7,7 +7,10 @@ $rows[] = [];
   <input type="hidden" name="csrf" value="<?= e($csrf ?? '') ?>">
   <div class="adm-card__head">
     <h1><?= e($name) ?>.json</h1>
-    <button class="adm-btn adm-btn--primary" type="submit"><?= e(t('admin_publish')) ?></button>
+    <div class="adm-actions">
+      <a class="adm-btn" href="/admin/data/<?= e($name) ?>/history"><?= e(t('admin_history')) ?> (<?= (int)($versions ?? 0) ?>)</a>
+      <button class="adm-btn adm-btn--primary" type="submit"><?= e(t('admin_publish')) ?></button>
+    </div>
   </div>
   <?php if (!empty($saved)): ?><p class="adm-ok">✓</p><?php endif; ?>
   <p class="adm-help">Las filas vacías se descartan al guardar.</p>

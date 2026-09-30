@@ -476,6 +476,28 @@ unverifiable from this repo alone.)*
 - Deviations from plan §1: H1s of five ranking URLs gained their keyword (`/agencia-de-viaje/`, `/vacaciones/`,
   `/nosotros/`, `/contacto/`, home); the URL contract (paths, 200s, canonicals) is unchanged.
 
+### 2026-09-30 — Engine hardening: forms, cache, content safety (branch `claude/epic-cray-f1qdml`)
+- **Rate-limit IP:** `Util::clientIp()` reads `X-Forwarded-For` (right-most untrusted hop) or
+  `CF-Connecting-IP` only when `REMOTE_ADDR` is in the new `trusted_proxies` config key (default empty).
+  Runbook has a throwaway header check for finding Hostinger's proxy.
+- **Newsletter double opt-in:** pending rows in `data/leads/newsletter-pending.jsonl` (7-day expiry,
+  HMAC token), confirmation email via `mail()`, `/suscribir/confirmar/` appends to the append-only
+  `newsletter.jsonl`. Mail failure is reported to the visitor.
+- **Form stamps:** `GET /enviar/sello/` (no-store) replaces stamps baked into cached HTML; `site.js`
+  fetches on first use and holds a too-fast submit. Contact page keeps its server stamp (no-JS path).
+- **Page cache:** fingerprint recomputed at most once a minute (`cache/.sigcheck`, 96 → 12 stat calls
+  per cached request); per-generation cache directories, retired by rename-then-delete, pages written
+  temp-then-rename.
+- **Content history:** `data/history/<type>/<slug>/` snapshots before every admin write/delete/restore
+  (newest 20), History screen with Restore and Restore-from-seed, in backup and export.
+- **Config guard:** verify fails Google/YouTube/reCAPTCHA hosts in any config string; runtime warning
+  for `head_extra`/`body_extra`.
+- **CI:** `tools/ci-local.sh` (php -l, both verify runs, `tools/tests/*.php`) is the only thing
+  `ci.yml` runs. KNOWN-ISSUES #24/#25 improved, #29–#33 added.
+- URL contract unchanged: `verify.php viaje.com.py --strict` 0 failures / 0 warnings;
+  `thingstodoinparaguay.com` 0 failures. New engine routes (`/enviar/sello/`, `/suscribir/confirmar/`)
+  are noindex, uncached, and covered by `robots.txt`'s existing `/enviar/` and `/suscribir/` disallows.
+
 ## 10. Backlog
 - Cinematic scroll homepage hero as an opt-in section (needs SEO-safe text fallback).
 - Newsletter capture.

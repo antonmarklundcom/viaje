@@ -59,7 +59,10 @@ So editing a page means using `/admin/`, not committing to the repo. Changes to
 ### Every later deploy
 
 Deploy button only. The page cache retires itself when engine code, templates, config, theme or
-content change (it is fingerprinted), so there is nothing to clear. **Never run the seed again**
+content change (it is fingerprinted), so there is nothing to clear. The fingerprint is re-checked at
+most once a minute (`cache/.sigcheck`), so a deploy or a File Manager edit shows up within
+60 seconds; edits made in `/admin/` show immediately. Cached pages live in
+`sites/viaje.com.py/cache/pages/<generation>/`; deleting the whole `cache/` folder is always safe. **Never run the seed again**
 after real edits exist — it refuses anyway when `content/` is not empty. `config.local.php`
 (password hash, `force_host` on staging), `data/` (leads and `newsletter.jsonl`), `cache/` and
 `media/` are untracked and survive deploys. Weekly backup cron path:
@@ -67,6 +70,18 @@ after real edits exist — it refuses anyway when `content/` is not empty. `conf
 
 Create `sites/viaje.com.py/config.local.php` on the server once (copy
 `config.local.example.php`; admin password hash, and `force_host` null while on a staging hostname).
+
+### Content history and undo (`data/history/`)
+
+The server's `content/` has no git history, so the admin keeps one: before every save, delete or
+restore, the previous file is copied to `sites/viaje.com.py/data/history/<type>/<slug>/<YYYYmmdd-HHMMSS-micro>.md`
+(`data/history/data/<name>/…json` for FAQ/testimonials/team/gallery). The newest 20 per page are
+kept. In `/admin/`: the **Historial (N)** button on a page's editor (or on a data collection) lists
+the versions with **Ver** and **Restaurar**; restoring saves the current version first, so it can
+be undone too. **Restaurar desde la copia original (seed)** appears only when the page also exists in
+`content-seed/` (the version shipped in the repo). Deleted pages are listed under "Eliminadas, con
+historial" on their type's list and come back from there. `data/history` is in the weekly backup
+zip and in *Exportar copia*.
 
 ### After publishing: tell Bing (IndexNow)
 
@@ -85,12 +100,65 @@ It checks that the key file is live before submitting (deploy first), pings
 failure. Also add the site in **Bing Webmaster Tools** (bing.com/webmasters) and submit
 `https://viaje.com.py/sitemap.xml` there; `<lastmod>` in the sitemap follows each page's `updated:`.
 
-### Newsletter signups
+### Newsletter signups (double opt-in)
 
-`/suscribir/` writes one line per address to `sites/viaje.com.py/data/leads/newsletter.jsonl`
-(deduplicated, no third-party service). Read or download it in File Manager; the weekly backup
-already includes `data/leads`. Contact-form leads with the page they came from are in
-`data/leads/YYYY-MM.jsonl`.
+Nobody is on the list until they click the link in a confirmation email, so nobody can sign up
+someone else's address. Two files, both in `sites/viaje.com.py/data/leads/` (File Manager; the
+weekly backup and *Exportar copia* include `data/leads`):
+
+| File | What is in it | Written how |
+|---|---|---|
+| `newsletter.jsonl` | **The list.** One line per confirmed address: `{"email", "page", "status":"confirmed", "consent":true, "requested":<signup time>, "when":<confirm time>}` | Append-only; never rewritten |
+| `newsletter-pending.jsonl` | Signups waiting for the click: `{"email", "page", "status":"pending", "token", "day", "when", "ts", "mail":"sent"\|"failed"}` | Rewritten on each signup/confirm; rows older than 7 days are dropped |
+
+To mail the list, take the `email` of every line in `newsletter.jsonl` whose `status` is
+`confirmed`. Lines without a `status` (if any) were written before double opt-in (2026-09-30) and
+were never confirmed — do not mail them.
+
+The confirmation email is sent with PHP `mail()` from `no-reply@viaje.com.py`; the link is
+`https://viaje.com.py/suscribir/confirmar/?e=…&t=…` and works for 7 days. If `mail()` fails, the
+visitor sees "No pudimos enviarte el email de confirmación…" (never a success message) and the
+pending row stays with `"mail":"failed"`. **Deliverability:** test it once after the deploy by
+subscribing two addresses of your own at different providers (e.g. Outlook and Proton). If it lands in spam or never arrives: in
+hPanel → Emails, create the `viaje.com.py` mailbox/domain so Hostinger signs outgoing mail (DKIM)
+and publishes SPF, and add a DMARC record; `mail()` sends through the same server. On a staging
+hostname the link still points at `https://viaje.com.py/` (the canonical host) — replace the host by
+hand to test it there.
+
+### Rate limits behind Hostinger's proxy (`trusted_proxies`)
+
+The contact form, the newsletter and the admin login limit attempts per visitor IP. PHP sees the
+visitor as `REMOTE_ADDR`; if Hostinger (its CDN, or Cloudflare if you ever add it) sits in front,
+`REMOTE_ADDR` is the proxy's address and every visitor shares one bucket — then 5 leads an hour
+would block *everyone*. The engine only reads a forwarding header when `REMOTE_ADDR` is listed in
+`trusted_proxies` in `config.local.php`; from any other address the header is ignored (a client can
+type anything into it). Default: empty — correct when there is no proxy.
+
+Find out once, after the first deploy:
+
+1. File Manager → document root (the folder with `index.php`) → New file `ipcheck-7f3a.php`
+   (any unguessable name) with exactly:
+   ```php
+   <?php header('Content-Type: text/plain');
+   foreach (['REMOTE_ADDR', 'HTTP_X_FORWARDED_FOR', 'HTTP_CF_CONNECTING_IP', 'HTTP_X_REAL_IP'] as $k) {
+       echo $k, ': ', $_SERVER[$k] ?? '-', "\n";
+   }
+   ```
+2. Open `https://viaje.com.py/ipcheck-7f3a.php` from your phone on mobile data, then from home Wi-Fi.
+   Compare with your own IP (search "what is my ip" on Bing).
+3. **Delete `ipcheck-7f3a.php` right away** — do not leave it on the server.
+
+Reading it:
+- `REMOTE_ADDR` is your own IP → no proxy. Leave `trusted_proxies` empty. Done.
+- `REMOTE_ADDR` is some other address and `HTTP_X_FORWARDED_FOR` ends with your IP → proxy. Put the
+  proxy's address (or its range if it changes between the two loads, e.g. `'10.0.0.0/8'`) in
+  `config.local.php`: `'trusted_proxies' => ['<address or CIDR>'],`. Keep
+  `'trusted_proxy_header' => 'X-Forwarded-For'`.
+- Only `HTTP_CF_CONNECTING_IP` shows your IP (Cloudflare) → list Cloudflare's published ranges
+  (cloudflare.com/ips) and set `'trusted_proxy_header' => 'CF-Connecting-IP'`.
+
+Leads record the address they came from (`ip` in `data/leads/YYYY-MM.jsonl`); after the change a
+test lead should show your real IP there, not the proxy's.
 
 ## 0. Before you start
 
@@ -309,7 +377,7 @@ Check Search Console daily for two weeks:
 
 ## 14. Weekly backup cron
 
-`engine/bin/backup.php` zips `site/content`, `site/media` and `site/data/leads` into
+`engine/bin/backup.php` zips `site/content`, `site/media`, `site/data/leads` and `site/data/history` into
 `site/data/backups/viaje.com.py-backup-<timestamp>.zip` (same contents as the admin's
 "Export backup" button) and keeps the newest 8. It's already on the server — deploying
 copies all of `engine/`. Wire it into hPanel:
