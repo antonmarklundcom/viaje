@@ -52,7 +52,7 @@ $path   = (string)(parse_url($uri, PHP_URL_PATH) ?: '/');
 $query  = $_GET;
 
 // Sessions exist only where they are needed (spec §1 item 2).
-if (str_starts_with($path, '/admin') || str_starts_with($path, '/preview/') || in_array(rtrim($path, '/'), ['/enviar', '/suscribir'], true)) {
+if (str_starts_with($path, '/admin') || str_starts_with($path, '/preview/') || in_array(rtrim($path, '/'), ['/enviar', '/enviar/sello', '/suscribir', '/suscribir/confirmar'], true)) {
     Render::disableCache();
 }
 

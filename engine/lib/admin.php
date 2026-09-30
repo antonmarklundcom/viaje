@@ -333,7 +333,7 @@ final class Admin
         if (array_key_exists($path, (array)Config::v('redirects', []))) {
             $errors['path'] = I18n::t('err_path_redirect');
         }
-        foreach (['/admin/', '/preview/', '/enviar/', '/feed/'] as $reserved) {
+        foreach (['/admin/', '/preview/', '/enviar/', '/suscribir/', '/feed/'] as $reserved) {
             if (str_starts_with($path, $reserved)) {
                 $errors['path'] = I18n::t('err_path_reserved');
             }

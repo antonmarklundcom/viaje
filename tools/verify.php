@@ -55,9 +55,11 @@ if ($base === null) {
     }
     $port = freePort();
     $base = 'http://127.0.0.1:' . $port;
+    // mail() goes to a file instead of a real MTA, so the form checks can read what was "sent".
     $cmd  = sprintf(
-        '%s -S 127.0.0.1:%d -t %s %s',
+        '%s -d %s -S 127.0.0.1:%d -t %s %s',
         escapeshellarg(PHP_BINARY),
+        escapeshellarg('sendmail_path=cat >> ' . escapeshellarg($distDir . '/site/data/outbox.log')),
         $port,
         escapeshellarg($distDir),
         escapeshellarg($distDir . '/engine/dev-router.php')
@@ -868,17 +870,65 @@ function formChecks(array &$failures, string $base, array $htmlByPath, string $d
         }
     }
 
-    // 2. newsletter: stored, deduplicated, validated
-    $checks += 3;
+    // 2. newsletter, double opt-in: signup → pending + email, bad token → error, link → confirmed, replay → harmless
+    $pendingFile = $leads . '/newsletter-pending.jsonl';
+    $nlFile      = $leads . '/newsletter.jsonl';
+    $outbox      = $distDir . '/site/data/outbox.log';
+    $rowsFor = static function (string $file) use ($email): array {
+        $lines = is_file($file) ? (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: []) : [];
+        return array_values(array_filter(array_map(static fn(string $l) => json_decode($l, true), $lines),
+            static fn($r): bool => is_array($r) && strtolower((string)($r['email'] ?? '')) === strtolower($email)));
+    };
+    $checks += 8;
     $r = post($base . '/suscribir/', ['email' => $email, 'ts' => $ts[1][0], 'page' => $guide, 'website' => '']);
     if ($r['status'] !== 303 || !str_contains((string)($r['headers']['location'] ?? ''), 'suscrito=1')) {
         fail($failures, '/suscribir/', 'signup should 303 with ?suscrito=1, got ' . $r['status'] . ' ' . ($r['headers']['location'] ?? ''));
     }
     post($base . '/suscribir/', ['email' => strtoupper($email), 'ts' => $ts[1][0], 'page' => $guide, 'website' => '']);
-    $stored = is_file($leads . '/newsletter.jsonl') ? (file($leads . '/newsletter.jsonl', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: []) : [];
-    $mine   = array_filter($stored, static fn(string $l): bool => str_contains(strtolower($l), strtolower($email)));
-    if (count($mine) !== 1) {
-        fail($failures, '/suscribir/', 'the address should be stored exactly once in data/leads/newsletter.jsonl, found ' . count($mine));
+    $pending = $rowsFor($pendingFile);
+    if (count($pending) !== 1 || ($pending[0]['status'] ?? '') !== 'pending' || ($pending[0]['mail'] ?? '') !== 'sent') {
+        fail($failures, '/suscribir/', 'a signup should leave exactly one pending row (mail sent) in newsletter-pending.jsonl, found ' . json_encode($pending));
+    }
+    if ($rowsFor($nlFile) !== []) {
+        fail($failures, '/suscribir/', 'an unconfirmed address must not be in newsletter.jsonl');
+    }
+    $link = null;
+    $mail = is_file($outbox) ? (string)file_get_contents($outbox) : '';
+    if (preg_match_all('#https?://\S+?(/suscribir/confirmar/\?e=([^&\s]+)&t=([a-f0-9]{64}))#', $mail, $lm, PREG_SET_ORDER)) {
+        foreach ($lm as $m) {
+            if (urldecode($m[2]) === $email) {
+                $link = $m[1];
+            }
+        }
+    }
+    if ($link === null) {
+        fail($failures, '/suscribir/', 'no confirmation email with a /suscribir/confirmar/ link was sent to ' . $email);
+    } else {
+        if (substr_count($mail, $email) > 2) {
+            fail($failures, '/suscribir/', 'a repeat signup within the hour must not mail the address again');
+        }
+        $bad = request($base . '/suscribir/confirmar/?' . http_build_query(['e' => $email, 't' => str_repeat('0', 64)]));
+        if ($bad['status'] !== 400 || $rowsFor($nlFile) !== []) {
+            fail($failures, '/suscribir/confirmar/', 'a bad token should answer 400 and confirm nothing, got ' . $bad['status']);
+        }
+        $ok = request($base . $link);
+        $confirmed = $rowsFor($nlFile);
+        if ($ok['status'] !== 200 || count($confirmed) !== 1 || ($confirmed[0]['status'] ?? '') !== 'confirmed'
+            || !str_contains($ok['body'], 'noindex')) {
+            fail($failures, '/suscribir/confirmar/', 'the emailed link should answer 200 (noindex) and append one confirmed row, got '
+                . $ok['status'] . ' ' . json_encode($confirmed));
+        }
+        if ($rowsFor($pendingFile) !== []) {
+            fail($failures, '/suscribir/confirmar/', 'a confirmed address should leave newsletter-pending.jsonl');
+        }
+        $again = request($base . $link);
+        if ($again['status'] !== 200 || count($rowsFor($nlFile)) !== 1) {
+            fail($failures, '/suscribir/confirmar/', 'replaying the link should be a harmless 200 that writes nothing');
+        }
+        $r = post($base . '/suscribir/', ['email' => $email, 'ts' => $ts[1][0], 'page' => $guide, 'website' => '']);
+        if (!str_contains((string)($r['headers']['location'] ?? ''), 'suscrito=ya') || count($rowsFor($nlFile)) !== 1 || $rowsFor($pendingFile) !== []) {
+            fail($failures, '/suscribir/', 'signing up a confirmed address should 303 with ?suscrito=ya and write nothing');
+        }
     }
     $r = post($base . '/suscribir/', ['email' => 'not-an-email', 'ts' => $ts[1][0], 'page' => $guide, 'website' => '']);
     if ($r['status'] !== 303 || !str_contains((string)($r['headers']['location'] ?? ''), 'suscripcion=error')) {

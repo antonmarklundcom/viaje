@@ -255,19 +255,29 @@ final class Leads
 
     /* ---------------------------------------------------------- newsletter */
 
+    private const NL_CONFIRM_DAYS = 7;      // a confirmation link (and its pending row) lives this long
+    private const NL_RESEND_AFTER = 3600;   // a repeat signup re-sends the email at most this often
+
     /**
-     * Newsletter signup: an email, stored to site/data/leads/newsletter.jsonl. No third-party
-     * service. Same anti-abuse set as the contact form (honeypot, signed timestamp, per-IP rate).
+     * Newsletter signup with double opt-in. No third-party service. Same anti-abuse set as the
+     * contact form (honeypot, signed timestamp, per-IP rate).
+     *
+     * A signup writes a pending row to data/leads/newsletter-pending.jsonl and mails a link to
+     * /suscribir/confirmar/; only a click on that link appends the address to newsletter.jsonl
+     * (append-only, one `"status":"confirmed"` row per address). Pending rows older than
+     * NL_CONFIRM_DAYS are pruned on the next write. `status` in the result: 'pending' (email
+     * sent) or 'already' (the address was confirmed before; nothing sent).
      *
      * @param array<string,mixed> $post
-     * @return array{ok:bool,errors:array<string,string>,page:string}
+     * @return array{ok:bool,errors:array<string,string>,page:string,status:string}
      */
     public static function subscribe(array $post): array
     {
         $page  = self::cleanPage((string)($post['page'] ?? ''));
         $email = strtolower(trim((string)($post['email'] ?? '')));
+        $fail  = static fn(array $errors): array => ['ok' => false, 'errors' => $errors, 'page' => $page, 'status' => ''];
         if (trim((string)($post['website'] ?? '')) !== '') {
-            return ['ok' => false, 'errors' => ['_spam' => 'honeypot'], 'page' => $page];
+            return $fail(['_spam' => 'honeypot']);
         }
         $errors = [];
         $age = self::stampAge((string)($post['ts'] ?? ''));
@@ -276,37 +286,205 @@ final class Leads
         } elseif ($age < self::MIN_AGE) {
             $errors['ts'] = I18n::t('err_too_fast');
         }
-        if ($email === '' || strlen($email) > 160 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (!self::validEmail($email)) {
             $errors['email'] = I18n::t('err_nl_email');
         }
         if (!$errors && !self::rateOk('newsletter')) {
             $errors['rate'] = I18n::t('err_nl_rate');
         }
         if ($errors) {
-            return ['ok' => false, 'errors' => $errors, 'page' => $page];
+            return $fail($errors);
         }
+        $storeError = ['_store' => I18n::t('err_nl_store', ['email' => (string)Config::v('contact.email', '')])];
 
-        $dir  = VJ_SITE . '/data/leads';
-        $file = $dir . '/newsletter.jsonl';
-        if (!Util::mkdirp($dir)) {
-            Util::log('Cannot create leads dir: ' . $dir);
-            return ['ok' => false, 'errors' => ['_store' => I18n::t('err_nl_store')], 'page' => $page];
+        // Already confirmed: a repeat signup is a success that sends and writes nothing.
+        if (self::nlConfirmed($email)) {
+            return ['ok' => true, 'errors' => [], 'page' => $page, 'status' => 'already'];
         }
-        // One row per address: a repeat signup is a success that writes nothing.
+        $fh = self::nlPendingOpen();
+        if ($fh === null) {
+            return $fail($storeError);
+        }
+        try {
+            $rows = self::nlPendingRead($fh);
+            $mine = $rows[$email] ?? null;
+            // One pending row per address; don't mail the same inbox again within the hour.
+            if ($mine !== null && ($mine['mail'] ?? '') === 'sent' && time() - (int)($mine['ts'] ?? 0) < self::NL_RESEND_AFTER) {
+                return self::nlPendingWrite($fh, $rows)
+                    ? ['ok' => true, 'errors' => [], 'page' => $page, 'status' => 'pending']
+                    : $fail($storeError);
+            }
+            $day   = date('Ymd');
+            $token = self::nlToken($email, $day);
+            $sent  = self::nlMail($email, $token);
+            $rows[$email] = [
+                'email' => $email, 'page' => $page, 'status' => 'pending', 'token' => $token, 'day' => $day,
+                'when' => date('c'), 'ts' => time(), 'mail' => $sent ? 'sent' : 'failed',
+            ];
+            if (!self::nlPendingWrite($fh, $rows)) {
+                return $fail($storeError);
+            }
+        } finally {
+            flock($fh, LOCK_UN);
+            fclose($fh);
+        }
+        // The pending row stays either way; the visitor is told the truth about the email.
+        if (!$sent) {
+            return $fail(['_mail' => I18n::t('err_nl_mail', ['email' => (string)Config::v('contact.email', '')])]);
+        }
+        return ['ok' => true, 'errors' => [], 'page' => $page, 'status' => 'pending'];
+    }
+
+    /**
+     * The link from the confirmation email. `status`: 'confirmed' (row appended now), 'already'
+     * (confirmed before — a replayed link is harmless) or 'invalid' (bad, expired or pruned).
+     *
+     * @return array{ok:bool,status:string,page:string}
+     */
+    public static function confirm(string $email, string $token): array
+    {
+        $email   = strtolower(trim($email));
+        $invalid = ['ok' => false, 'status' => 'invalid', 'page' => ''];
+        if (!self::validEmail($email) || !preg_match('/^[a-f0-9]{64}$/', $token)) {
+            return $invalid;
+        }
+        $valid = false;
+        for ($i = 0; $i <= self::NL_CONFIRM_DAYS && !$valid; $i++) {
+            $valid = hash_equals(self::nlToken($email, date('Ymd', strtotime("-$i days"))), $token);
+        }
+        if (!$valid) {
+            return $invalid;
+        }
+        $fh = self::nlPendingOpen();
+        if ($fh === null) {
+            return $invalid;
+        }
+        try {
+            // Checked under the lock, so two clicks at once still write one row.
+            if (self::nlConfirmed($email)) {
+                return ['ok' => true, 'status' => 'already', 'page' => ''];
+            }
+            $rows = self::nlPendingRead($fh);
+            $row  = $rows[$email] ?? null;
+            if ($row === null) {
+                return $invalid;
+            }
+            $line = json_encode([
+                'email' => $email, 'page' => (string)($row['page'] ?? ''), 'status' => 'confirmed', 'consent' => true,
+                'requested' => (string)($row['when'] ?? ''), 'when' => date('c'),
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if (@file_put_contents(self::nlFile(), $line . "\n", FILE_APPEND | LOCK_EX) === false) {
+                Util::log('Cannot append newsletter confirmation to ' . self::nlFile());
+                return $invalid;
+            }
+            unset($rows[$email]);
+            self::nlPendingWrite($fh, $rows);
+            return ['ok' => true, 'status' => 'confirmed', 'page' => (string)($row['page'] ?? '')];
+        } finally {
+            flock($fh, LOCK_UN);
+            fclose($fh);
+        }
+    }
+
+    private static function validEmail(string $email): bool
+    {
+        return $email !== '' && strlen($email) <= 160 && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+    /** HMAC of address + signup day: the link proves the inbox received it, and expires with the day window. */
+    private static function nlToken(string $email, string $day): string
+    {
+        return hash_hmac('sha256', 'newsletter|' . $email . '|' . $day, Config::secret());
+    }
+
+    public static function nlFile(): string
+    {
+        return VJ_SITE . '/data/leads/newsletter.jsonl';
+    }
+
+    public static function nlPendingFile(): string
+    {
+        return VJ_SITE . '/data/leads/newsletter-pending.jsonl';
+    }
+
+    /** True when newsletter.jsonl holds a confirmed row for the address (rows without `status` predate double opt-in). */
+    private static function nlConfirmed(string $email): bool
+    {
+        $file = self::nlFile();
         foreach (is_file($file) ? (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: []) : [] as $line) {
             $row = json_decode($line, true);
-            if (is_array($row) && strtolower((string)($row['email'] ?? '')) === $email) {
-                return ['ok' => true, 'errors' => [], 'page' => $page];
+            if (is_array($row) && ($row['status'] ?? '') === 'confirmed' && strtolower((string)($row['email'] ?? '')) === $email) {
+                return true;
             }
         }
-        $line = json_encode(
-            ['email' => $email, 'page' => $page, 'consent' => true, 'when' => date('c')],
-            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
-        );
-        if (@file_put_contents($file, $line . "\n", FILE_APPEND | LOCK_EX) === false) {
-            Util::log('Cannot append newsletter signup to ' . $file);
-            return ['ok' => false, 'errors' => ['_store' => I18n::t('err_nl_store')], 'page' => $page];
+        return false;
+    }
+
+    /** The pending file, opened and exclusively locked. @return resource|null */
+    private static function nlPendingOpen()
+    {
+        $file = self::nlPendingFile();
+        if (!Util::mkdirp(dirname($file))) {
+            Util::log('Cannot create leads dir: ' . dirname($file));
+            return null;
         }
-        return ['ok' => true, 'errors' => [], 'page' => $page];
+        $fh = @fopen($file, 'c+');
+        if ($fh === false || !flock($fh, LOCK_EX)) {
+            Util::log('Cannot open ' . $file);
+            return null;
+        }
+        return $fh;
+    }
+
+    /** Pending rows by address, minus the expired ones. @param resource $fh @return array<string,array> */
+    private static function nlPendingRead($fh): array
+    {
+        rewind($fh);
+        $rows = [];
+        $cut  = time() - self::NL_CONFIRM_DAYS * 86400;
+        foreach (preg_split('/\R/', (string)stream_get_contents($fh)) ?: [] as $line) {
+            $row = json_decode($line, true);
+            if (is_array($row) && isset($row['email']) && (int)($row['ts'] ?? 0) >= $cut) {
+                $rows[strtolower((string)$row['email'])] = $row;
+            }
+        }
+        return $rows;
+    }
+
+    /** @param resource $fh @param array<string,array> $rows */
+    private static function nlPendingWrite($fh, array $rows): bool
+    {
+        $out = '';
+        foreach ($rows as $row) {
+            $out .= json_encode($row, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n";
+        }
+        $ok = ftruncate($fh, 0) && rewind($fh) && fwrite($fh, $out) === strlen($out) && fflush($fh);
+        if (!$ok) {
+            Util::log('Cannot write ' . self::nlPendingFile());
+        }
+        return $ok;
+    }
+
+    /** The confirmation email. False when mail() refused it (the caller says so to the visitor). */
+    private static function nlMail(string $email, string $token): bool
+    {
+        if (!function_exists('mail')) {
+            return false;
+        }
+        $site = (string)Config::v('site_name');
+        $link = abs_url('/suscribir/confirmar/') . '?' . http_build_query(['e' => $email, 't' => $token]);
+        $body = I18n::t('nl_mail_body', ['link' => $link, 'days' => self::NL_CONFIRM_DAYS, 'site' => $site]);
+        $headers = [
+            'From: ' . mb_encode_mimeheader($site, 'UTF-8') . ' <no-reply@' . (string)Config::v('domain') . '>',
+            'MIME-Version: 1.0',
+            'Content-Type: text/plain; charset=UTF-8',
+            'Content-Transfer-Encoding: 8bit',
+        ];
+        $subject = mb_encode_mimeheader(I18n::t('nl_mail_subject', ['site' => $site]), 'UTF-8');
+        if (!@mail($email, $subject, $body, implode("\r\n", $headers))) {
+            Util::log('mail() failed for newsletter confirmation to ' . $email);
+            return false;
+        }
+        return true;
     }
 }

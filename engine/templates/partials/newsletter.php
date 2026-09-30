@@ -1,5 +1,6 @@
-<?php /** @var array $page — email signup, stored in data/leads/newsletter.jsonl (no third-party service). */
+<?php /** @var array $page — email signup with double opt-in (Leads::subscribe), no third-party service. */
 $ok  = ($_GET['suscrito'] ?? '') === '1';
+$already = ($_GET['suscrito'] ?? '') === 'ya';
 $err = ($_GET['suscripcion'] ?? '') === 'error';
 ?>
 <section class="newsletter" id="suscribirse" aria-labelledby="nl-title">
@@ -7,6 +8,12 @@ $err = ($_GET['suscripcion'] ?? '') === 'error';
     <div class="notice notice--ok" role="status">
       <p class="notice__title"><?= e(t('nl_ok_title')) ?></p>
       <p><?= e(t('nl_ok_text')) ?></p>
+    </div>
+  <?php endif; ?>
+  <?php if ($already): ?>
+    <div class="notice notice--ok" role="status">
+      <p class="notice__title"><?= e(t('nl_already_title')) ?></p>
+      <p><?= e(t('nl_already_text')) ?></p>
     </div>
   <?php endif; ?>
   <?php if ($err): ?>

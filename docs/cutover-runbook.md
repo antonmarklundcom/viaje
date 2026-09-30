@@ -85,12 +85,30 @@ It checks that the key file is live before submitting (deploy first), pings
 failure. Also add the site in **Bing Webmaster Tools** (bing.com/webmasters) and submit
 `https://viaje.com.py/sitemap.xml` there; `<lastmod>` in the sitemap follows each page's `updated:`.
 
-### Newsletter signups
+### Newsletter signups (double opt-in)
 
-`/suscribir/` writes one line per address to `sites/viaje.com.py/data/leads/newsletter.jsonl`
-(deduplicated, no third-party service). Read or download it in File Manager; the weekly backup
-already includes `data/leads`. Contact-form leads with the page they came from are in
-`data/leads/YYYY-MM.jsonl`.
+Nobody is on the list until they click the link in a confirmation email, so nobody can sign up
+someone else's address. Two files, both in `sites/viaje.com.py/data/leads/` (File Manager; the
+weekly backup and *Exportar copia* include `data/leads`):
+
+| File | What is in it | Written how |
+|---|---|---|
+| `newsletter.jsonl` | **The list.** One line per confirmed address: `{"email", "page", "status":"confirmed", "consent":true, "requested":<signup time>, "when":<confirm time>}` | Append-only; never rewritten |
+| `newsletter-pending.jsonl` | Signups waiting for the click: `{"email", "page", "status":"pending", "token", "day", "when", "ts", "mail":"sent"\|"failed"}` | Rewritten on each signup/confirm; rows older than 7 days are dropped |
+
+To mail the list, take the `email` of every line in `newsletter.jsonl` whose `status` is
+`confirmed`. Lines without a `status` (if any) were written before double opt-in (2026-09-30) and
+were never confirmed — do not mail them.
+
+The confirmation email is sent with PHP `mail()` from `no-reply@viaje.com.py`; the link is
+`https://viaje.com.py/suscribir/confirmar/?e=…&t=…` and works for 7 days. If `mail()` fails, the
+visitor sees "No pudimos enviarte el email de confirmación…" (never a success message) and the
+pending row stays with `"mail":"failed"`. **Deliverability:** test it once after the deploy by
+subscribing two addresses of your own at different providers (e.g. Outlook and Proton). If it lands in spam or never arrives: in
+hPanel → Emails, create the `viaje.com.py` mailbox/domain so Hostinger signs outgoing mail (DKIM)
+and publishes SPF, and add a DMARC record; `mail()` sends through the same server. On a staging
+hostname the link still points at `https://viaje.com.py/` (the canonical host) — replace the host by
+hand to test it there.
 
 ### Rate limits behind Hostinger's proxy (`trusted_proxies`)
 

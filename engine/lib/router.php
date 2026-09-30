@@ -36,6 +36,9 @@ final class Router
         if ($path === '/enviar/' || $path === '/enviar') {
             return self::enviar($method, $post);
         }
+        if ($path === '/suscribir/confirmar/' || $path === '/suscribir/confirmar') {
+            return self::confirmar($query);
+        }
         if ($path === '/suscribir/' || $path === '/suscribir') {
             return self::suscribir($method, $post);
         }
@@ -423,9 +426,34 @@ final class Router
             $qs = ['suscripcion' => 'error', 'msg' => implode(' ', $result['errors'])];
             return Response::redirect($to . '?' . http_build_query($qs) . '#suscribirse', 303);
         }
+        // `suscrito=1`: confirmation email sent; `suscrito=ya`: the address was confirmed before.
+        $flag = $result['status'] === 'already' ? 'ya' : '1';
         return $wantsJson
-            ? Response::json(['ok' => true])
-            : Response::redirect($to . '?suscrito=1#suscribirse', 303);
+            ? Response::json(['ok' => true, 'status' => $result['status']])
+            : Response::redirect($to . '?suscrito=' . $flag . '#suscribirse', 303);
+    }
+
+    /** GET /suscribir/confirmar/?e=&t= — the link from the confirmation email. Never cached, noindex. */
+    private static function confirmar(array $query): Response
+    {
+        Render::disableCache();
+        $r = Leads::confirm((string)($query['e'] ?? ''), (string)($query['t'] ?? ''));
+        [$title, $text] = match ($r['status']) {
+            'confirmed' => [I18n::t('nl_confirmed_title'), I18n::t('nl_confirmed_text')],
+            'already'   => [I18n::t('nl_confirmed_title'), I18n::t('nl_confirm_again')],
+            default     => [I18n::t('nl_confirm_bad_title'), I18n::t('nl_confirm_bad_text')],
+        };
+        $vars = [
+            'page' => [
+                'type' => 'page', 'path' => '/suscribir/confirmar/', 'title' => $title, 'text' => $text,
+                'ok' => $r['ok'], 'back' => $r['page'] !== '' ? $r['page'] : '/', 'html' => '',
+            ],
+            'seo' => Seo::head(['title' => $title, 'description' => $text, 'path' => '/', 'noindex' => true, 'suffix' => true]),
+        ];
+        return Response::html(Render::page('notice', $vars), $r['ok'] ? 200 : 400)
+            ->withHeader('Cache-Control', 'no-store')
+            ->withHeader('X-Robots-Tag', 'noindex, nofollow')
+            ->withHeader('Referrer-Policy', 'no-referrer');
     }
 
     /** The path of the site-wide FAQ page (layout `faq`), or null. */
