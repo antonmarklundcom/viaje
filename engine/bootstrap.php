@@ -46,6 +46,76 @@ if (defined('VJ_NO_DISPATCH') && VJ_NO_DISPATCH) {
     return;
 }
 
+// First request on a fresh install: the server owns content/, git only ships content-seed/.
+// Copy the seed once (marker file in data/ means "already done, never again", so pages the
+// owner later deletes in /admin/ do not come back). Same result as tools/seed-content.php.
+vj_auto_seed(VJ_SITE);
+
+function vj_auto_seed(string $site): void
+{
+    $seed = $site . '/content-seed';
+    $dest = $site . '/content';
+    $mark = $site . '/data/.content-seeded';
+    if (!is_dir($seed) || is_file($mark)) {
+        return;
+    }
+    $has = static function (string $dir): bool {
+        if (!is_dir($dir)) {
+            return false;
+        }
+        $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS));
+        foreach ($it as $f) {
+            if ($f->isFile() && !str_starts_with($f->getFilename(), '.')) {
+                return true;
+            }
+        }
+        return false;
+    };
+    if ($has($dest)) {
+        @mkdir($site . '/data', 0775, true);
+        @file_put_contents($mark, date('c') . " existing content\n");
+        return;
+    }
+    @mkdir($site . '/data', 0775, true);
+    $lock = $site . '/data/.seed.lock';
+    if (!@mkdir($lock, 0775)) {
+        // Another request is seeding; ignore a lock older than a minute (crashed request).
+        if (@filemtime($lock) < time() - 60) {
+            @rmdir($lock);
+        }
+        return;
+    }
+    $n = 0;
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($seed, FilesystemIterator::SKIP_DOTS));
+    foreach ($it as $f) {
+        if (!$f->isFile() || str_starts_with($f->getFilename(), '.')) {
+            continue;
+        }
+        $to = $dest . '/' . substr($f->getPathname(), strlen($seed) + 1);
+        if (!is_dir(dirname($to))) {
+            @mkdir(dirname($to), 0775, true);
+        }
+        if (@copy($f->getPathname(), $to)) {
+            $n++;
+        }
+    }
+    if ($n > 0) {
+        foreach ([$site . '/cache/pages', $site . '/cache/index.php'] as $stale) {
+            if (is_dir($stale)) {
+                $r = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($stale, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
+                foreach ($r as $x) {
+                    $x->isDir() ? @rmdir($x->getPathname()) : @unlink($x->getPathname());
+                }
+                @rmdir($stale);
+            } else {
+                @unlink($stale);
+            }
+        }
+        @file_put_contents($mark, date('c') . " $n files (auto)\n");
+    }
+    @rmdir($lock);
+}
+
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 $uri    = (string)($_SERVER['REQUEST_URI'] ?? '/');
 $path   = (string)(parse_url($uri, PHP_URL_PATH) ?: '/');

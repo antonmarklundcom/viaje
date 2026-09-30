@@ -41,7 +41,7 @@ So editing a page means using `/admin/`, not committing to the repo. Changes to
    `/admin/` → *Exportar copia* (zip of content + media + leads), or zip
    `sites/viaje.com.py/content`, `media` and `data/leads` in File Manager.
 2. hPanel → Advanced → GIT → **Deploy** (pull `main`).
-3. **Seed the content** — the site is empty until you do (SSH: hPanel → Advanced → SSH Access):
+3. **Seed the content** — automatic since 2026-09-30: the first page request after deploy copies `content-seed/` → `content/` by itself (marker `data/.content-seeded`), so you can skip this step. Manual fallback (SSH: hPanel → Advanced → SSH Access):
    ```bash
    cd ~/domains/viaje.com.py/public_html      # the folder that holds index.php and engine/
                                               # (~/public_html if it is the account's main domain; hPanel → Files shows the path)
