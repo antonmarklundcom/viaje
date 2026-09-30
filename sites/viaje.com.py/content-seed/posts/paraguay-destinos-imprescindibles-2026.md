@@ -10,7 +10,7 @@ quick_answer: >
   un dato para planificar la visita.
 path: /paraguay-destinos-imprescindibles-2026/
 date: 2026-02-03
-updated: 2026-09-29
+updated: 2026-09-30
 author: Yanina — Equipo Viaje.com.py
 region: Paraguay
 hero: /assets/img/saltos-del-monday-cascada.jpg
@@ -51,6 +51,11 @@ faq:
       Frutilla. La UNESCO la declaró Ciudad Creativa.
 related:
   - /actividades/saltos-del-monday/
+  - /actividades/laguna-blanca/
+  - /actividades/salto-cristal/
+  - /actividades/itaipu-hernandarias/
+  - /actividades/cerro-tres-kandu/
+  - /actividades/aregua/
   - /viajes/ruta-del-chaco-3-dias/
   - /agencia-de-viaje/
 ---

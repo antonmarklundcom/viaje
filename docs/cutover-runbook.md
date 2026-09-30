@@ -71,6 +71,22 @@ after real edits exist — it refuses anyway when `content/` is not empty. `conf
 Create `sites/viaje.com.py/config.local.php` on the server once (copy
 `config.local.example.php`; admin password hash, and `force_host` null while on a staging hostname).
 
+### Publishing seed changes to the live site
+
+A merged PR that edits `sites/viaje.com.py/content-seed/` updates only the seed on the server (the Git deploy
+replaces it); the live pages in `sites/viaje.com.py/content/` are the server's and stay as they are. Deploy first
+(hPanel → Advanced → GIT → Deploy), then, per kind of change:
+
+| What changed | What to do |
+|---|---|
+| **New page** (a seed file with no twin in `content/`) | Copy only that file. File Manager: `sites/viaje.com.py/content-seed/<folder>/<file>.md` → `sites/viaje.com.py/content/<folder>/` (create the folder if it is missing, e.g. `news/`). Or, over SSH from the document root, copy every seed file that is not in `content/` yet and overwrite nothing: `cp -rn sites/viaje.com.py/content-seed/. sites/viaje.com.py/content/` (GNU `cp`: `-r` recurses, `-n` skips files that already exist, the trailing `/.` copies the folder's contents including dot-files). |
+| **Changed existing page** | Do not copy over it. `/admin/` → open the page → **Historial** → **Restaurar desde la copia original (seed)**. The current live version is saved to `data/history` first, so the restore can be undone, but it replaces any edit made to that page in `/admin/` (the edit stays in Historial). |
+| `config.php` (nav, hubs) and `urls.txt` | Arrive with the deploy; nothing to copy. |
+
+Page cache: a file copied in File Manager or over SSH shows within 60 seconds; an admin restore shows immediately.
+`cp -n` never touches a page that exists, so it is safe to run twice, but it also never updates one: changed pages always
+go through the admin restore. Then `php tools/indexnow.php --since=1d`.
+
 ### Content history and undo (`data/history/`)
 
 The server's `content/` has no git history, so the admin keeps one: before every save, delete or
