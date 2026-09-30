@@ -174,10 +174,94 @@ final class Util
         return trim(preg_replace('/\s+/u', ' ', $s) ?? '');
     }
 
-    public static function clientIp(): string
+    /**
+     * The visitor's IP, for the rate limiters and the lead record.
+     *
+     * REMOTE_ADDR is the only thing a client cannot forge, so it is the answer unless it belongs
+     * to a proxy listed in config `trusted_proxies` (IPs or CIDRs). Only then is the forwarding
+     * header read (`trusted_proxy_header`: X-Forwarded-For by default, or CF-Connecting-IP), and
+     * for X-Forwarded-For the right-most entry that is not itself a trusted proxy wins — entries
+     * further left were written by the client and prove nothing.
+     *
+     * @param array<string,mixed>|null $server  defaults to $_SERVER (tests pass their own)
+     * @param list<string>|null        $trusted defaults to config `trusted_proxies`
+     */
+    public static function clientIp(?array $server = null, ?array $trusted = null, ?string $header = null): string
     {
-        $ip = (string)($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
-        return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '0.0.0.0';
+        $server  ??= $_SERVER;
+        $trusted ??= array_values(array_map('strval', (array)Config::v('trusted_proxies', [])));
+        $remote  = (string)($server['REMOTE_ADDR'] ?? '');
+        if (!filter_var($remote, FILTER_VALIDATE_IP)) {
+            return '0.0.0.0';
+        }
+        if ($trusted === [] || !self::ipInList($remote, $trusted)) {
+            return $remote;
+        }
+        $header = strtolower($header ?? (string)Config::v('trusted_proxy_header', 'X-Forwarded-For'));
+        if ($header === 'cf-connecting-ip') {
+            $cf = self::bareIp((string)($server['HTTP_CF_CONNECTING_IP'] ?? ''));
+            return $cf ?? $remote;
+        }
+        $hops = array_reverse(array_map('trim', explode(',', (string)($server['HTTP_X_FORWARDED_FOR'] ?? ''))));
+        $ip   = $remote;
+        foreach ($hops as $hop) {
+            $hop = self::bareIp($hop);
+            if ($hop === null) {
+                break;                      // garbage in the chain: stop at the last hop we could read
+            }
+            $ip = $hop;
+            if (!self::ipInList($hop, $trusted)) {
+                break;                      // first address a trusted proxy did not vouch for
+            }
+        }
+        return $ip;
+    }
+
+    /** "1.2.3.4", "1.2.3.4:5678", "[2001:db8::1]:443" or "2001:db8::1" → the address, else null. */
+    private static function bareIp(string $s): ?string
+    {
+        $s = trim($s);
+        if (preg_match('/^\[([0-9a-fA-F:.]+)\](?::\d+)?$/', $s, $m)) {
+            $s = $m[1];
+        } elseif (preg_match('/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/', $s, $m)) {
+            $s = $m[1];
+        }
+        return filter_var($s, FILTER_VALIDATE_IP) ? $s : null;
+    }
+
+    /** True when $ip equals one of $list or falls inside one of its CIDR ranges (IPv4 and IPv6). */
+    public static function ipInList(string $ip, array $list): bool
+    {
+        $bin = @inet_pton($ip);
+        if ($bin === false) {
+            return false;
+        }
+        foreach ($list as $entry) {
+            $entry = trim((string)$entry);
+            [$net, $bits] = str_contains($entry, '/') ? explode('/', $entry, 2) : [$entry, null];
+            $netBin = @inet_pton($net);
+            if ($netBin === false || strlen($netBin) !== strlen($bin)) {
+                continue;
+            }
+            $max  = strlen($bin) * 8;
+            $bits = $bits === null ? $max : (ctype_digit($bits) ? (int)$bits : -1);
+            if ($bits < 0 || $bits > $max) {
+                continue;
+            }
+            $bytes = intdiv($bits, 8);
+            $rest  = $bits % 8;
+            if (substr($bin, 0, $bytes) !== substr($netBin, 0, $bytes)) {
+                continue;
+            }
+            if ($rest === 0) {
+                return true;
+            }
+            $mask = (0xFF << (8 - $rest)) & 0xFF;
+            if ((ord($bin[$bytes]) & $mask) === (ord($netBin[$bytes]) & $mask)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Stable, filename-safe key for an IP (used by the rate limiter). */

@@ -92,6 +92,41 @@ failure. Also add the site in **Bing Webmaster Tools** (bing.com/webmasters) and
 already includes `data/leads`. Contact-form leads with the page they came from are in
 `data/leads/YYYY-MM.jsonl`.
 
+### Rate limits behind Hostinger's proxy (`trusted_proxies`)
+
+The contact form, the newsletter and the admin login limit attempts per visitor IP. PHP sees the
+visitor as `REMOTE_ADDR`; if Hostinger (its CDN, or Cloudflare if you ever add it) sits in front,
+`REMOTE_ADDR` is the proxy's address and every visitor shares one bucket — then 5 leads an hour
+would block *everyone*. The engine only reads a forwarding header when `REMOTE_ADDR` is listed in
+`trusted_proxies` in `config.local.php`; from any other address the header is ignored (a client can
+type anything into it). Default: empty — correct when there is no proxy.
+
+Find out once, after the first deploy:
+
+1. File Manager → document root (the folder with `index.php`) → New file `ipcheck-7f3a.php`
+   (any unguessable name) with exactly:
+   ```php
+   <?php header('Content-Type: text/plain');
+   foreach (['REMOTE_ADDR', 'HTTP_X_FORWARDED_FOR', 'HTTP_CF_CONNECTING_IP', 'HTTP_X_REAL_IP'] as $k) {
+       echo $k, ': ', $_SERVER[$k] ?? '-', "\n";
+   }
+   ```
+2. Open `https://viaje.com.py/ipcheck-7f3a.php` from your phone on mobile data, then from home Wi-Fi.
+   Compare with your own IP (search "what is my ip" on Bing).
+3. **Delete `ipcheck-7f3a.php` right away** — do not leave it on the server.
+
+Reading it:
+- `REMOTE_ADDR` is your own IP → no proxy. Leave `trusted_proxies` empty. Done.
+- `REMOTE_ADDR` is some other address and `HTTP_X_FORWARDED_FOR` ends with your IP → proxy. Put the
+  proxy's address (or its range if it changes between the two loads, e.g. `'10.0.0.0/8'`) in
+  `config.local.php`: `'trusted_proxies' => ['<address or CIDR>'],`. Keep
+  `'trusted_proxy_header' => 'X-Forwarded-For'`.
+- Only `HTTP_CF_CONNECTING_IP` shows your IP (Cloudflare) → list Cloudflare's published ranges
+  (cloudflare.com/ips) and set `'trusted_proxy_header' => 'CF-Connecting-IP'`.
+
+Leads record the address they came from (`ip` in `data/leads/YYYY-MM.jsonl`); after the change a
+test lead should show your real IP there, not the proxy's.
+
 ## 0. Before you start
 
 - Pick an upload path for step 4 and stay with it for every later deploy:

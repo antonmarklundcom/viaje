@@ -94,6 +94,8 @@ final class Config
             'leads'            => [],
             'per_page'         => 12,
             'footer_blurb'     => '',
+            'trusted_proxies'  => [],          // see Util::clientIp()
+            'trusted_proxy_header' => 'X-Forwarded-For',
         ];
         $c = array_replace_recursive($d, $c);
 

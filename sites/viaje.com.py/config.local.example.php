@@ -24,6 +24,13 @@ return [
         ],
     ],
 
+    // Reverse proxy / CDN in front of PHP (docs/cutover-runbook.md, "Rate limits behind
+    // Hostinger's proxy"). Leave empty unless REMOTE_ADDR is a proxy: then list its IPs or
+    // CIDR ranges here and the forms' per-IP rate limit reads the visitor's address from the
+    // header below instead. Forwarding headers from any other address are never trusted.
+    'trusted_proxies'      => [],                 // e.g. ['10.0.0.0/8', '2a02:4780::/32']
+    'trusted_proxy_header' => 'X-Forwarded-For',  // or 'CF-Connecting-IP' (Cloudflare only)
+
     // Staging installs: noindex header + meta on every response, no analytics.
     'staging' => false,
     'debug'   => false,
