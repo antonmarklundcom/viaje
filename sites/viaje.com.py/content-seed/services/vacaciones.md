@@ -3,8 +3,13 @@ title: Vacaciones en Paraguay
 seo_title: Vacaciones en Paraguay a Medida | Viaje.com.py
 keyword: vacaciones en Paraguay
 description: Vacaciones en Paraguay a medida, con estancias de primer nivel y toda la logística resuelta, desde tu salida hasta tu regreso. Contanos fechas y lo armamos.
+quick_answer: >
+  Diseñamos vacaciones en Paraguay a medida, sin paquetes rígidos: elegimos estancias y
+  alojamiento de primer nivel, reservamos actividades exclusivas, coordinamos transporte dedicado
+  y damos soporte de conserjería, con seguros y cobertura de viaje. Vos elegís destino y fechas, y
+  nosotros resolvemos la logística de principio a fin.
 date: 2026-09-03
-updated: 2026-09-29
+updated: 2026-09-30
 order: 4
 hero: /assets/img/vacaciones-familia-lago.jpg
 hero_alt: Una familia vista de espaldas camina hacia la orilla de un lago con toallas y una conservadora, bajo luz dorada.

@@ -117,14 +117,32 @@ return [
             ],
             'cta' => ['heading' => 'Armamos tu viaje', 'text' => 'Contanos fechas y presupuesto y te respondemos por WhatsApp.'],
         ],
-        ['label' => 'Actividades',  'href' => '/actividades/', 'children' => [
-            ['label' => 'Saltos del Monday',        'href' => '/actividades/saltos-del-monday/'],
-            ['label' => 'Salto Suizo y Ybytyruzú',  'href' => '/actividades/salto-suizo-ybytyruzu/'],
-            ['label' => 'Lago Ypacaraí',            'href' => '/actividades/lago-ypacarai-san-bernardino/'],
-            ['label' => 'Misiones Jesuíticas',      'href' => '/actividades/misiones-jesuiticas-trinidad-jesus/'],
-            ['label' => 'Costanera de Encarnación', 'href' => '/actividades/encarnacion-costanera/'],
-            ['label' => 'Chaco Paraguayo',          'href' => '/actividades/chaco-paraguayo/'],
-        ]],
+        // Mega menu, same shape as Servicios: four columns of at most 8 links, then the CTA card.
+        ['label' => 'Actividades',  'href' => '/actividades/',
+            'columns' => [
+                ['heading' => 'Saltos y agua', 'links' => [
+                    ['label' => 'Saltos del Monday',       'href' => '/actividades/saltos-del-monday/'],
+                    ['label' => 'Salto Suizo y Ybytyruzú', 'href' => '/actividades/salto-suizo-ybytyruzu/'],
+                    ['label' => 'Salto Cristal',           'href' => '/actividades/salto-cristal/'],
+                    ['label' => 'Laguna Blanca',           'href' => '/actividades/laguna-blanca/'],
+                ]],
+                ['heading' => 'Cerros y Chaco', 'links' => [
+                    ['label' => 'Cerro Tres Kandú',  'href' => '/actividades/cerro-tres-kandu/'],
+                    ['label' => 'Chaco Paraguayo',   'href' => '/actividades/chaco-paraguayo/'],
+                ]],
+                ['heading' => 'Historia y cultura', 'links' => [
+                    ['label' => 'Misiones Jesuíticas',     'href' => '/actividades/misiones-jesuiticas-trinidad-jesus/'],
+                    ['label' => 'Itaipú y Hernandarias',   'href' => '/actividades/itaipu-hernandarias/'],
+                ]],
+                ['heading' => 'Lago y costanera', 'links' => [
+                    ['label' => 'Lago Ypacaraí',               'href' => '/actividades/lago-ypacarai-san-bernardino/'],
+                    ['label' => 'Areguá',                      'href' => '/actividades/aregua/'],
+                    ['label' => 'Costanera de Encarnación',    'href' => '/actividades/encarnacion-costanera/'],
+                    ['label' => 'Ver todas las actividades →', 'href' => '/actividades/'],
+                ]],
+            ],
+            'cta' => ['heading' => 'Armamos tu viaje', 'text' => 'Contanos fechas y presupuesto y te respondemos por WhatsApp.'],
+        ],
         ['label' => 'Viajes',       'href' => '/viajes/', 'children' => [
             ['label' => 'Ruta del Chaco en 3 días',     'href' => '/viajes/ruta-del-chaco-3-dias/'],
             ['label' => 'Fin de semana en Encarnación', 'href' => '/viajes/fin-de-semana-en-encarnacion/'],
@@ -187,8 +205,9 @@ return [
         '/novedades/' => [
             'type'        => 'news',
             'nav_label'   => 'Novedades',
-            'title'       => 'Novedades',
-            'description' => 'Anuncios y apariciones en medios de Viaje.com.py.',
+            'keyword'     => 'novedades de turismo en Paraguay',
+            'title'       => 'Novedades de Turismo en Paraguay',
+            'description' => 'Novedades de turismo en Paraguay: anuncios y apariciones en medios de Viaje.com.py, con lo que se dice del país y cómo armar tu próxima escapada.',
         ],
         '/viajes/' => [
             'type'        => 'trip',

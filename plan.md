@@ -498,6 +498,26 @@ unverifiable from this repo alone.)*
   `thingstodoinparaguay.com` 0 failures. New engine routes (`/enviar/sello/`, `/suscribir/confirmar/`)
   are noindex, uncached, and covered by `robots.txt`'s existing `/enviar/` and `/suscribir/` disallows.
 
+### 2026-09-30 — Content pass 2: new destination pages, service answer boxes, seed hygiene (branch `claude/friendly-fermat-xrujk2`)
+- **Five activity pages** built from the pillar post's own text: `/actividades/laguna-blanca/`, `salto-cristal/`,
+  `itaipu-hernandarias/`, `cerro-tres-kandu/`, `aregua/` (300–450 words, `quick_answer`, 4 FAQs, service links, link back to
+  the pillar's H2 anchor). No hero on any of them (no matching image exists; prompts are in `docs/higgsfield-todo.md`).
+  Added to `urls.txt`, `docs/keyword-map.md`, the pillar's `related`, and the Actividades menu, now a four-column mega menu.
+- **Services:** all five got a `quick_answer` (40–60 words, from each page's own text) and `updated: 2026-09-30`. `service.php`
+  renders only the shared FAQ (`Content::faq([slug, 'servicios'])`), so no page-level `faq:` was added (it would emit no
+  markup and verify would expect a `FAQPage` node); an engine change would be needed to show one.
+- **`/novedades/` is no longer an empty hub:** one news item, `asuncion-conde-nast-traveler-2026`, that only repeats what
+  `destinos-imperdibles-2026.md` already says about Condé Nast Traveler. `source_name` is set, `source_url` is not (none is
+  stated on the site), and `post.php` only prints the source line when `source_url` exists, so the attribution is in the text.
+  The hub got a `keyword`, title and description that pass `--strict`; it is in `urls.txt` and the sitemap.
+- **Hygiene:** a throwaway script over `content-seed/` (internal links against `urls.txt` and content paths, self-links,
+  pillar anchors, FAQ questions vs `data/faq.json`, `updated:` on touched pages, alts ≥ 15 characters) found nothing to fix.
+  `engine/lang/es.php` and `en.php` still have the same 220 keys ("parity confirmed"; nothing changed).
+- `bash tools/ci-local.sh` → all steps passed; `verify.php viaje.com.py --strict` 0 failures / 0 warnings;
+  `thingstodoinparaguay.com` 0 failures. Nothing under `engine/` or `tools/` was touched.
+- **Live site:** new pages are copied to `content/`; changed pages (5 services, the pillar post) are restored from the seed
+  in `/admin/` → Historial. See the cutover runbook, "Publishing seed changes to the live site".
+
 ## 10. Backlog
 - Cinematic scroll homepage hero as an opt-in section (needs SEO-safe text fallback).
 - Newsletter capture.
